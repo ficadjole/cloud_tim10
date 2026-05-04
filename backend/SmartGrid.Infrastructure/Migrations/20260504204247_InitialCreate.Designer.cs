@@ -12,8 +12,8 @@ using SmartGrid.Infrastructure.Persistence.AzureSQL.Context;
 namespace SmartGrid.Infrastructure.Migrations
 {
     [DbContext(typeof(SmartMeteringDbContext))]
-    [Migration("20260504144206_InitialMigration")]
-    partial class InitialMigration
+    [Migration("20260504204247_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -37,8 +37,8 @@ namespace SmartGrid.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("UserEntityId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("UserEntityId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -49,14 +49,14 @@ namespace SmartGrid.Infrastructure.Migrations
 
             modelBuilder.Entity("SmartGrid.Infrastructure.Persistence.AzureSQL.Entities.UserEntity", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("newid()");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AccountStatus")
-                        .HasColumnType("int");
+                    b.Property<string>("AccountStatus")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -81,8 +81,9 @@ namespace SmartGrid.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Role")
-                        .HasColumnType("int");
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 

@@ -14,7 +14,7 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Entities
     [EntityTypeConfiguration(typeof(UserEntityTypeConfiguration))]
     public class UserEntity
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         public string FirstName { get; set; } = null!;
         public string LastName { get; set; } = null!;
 
