@@ -75,7 +75,9 @@ namespace SmartGrid.Domain.Models
             string id,
             string name,
             ObjectType type,
-            Address address,
+            string street,
+            string number,
+            string city,
             string ownerId,
             SmartMeter? connectedMeter = null)
         {
@@ -87,11 +89,15 @@ namespace SmartGrid.Domain.Models
             if(ownerIdResult.IsFailure)
                 return Result<ResidentalObject>.Failure(ownerIdResult.Error!.Message, ErrorType.Validation);
 
+            var addressResult = Address.Create(street, number, city);
+            if(addressResult.IsFailure)
+                return Result<ResidentalObject>.Failure(addressResult.Error!.Message, ErrorType.Validation);
+
             return Result<ResidentalObject>.Success(new ResidentalObject(
                 idResult.Value,
                 name,
                 type,
-                address,
+                addressResult.Value,
                 ownerIdResult.Value)
             {
                 ConnectedMeter = connectedMeter
