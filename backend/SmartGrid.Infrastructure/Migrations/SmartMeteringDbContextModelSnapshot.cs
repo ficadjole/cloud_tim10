@@ -22,26 +22,117 @@ namespace SmartGrid.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("SmartGrid.Infrastructure.Persistence.AzureSQL.Entities.ResidentalObject", b =>
+            modelBuilder.Entity("SmartGrid.Infrastructure.Persistence.AzureSQL.Entities.ResidentalObjectEntity", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("uniqueidentifier");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("UserEntityId")
+                    b.Property<string>("Number")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("OwnerId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Street")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserEntityId");
+                    b.HasIndex("OwnerId");
 
                     b.ToTable("ResidentalObjects");
+                });
+
+            modelBuilder.Entity("SmartGrid.Infrastructure.Persistence.AzureSQL.Entities.SmartMeterEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("ConnectionType")
+                        .HasColumnType("int");
+
+                    b.Property<double>("MaxPower")
+                        .HasColumnType("float");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("RegisteredAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("ResidentalObjectId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("SerialNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("UserLimitType")
+                        .HasColumnType("int");
+
+                    b.Property<double?>("UserLimitValue")
+                        .HasColumnType("float");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ResidentalObjectId")
+                        .IsUnique()
+                        .HasFilter("[ResidentalObjectId] IS NOT NULL");
+
+                    b.ToTable("SmartMeters");
+                });
+
+            modelBuilder.Entity("SmartGrid.Infrastructure.Persistence.AzureSQL.Entities.TariffModelEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<float>("BHT")
+                        .HasColumnType("real");
+
+                    b.Property<float>("BLT")
+                        .HasColumnType("real");
+
+                    b.Property<float>("BillingPowerPrice")
+                        .HasColumnType("real");
+
+                    b.Property<float>("GHT")
+                        .HasColumnType("real");
+
+                    b.Property<float>("GLT")
+                        .HasColumnType("real");
+
+                    b.Property<float>("RHT")
+                        .HasColumnType("real");
+
+                    b.Property<float>("RLT")
+                        .HasColumnType("real");
+
+                    b.Property<float>("SupplierCost")
+                        .HasColumnType("real");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TariffModels");
                 });
 
             modelBuilder.Entity("SmartGrid.Infrastructure.Persistence.AzureSQL.Entities.UserEntity", b =>
@@ -87,11 +178,29 @@ namespace SmartGrid.Infrastructure.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("SmartGrid.Infrastructure.Persistence.AzureSQL.Entities.ResidentalObject", b =>
+            modelBuilder.Entity("SmartGrid.Infrastructure.Persistence.AzureSQL.Entities.ResidentalObjectEntity", b =>
                 {
-                    b.HasOne("SmartGrid.Infrastructure.Persistence.AzureSQL.Entities.UserEntity", null)
+                    b.HasOne("SmartGrid.Infrastructure.Persistence.AzureSQL.Entities.UserEntity", "Owner")
                         .WithMany("ResidentalObjects")
-                        .HasForeignKey("UserEntityId");
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Owner");
+                });
+
+            modelBuilder.Entity("SmartGrid.Infrastructure.Persistence.AzureSQL.Entities.SmartMeterEntity", b =>
+                {
+                    b.HasOne("SmartGrid.Infrastructure.Persistence.AzureSQL.Entities.ResidentalObjectEntity", "ResidentalObject")
+                        .WithOne("ConnectedMeter")
+                        .HasForeignKey("SmartGrid.Infrastructure.Persistence.AzureSQL.Entities.SmartMeterEntity", "ResidentalObjectId");
+
+                    b.Navigation("ResidentalObject");
+                });
+
+            modelBuilder.Entity("SmartGrid.Infrastructure.Persistence.AzureSQL.Entities.ResidentalObjectEntity", b =>
+                {
+                    b.Navigation("ConnectedMeter");
                 });
 
             modelBuilder.Entity("SmartGrid.Infrastructure.Persistence.AzureSQL.Entities.UserEntity", b =>

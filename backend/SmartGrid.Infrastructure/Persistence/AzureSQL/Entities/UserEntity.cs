@@ -28,7 +28,7 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Entities
 
         public UserAccountStatus AccountStatus { get; set; } = UserAccountStatus.WaitingForConfirmation;
 
-        public ICollection<ResidentalObject> ResidentalObjects { get; set; } = null!; 
+        public ICollection<ResidentalObjectEntity> ResidentalObjects { get; set; } = null!; 
 
     }
 }

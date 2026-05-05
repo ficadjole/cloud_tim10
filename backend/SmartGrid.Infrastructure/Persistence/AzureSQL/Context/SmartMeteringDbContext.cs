@@ -19,8 +19,18 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Context
         }
 
         public DbSet<UserEntity> Users {get; set; }
-        
-        public DbSet<ResidentalObject> ResidentalObjects { get; set; }
+        public DbSet<ResidentalObjectEntity> ResidentalObjects { get; set; }
+        public DbSet<SmartMeterEntity> SmartMeters { get; set; }
+        public DbSet<TariffModelEntity> TariffModels { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(SmartMeteringDbContext).Assembly);
+
+            modelBuilder.Entity<TariffModelEntity>().HasKey(t => t.Id);
+        }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
