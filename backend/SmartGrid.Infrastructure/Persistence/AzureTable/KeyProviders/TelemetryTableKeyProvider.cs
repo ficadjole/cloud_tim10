@@ -7,7 +7,7 @@ namespace SmartGrid.Infrastructure.Persistence.AzureTable.KeyProviders
     {
         public string GetPartitionKey(Telemetry model)
         {
-            return model.DeviceId.Value;
+            return model.SmartMeterId.Value;
         }
 
         public string GetRowKey(Telemetry model)

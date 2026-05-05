@@ -13,13 +13,25 @@ namespace SmartGrid.Application.Features.Telemetries.Commands
     // COMMAND
     public record ProcessTelemetryCommand : IRequest<Result>
     {
-        public string DeviceId { get; set; } = string.Empty;
-        public string DeviceName { get; init; } = string.Empty;
+        public string SmartMeterId { get; init; } = string.Empty;
+        public string DeviceToken { get; init; } = string.Empty;
         public DeviceType DeviceType { get; init; }
-        public double NominalPower { get; init; }
-        public double CurrentPower { get; init; }
-        public string FirmwareVersion { get; init; } = string.Empty;
+
         public DateTime Timestamp { get; init; }
+        public double TotalConsumptionKWh { get; init; }
+        public double CurrentLoadKW { get; init; }
+
+        public double VoltageL1 { get; init; }
+        public double? VoltageL2 { get; init; }
+        public double? VoltageL3 { get; init; }
+
+        public double CurrentL1 { get; init; }
+        public double? CurrentL2 { get; init; }
+        public double? CurrentL3 { get; init; }
+
+        public double PowerFactorL1 { get; init; }
+        public double? PowerFactorL2 { get; init; }
+        public double? PowerFactorL3 { get; init; }
     }
 
     // VALIDATOR
@@ -27,48 +39,66 @@ namespace SmartGrid.Application.Features.Telemetries.Commands
     {
         public ProcessTelemetryValidator()
         {
-            RuleFor(t => t.DeviceId)
-                .NotEmpty().WithMessage("DeviceId is required.");
+            RuleFor(t => t.SmartMeterId)
+                .NotEmpty();
 
-            RuleFor(t => t.DeviceName)
-                .NotEmpty().WithMessage("DeviceName is required.");
+            RuleFor(t => t.DeviceToken)
+                .NotEmpty();
 
-            RuleFor(t => t.FirmwareVersion)
-                .IsValidFirmwareVersion();
-
-            RuleFor(t => t.DeviceType)
-                 .IsValidDeviceType();
-
-            RuleFor(t => t.NominalPower)
-                .NotEmpty().WithMessage("NominalPower is missing from payload.")
-                .GreaterThan(0).WithMessage("NominalPower must be greater than zero.");
-            
-            RuleFor(t => t.CurrentPower)
-                .NotEmpty().WithMessage("CurrentPower is missing from payload.")
+            RuleFor(t => t.TotalConsumptionKWh)
                 .GreaterThanOrEqualTo(0);
-            
+
+            RuleFor(t => t.CurrentLoadKW)
+                .GreaterThanOrEqualTo(0);
+
+            RuleFor(t => t.VoltageL1)
+                .InclusiveBetween(0, 300);
+
+            RuleFor(t => t.CurrentL1)
+                .GreaterThanOrEqualTo(0);
+
+            RuleFor(t => t.PowerFactorL1)
+                .InclusiveBetween(0, 1);
+
             RuleFor(t => t.Timestamp)
-                .NotEmpty().WithMessage("Timestamp is required.")
-                .LessThanOrEqualTo(DateTime.UtcNow).WithMessage("Timestamp cannot be in the future.");
+                .LessThanOrEqualTo(DateTime.UtcNow);
+
+            When(t => t.DeviceType == DeviceType.MultiPhase, () =>
+            {
+                RuleFor(t => t.VoltageL2).NotNull();
+                RuleFor(t => t.VoltageL3).NotNull();
+
+                RuleFor(t => t.CurrentL2).NotNull();
+                RuleFor(t => t.CurrentL3).NotNull();
+
+                RuleFor(t => t.PowerFactorL2).NotNull();
+                RuleFor(t => t.PowerFactorL3).NotNull();
+            });
         }
     }
 
     // HANDLER
     internal class ProcessTelemetryHandler(
-        ITelemetryRepository telemetryRepository,
-        IMediator mediator,
-        ILogger<ProcessTelemetryHandler> logger) : IRequestHandler<ProcessTelemetryCommand, Result>
+    ITelemetryRepository telemetryRepository,
+    IMediator mediator,
+    ILogger<ProcessTelemetryHandler> logger)
+    : IRequestHandler<ProcessTelemetryCommand, Result>
     {
         public async Task<Result> Handle(ProcessTelemetryCommand request, CancellationToken ct)
         {
+            //moram dodati ovo za token dok provjerim kako tacno to ide 
             var telemetryResult = Telemetry.Create(
-                request.DeviceId,
-                request.DeviceName,
+                request.SmartMeterId,       
                 request.DeviceType,
-                request.NominalPower, 
-                request.CurrentPower, 
                 request.Timestamp,
-                request.FirmwareVersion
+                request.TotalConsumptionKWh,
+                request.CurrentLoadKW,       
+                request.VoltageL1,          
+                request.CurrentL1,           
+                request.VoltageL2,           
+                request.VoltageL3,           
+                request.CurrentL2,       
+                request.CurrentL3         
             );
 
             if (telemetryResult.IsFailure)
@@ -80,8 +110,9 @@ namespace SmartGrid.Application.Features.Telemetries.Commands
 
             await mediator.Publish(new TelemetryProcessedEvent(telemetry), ct);
 
-            logger.LogInformation("[TELEMETRY] Telemetry data successfully saved and event published for Device: {DeviceId}", 
-                telemetry.DeviceId);
+            logger.LogInformation(
+                "[TELEMETRY] Saved for Device: {DeviceId}",
+                telemetry.SmartMeterId);
 
             return Result.Success();
         }

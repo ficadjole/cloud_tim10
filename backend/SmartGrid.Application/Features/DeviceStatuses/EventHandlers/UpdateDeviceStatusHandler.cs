@@ -17,13 +17,13 @@ internal class UpdateDeviceStatusHandler(
         {
             var device = await deviceRepository.GetWithStatusByIdAsync(
                 telemetry.DeviceType,
-                telemetry.DeviceId,
+                telemetry.SmartMeterId,
                 ct);
 
             if (device is null)
             {
                 logger.LogWarning("Cannot update status: Device {DeviceId} of type {DeviceType} not found.",
-                    telemetry.DeviceId, telemetry.DeviceType);
+                    telemetry.SmartMeterId, telemetry.DeviceType);
                 return;
             }
 
@@ -31,11 +31,11 @@ internal class UpdateDeviceStatusHandler(
 
             await deviceRepository.SaveStatusAsync(device.Status, ct);
 
-            logger.LogInformation("Successfully updated status for device {DeviceId}.", telemetry.DeviceId);
+            logger.LogInformation("Successfully updated status for device {DeviceId}.", telemetry.SmartMeterId);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error asynchronously updating status for device {DeviceId}", telemetry.DeviceId);
+            logger.LogError(ex, "Error asynchronously updating status for device {DeviceId}", telemetry.SmartMeterId);
         }
     }
 }

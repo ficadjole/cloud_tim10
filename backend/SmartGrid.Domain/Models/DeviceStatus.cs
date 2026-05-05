@@ -114,9 +114,15 @@ namespace SmartGrid.Domain.Models
         public void UpdateTelemetry(Telemetry telemetry)
         {
             LastHeartbeat = telemetry.Timestamp;
-            CurrentPower = telemetry.CurrentPower;
-            LoadPercentage= telemetry.LoadPercentage;
 
+            CurrentPower = Power.Create(telemetry.CurrentLoadKW).Value;
+
+            LoadPercentage = Percentage.Create(telemetry.CurrentLoadKW > 0 ? 50 : 0).Value;
+
+            // FIRMWARE: Pošto smo izbacili Firmware iz telemetrije, 
+            // ovde više ne možemo raditi proveru dok ne odlučimo gde ćemo čuvati verziju.
+            // Privremeno komentarišemo da ne bi bacalo grešku.
+            /*
             if (UpdateStatus == UpdateStatus.PendingUpdate &&
                 TargetFirmwareVersion != null &&
                 telemetry.FirmwareVersion == TargetFirmwareVersion)
@@ -125,7 +131,7 @@ namespace SmartGrid.Domain.Models
                 UpdateStatus = UpdateStatus.UpToDate;
                 TargetFirmwareVersion = null;
             }
-
+            */
         }
 
         public void SetTargetVersion(FirmwareVersion newTarget)

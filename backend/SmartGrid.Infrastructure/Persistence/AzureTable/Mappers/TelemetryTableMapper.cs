@@ -11,34 +11,39 @@ namespace SmartGrid.Infrastructure.Persistence.AzureTable.Mappers
         {
             return new TelemetryEntity
             {
-                DeviceName = domain.DeviceName,
                 ObservationTime = domain.Timestamp,
-                Load = domain.LoadPercentage,
                 DeviceType = domain.DeviceType.ToString(),
-                CurrentPower = domain.CurrentPower.Value,
-                NominalPower = domain.NominalPower.Value,
-                FirmwareVersion = domain.FirmwareVersion.Value
+                TotalConsumptionKWh = domain.TotalConsumptionKWh,
+                CurrentLoadKW = domain.CurrentLoadKW,
+                VoltageL1 = domain.VoltageL1,
+                VoltageL2 = domain.VoltageL2,
+                VoltageL3 = domain.VoltageL3,
+                CurrentL1 = domain.CurrentL1,
+                CurrentL2 = domain.CurrentL2,
+                CurrentL3 = domain.CurrentL3
             };
         }
 
         public Telemetry? ToDomain(TelemetryEntity entity)
         {
-            var type = Enum.TryParse<DeviceType>(entity.PartitionKey, out var parsedType)
-                ? parsedType
-                : DeviceType.Unknown;
-
-            var parts = entity.RowKey.Split('_');
-            var telemetryId = parts.Length > 1 ? parts[1] : entity.RowKey;
+            if (!Enum.TryParse<DeviceType>(entity.DeviceType, out var parsedType))
+            {
+                parsedType = DeviceType.Unknown;
+            }
 
             var telemetryResult = Telemetry.Load(
-                telemetryId,
-                entity.PartitionKey,
-                entity.DeviceName,
-                type,
-                entity.NominalPower,
-                entity.CurrentPower,
+                entity.RowKey,           
+                entity.PartitionKey,    
+                parsedType,
                 entity.ObservationTime,
-                entity.FirmwareVersion
+                entity.TotalConsumptionKWh,
+                entity.CurrentLoadKW,
+                entity.VoltageL1,
+                entity.CurrentL1,
+                entity.VoltageL2,
+                entity.VoltageL3,
+                entity.CurrentL2,
+                entity.CurrentL3
             );
 
             if (telemetryResult.IsFailure)

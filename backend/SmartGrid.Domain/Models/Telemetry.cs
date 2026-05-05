@@ -7,134 +7,122 @@ namespace SmartGrid.Domain.Models
     public class Telemetry
     {
         public EntityId Id { get; private set; }
-        public EntityId DeviceId { get; private set; }
-        public string DeviceName { get; private set; } = string.Empty;
+        public EntityId SmartMeterId { get; private set; } 
         public DeviceType DeviceType { get; private set; } = DeviceType.Unknown;
-        public FirmwareVersion FirmwareVersion { get; private set; }
-        public Power NominalPower { get; private set; }
-        public Power CurrentPower { get; private set; }
         public DateTime Timestamp { get; private set; }
-        public Percentage LoadPercentage { get; private set; }
+        public double TotalConsumptionKWh { get; private set; }
+        public double CurrentLoadKW { get; private set; }
+
+        // Fazna merenja (L1, L2, L3)
+        public double VoltageL1 { get; private set; }
+        public double? VoltageL2 { get; private set; }
+        public double? VoltageL3 { get; private set; }
+        public double CurrentL1 { get; private set; }
+        public double? CurrentL2 { get; private set; }
+        public double? CurrentL3 { get; private set; }
 
         private Telemetry(
             EntityId id,
-            EntityId deviceId,
-            string deviceName,
+            EntityId smartMeterId,
             DeviceType deviceType,
-            Power nominalPower,
-            Power currentPower,
             DateTime timestamp,
-            FirmwareVersion firmwareVersion)
+            double totalConsumptionKWh,
+            double currentLoadKW,
+            double voltageL1,
+            double currentL1,
+            double? voltageL2 = null,
+            double? voltageL3 = null,
+            double? currentL2 = null,
+            double? currentL3 = null)
         {
             Id = id;
-            DeviceId = deviceId;
-            DeviceName = deviceName;
+            SmartMeterId = smartMeterId;
             DeviceType = deviceType;
-            NominalPower = nominalPower;
-            CurrentPower = currentPower;
             Timestamp = timestamp;
-            FirmwareVersion = firmwareVersion;
-            LoadPercentage = nominalPower.Value > 0
-                ? Percentage.FromRaw(Math.Round((currentPower.Value / nominalPower.Value) * 100, 2))
-                : Percentage.Zero();
+            TotalConsumptionKWh = totalConsumptionKWh;
+            CurrentLoadKW = currentLoadKW;
+            VoltageL1 = voltageL1;
+            CurrentL1 = currentL1;
+            VoltageL2 = voltageL2;
+            VoltageL3 = voltageL3;
+            CurrentL2 = currentL2;
+            CurrentL3 = currentL3;
         }
 
-        #region Factory Method
+        #region Factory Methods
 
         public static Result<Telemetry> Create(
-            string deviceId,
-            string deviceName,
+            string smartMeterId,
             DeviceType deviceType,
-            double nominalPower,
-            double currentPower,
             DateTime timestamp,
-            string firmwareVersion)
+            double totalConsumptionKWh,
+            double currentLoadKW,
+            double voltageL1,
+            double currentL1,
+            double? voltageL2 = null,
+            double? voltageL3 = null,
+            double? currentL2 = null,
+            double? currentL3 = null)
         {
-            if (string.IsNullOrWhiteSpace(deviceName))
-                return Result<Telemetry>.Failure("DeviceName is required.",
-                    ErrorType.Validation);
-
-            if (!Enum.IsDefined(typeof(DeviceType), deviceType)
-                || deviceType == DeviceType.Unknown)
-                return Result<Telemetry>.Failure("A valid and defined DeviceType must be specified.",
-                    ErrorType.Validation);
-
-            if (timestamp > DateTime.UtcNow)
-                return Result<Telemetry>.Failure("Timestamp cannot be in the future.",
-                    ErrorType.Validation);
-
-            var idResult = EntityId.Create(deviceId);
-
+            var idResult = EntityId.Create(smartMeterId);
             if (idResult.IsFailure)
                 return Result<Telemetry>.Failure(idResult.Error!.Message, ErrorType.Validation);
 
-            var nominalPowerResult = Power.Create(nominalPower);
+            if (timestamp > DateTime.UtcNow)
+                return Result<Telemetry>.Failure("Timestamp cannot be in the future.", ErrorType.Validation);
 
-            if (nominalPowerResult.IsFailure)
-                return Result<Telemetry>.Failure(nominalPowerResult.Error!.Message, ErrorType.Validation);
-
-            var currentPowerResult = Power.Create(currentPower);
-
-            if (currentPowerResult.IsFailure)
-                return Result<Telemetry>.Failure(currentPowerResult.Error!.Message, ErrorType.Validation);
-
-            var firmwareVersionResult = FirmwareVersion.Create(firmwareVersion);
-
-            if (firmwareVersionResult.IsFailure)
-                return Result<Telemetry>.Failure(firmwareVersionResult.Error!.Message, ErrorType.Validation);
+            if (deviceType == DeviceType.MultiPhase && (voltageL2 == null || voltageL3 == null))
+                return Result<Telemetry>.Failure("MultiPhase meters must provide L2 and L3 readings.", ErrorType.Validation);
 
             return Result<Telemetry>.Success(new Telemetry(
                 EntityId.New(),
                 idResult.Value,
-                deviceName,
                 deviceType,
-                nominalPowerResult.Value,
-                currentPowerResult.Value,
                 timestamp,
-                firmwareVersionResult.Value
+                totalConsumptionKWh,
+                currentLoadKW,
+                voltageL1,
+                currentL1,
+                voltageL2,
+                voltageL3,
+                currentL2,
+                currentL3
             ));
         }
+
         public static Result<Telemetry> Load(
             string id,
-            string deviceId,
-            string deviceName,
+            string smartMeterId,
             DeviceType deviceType,
-            double nominalPower,
-            double currentPower,
             DateTime timestamp,
-            string firmwareVersion)
+            double totalConsumptionKWh,
+            double currentLoadKW,
+            double voltageL1,
+            double currentL1,
+            double? voltageL2,
+            double? voltageL3,
+            double? currentL2,
+            double? currentL3)
         {
             var idResult = EntityId.Create(id);
-            if (idResult.IsFailure)
-                return Result<Telemetry>.Failure(idResult.Error!.Message, ErrorType.Validation);
+            var meterIdResult = EntityId.Create(smartMeterId);
 
-            var deviceIdResult = EntityId.Create(deviceId);
-            if (deviceIdResult.IsFailure)
-                return Result<Telemetry>.Failure(deviceIdResult.Error!.Message, ErrorType.Validation);
+            if (idResult.IsFailure || meterIdResult.IsFailure)
+                return Result<Telemetry>.Failure("Invalid ID format.", ErrorType.Validation);
 
-            var nominalPowerResult = Power.Create(nominalPower);
-            if (nominalPowerResult.IsFailure)
-                return Result<Telemetry>.Failure(nominalPowerResult.Error!.Message, ErrorType.Validation);
-
-            var currentPowerResult = Power.Create(currentPower);
-            if (currentPowerResult.IsFailure)
-                return Result<Telemetry>.Failure(currentPowerResult.Error!.Message, ErrorType.Validation);
-
-            var firmwareResult = FirmwareVersion.Create(firmwareVersion);
-            if (firmwareResult.IsFailure)
-                return Result<Telemetry>.Failure(firmwareResult.Error!.Message, ErrorType.Validation);
-
-            var telemetry = new Telemetry(
+            return Result<Telemetry>.Success(new Telemetry(
                 idResult.Value,
-                deviceIdResult.Value,
-                deviceName,
+                meterIdResult.Value,
                 deviceType,
-                nominalPowerResult.Value,
-                currentPowerResult.Value,
                 timestamp,
-                firmwareResult.Value);
-
-            return Result<Telemetry>.Success(telemetry);
+                totalConsumptionKWh,
+                currentLoadKW,
+                voltageL1,
+                currentL1,
+                voltageL2,
+                voltageL3,
+                currentL2,
+                currentL3));
         }
 
         #endregion

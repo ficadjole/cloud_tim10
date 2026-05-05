@@ -21,7 +21,48 @@ namespace SmartGrid.Infrastructure.Persistence.AzureTable.Repositories
     {
         public async Task SaveAsync(Telemetry telemetry, CancellationToken ct)
         {
-           await base.AddAsync(telemetry, ct);
+            await base.AddAsync(telemetry, ct);
+        }
+
+        public async Task<Telemetry?> GetLatestAsync(string smartMeterId, CancellationToken ct)
+        {
+            var filter = $"PartitionKey eq '{smartMeterId}'";
+
+            var entities = _tableClient.QueryAsync<TelemetryEntity>(filter, cancellationToken: ct);
+
+            TelemetryEntity? latest = null;
+            await foreach (var entity in entities)
+            {
+
+                latest = entity;
+            }
+
+            return latest != null ? _mapper.ToDomain(latest) : null;
+        }
+
+        public async Task<IEnumerable<Telemetry>> GetHistoryAsync(
+            string smartMeterId,
+            DateTime start,
+            DateTime end,
+            CancellationToken ct)
+        {
+            var results = new List<Telemetry>();
+
+            var filter = TableClient.CreateQueryFilter(
+                $"PartitionKey eq {smartMeterId} and ObservationTime ge {start:yyyy-MM-ddTHH:mm:ssZ} and ObservationTime le {end:yyyy-MM-ddTHH:mm:ssZ}");
+
+            var entities = _tableClient.QueryAsync<TelemetryEntity>(filter, cancellationToken: ct);
+
+            await foreach (var entity in entities)
+            {
+                var domain = _mapper.ToDomain(entity);
+                if (domain != null)
+                {
+                    results.Add(domain);
+                }
+            }
+
+            return results;
         }
     }
 }

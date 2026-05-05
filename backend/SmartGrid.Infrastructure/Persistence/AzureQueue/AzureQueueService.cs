@@ -19,6 +19,8 @@ namespace SmartGrid.Infrastructure.Persistence.AzureQueue
         {
             try
             {
+                await _queueClient.CreateIfNotExistsAsync(cancellationToken: ct);
+
                 var response = await _queueClient.ReceiveMessagesAsync(maxMessages: 1,
                                                                        visibilityTimeout: TimeSpan.FromSeconds(30),
                                                                        cancellationToken: ct);
@@ -51,6 +53,9 @@ namespace SmartGrid.Infrastructure.Persistence.AzureQueue
 
             try
             {
+                // OSIGURAVAMO DA RED POSTOJI PRE SLANJA
+                await _queueClient.CreateIfNotExistsAsync(cancellationToken: ct);
+
                 var json = _serializer.Serialize(message);
 
                 await _queueClient.SendMessageAsync(json, ct);
