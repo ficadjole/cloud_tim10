@@ -8,6 +8,9 @@ using SmartGrid.Application.Interfaces.Storage;
 using SmartGrid.Domain.Models;
 using SmartGrid.Infrastructure.Persistence.AzureBlob.Storages;
 using SmartGrid.Infrastructure.Persistence.AzureQueue.Services;
+using SmartGrid.Infrastructure.Persistence.AzureSQL.Entities;
+using SmartGrid.Infrastructure.Persistence.AzureSQL.Mappers;
+using SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories;
 using SmartGrid.Infrastructure.Persistence.AzureTable.Common;
 using SmartGrid.Infrastructure.Persistence.AzureTable.Entities;
 using SmartGrid.Infrastructure.Persistence.AzureTable.KeyProviders;
@@ -52,6 +55,7 @@ namespace SmartGrid.Infrastructure.Extensions
             services.AddSingleton(sp => new BlobServiceClient(connectionString));
 
             services.AddScoped<IFirmwareBlobStorage, FirmwareBlobStorage>();
+            services.AddScoped<IManualLogBlob, ManualStateLogBlobStorage>();
 
             return services;
         }

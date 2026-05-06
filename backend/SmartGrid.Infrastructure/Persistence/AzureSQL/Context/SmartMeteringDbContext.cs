@@ -22,6 +22,7 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Context
         public DbSet<ResidentalObjectEntity> ResidentalObjects { get; set; }
         public DbSet<SmartMeterEntity> SmartMeters { get; set; }
         public DbSet<TariffModelEntity> TariffModels { get; set; }
+        public DbSet<ManualStateLogEntity> ManualStateLogs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -30,6 +31,7 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Context
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(SmartMeteringDbContext).Assembly);
 
             modelBuilder.Entity<TariffModelEntity>().HasKey(t => t.Id);
+            modelBuilder.Entity<ManualStateLogEntity>().HasKey(m => m.SmartMeterId);
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
