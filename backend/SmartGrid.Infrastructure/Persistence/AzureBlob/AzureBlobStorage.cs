@@ -28,8 +28,9 @@ namespace SmartGrid.Infrastructure.Persistence.AzureBlob
 
         public async Task SaveAsync(FileData<TMetadata> file, CancellationToken ct = default)
         {
-            var blobPath = GetBlobPath(file.Metadata);
+            await _containerClient.CreateIfNotExistsAsync(PublicAccessType.Blob, cancellationToken: ct);
 
+            var blobPath = GetBlobPath(file.Metadata);
             var blobClient = _containerClient.GetBlobClient(blobPath);
 
             using var stream = new MemoryStream(file.Content);

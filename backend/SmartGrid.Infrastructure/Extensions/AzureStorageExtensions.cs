@@ -8,6 +8,7 @@ using SmartGrid.Application.Interfaces.Storage;
 using SmartGrid.Domain.Models;
 using SmartGrid.Infrastructure.Persistence.AzureBlob.Storages;
 using SmartGrid.Infrastructure.Persistence.AzureQueue.Services;
+using SmartGrid.Infrastructure.Persistence.AzureSQL.Common;
 using SmartGrid.Infrastructure.Persistence.AzureSQL.Entities;
 using SmartGrid.Infrastructure.Persistence.AzureSQL.Mappers;
 using SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories;
@@ -73,6 +74,14 @@ namespace SmartGrid.Infrastructure.Extensions
 
             services.AddScoped<IAlertQueueService, AlertQueueService>();
             services.AddScoped<IDeviceStatusQueueService, DeviceStatusQueueService>();
+
+            return services;
+        }
+
+        public static IServiceCollection AddAzureSqlServices(this IServiceCollection services)
+        {
+            services.AddSingleton<ISQLTableMapper<ManualStateLog, ManualStateLogEntity>, ManualStateLogMapper>();
+            services.AddScoped<IManualStateLogRepository, ManualStateLogRepository>();
 
             return services;
         }

@@ -22,6 +22,33 @@ namespace SmartGrid.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("SmartGrid.Infrastructure.Persistence.AzureSQL.Entities.ManualStateLogEntity", b =>
+                {
+                    b.Property<Guid>("SmartMeterId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<double>("HighTariffValue")
+                        .HasColumnType("float");
+
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("LowTariffValue")
+                        .HasColumnType("float");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("SmartMeterId");
+
+                    b.ToTable("ManualStateLogs");
+                });
+
             modelBuilder.Entity("SmartGrid.Infrastructure.Persistence.AzureSQL.Entities.ResidentalObjectEntity", b =>
                 {
                     b.Property<Guid>("Id")

@@ -1,4 +1,6 @@
-﻿using SmartGrid.Domain.Models;
+﻿using SmartGrid.Domain.Enums;
+using SmartGrid.Domain.Models;
+using SmartGrid.Infrastructure.Persistence.AzureSQL.Common;
 using SmartGrid.Infrastructure.Persistence.AzureSQL.Entities;
 using System;
 using System.Collections.Generic;
@@ -8,9 +10,24 @@ using System.Threading.Tasks;
 
 namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Mappers
 {
-    public  class ManualStateLogMapper
+    public  class ManualStateLogMapper : ISQLTableMapper<ManualStateLog, ManualStateLogEntity>
     {
-        public ManualStateLogEntity ToEntity(ManualStateLog log)
+        public ManualStateLog? MapToDomain(ManualStateLogEntity entity)
+        {
+            var result = ManualStateLog.Load(
+                entity.Id.ToString(),
+                entity.SmartMeterId.ToString(),
+                entity.HighTariffValue,
+                entity.LowTariffValue,
+                entity.ImageUrl,
+                (ProcessingStatus)entity.Status
+            );
+
+            return result.IsSuccess ? result.Value : null;
+
+        }
+
+        public ManualStateLogEntity MapToEntity(ManualStateLog log)
         {
             return new ManualStateLogEntity
             {
@@ -22,5 +39,6 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Mappers
                 Status = (int)log.Status
             };
         }
+
     }
 }
