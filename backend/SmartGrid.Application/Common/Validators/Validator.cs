@@ -18,5 +18,12 @@ namespace SmartGrid.Application.Common.Validators
                 .NotEmpty().WithMessage("Firmware version is required.")
                 .Matches(@"^[Vv]\d+(\.\d+)*$").WithMessage("Version must be in format V1.0, V2.1.3 etc.");
         }
+
+        public static IRuleBuilderOptions<T, UserRoles> IsValidUserRole<T>(this IRuleBuilder<T, UserRoles> ruleBuilder)
+        {
+            return ruleBuilder
+                            .IsInEnum().WithMessage("Invalid user role.")
+                            .NotEqual(UserRoles.SysAdmin).WithMessage("User role cannot be SysAdmin.");
+        }
     }
 }

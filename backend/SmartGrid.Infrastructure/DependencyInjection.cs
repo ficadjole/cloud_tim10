@@ -2,9 +2,16 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SmartGrid.Application.Common.Options;
+using SmartGrid.Application.Interfaces;
+using SmartGrid.Application.Interfaces.Messaging;
+using SmartGrid.Application.Interfaces.Repositories;
 using SmartGrid.Infrastructure.Common.Options;
 using SmartGrid.Infrastructure.Extensions;
+using SmartGrid.Infrastructure.Persistence.AzureQueue.Services;
 using SmartGrid.Infrastructure.Persistence.AzureSQL.Context;
+using SmartGrid.Infrastructure.Persistence.AzureSQL.Mappers;
+using SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories;
+using SmartGrid.Infrastructure.Services;
 
 namespace SmartGrid.Infrastructure
 {
@@ -21,10 +28,12 @@ namespace SmartGrid.Infrastructure
 
             services.Configure<AzureSQLOptions>(configuration.GetSection("AzureSQLOptions"));
 
+            services.Configure<JwtOptions>(configuration.GetSection("JwtOptions"));
+
             var sqlConn = configuration.GetValue<string>("AzureSQLOptions:ConnectionString")
                 ?? throw new InvalidOperationException("AzureSQLOptions:ConnectionString is not configured.");
 
-                services.AddDbContext<SmartMeteringDbContext>(options => options.UseSqlServer(sqlConn));
+           services.AddDbContext<SmartMeteringDbContext>(options => options.UseSqlServer(sqlConn));
 
             var tableConn = configuration.GetValue<string>("AzureTableOptions:ConnectionString")
                 ?? throw new InvalidOperationException("AzureTableOptions:ConnectionString is not configured.");
@@ -36,6 +45,15 @@ namespace SmartGrid.Infrastructure
                 ?? throw new InvalidOperationException("AzureQueueOptions:ConnectionString is not configured.");
 
             services.AddJsonSerializer();
+
+            services.AddScoped<IJwtService, JwtService>();
+            services.AddScoped<IPasswordHasher, PasswordHasher>();
+
+            services.AddScoped<IUserRepository, UserRepository>();
+
+            services.AddSingleton<UserEntityMapper>();
+
+            services.AddScoped<IEmailService, SendGridEmailService>();
 
             services
                 .AddServices()

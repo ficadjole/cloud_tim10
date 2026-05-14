@@ -16,4 +16,9 @@
     <ProjectReference Include="..\SmartGrid.Domain\SmartGrid.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Features\Users\Mappers\" />
+    <Folder Include="Features\Users\Queries\" />
+  </ItemGroup>
+
 </Project>

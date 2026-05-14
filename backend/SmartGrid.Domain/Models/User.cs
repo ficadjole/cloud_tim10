@@ -1,11 +1,6 @@
 ﻿using SmartGrid.Domain.Common;
 using SmartGrid.Domain.Enums;
 using SmartGrid.Domain.ValueObjects;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SmartGrid.Domain.Models
 {
@@ -29,7 +24,6 @@ namespace SmartGrid.Domain.Models
             string lastName,
             string email,
             string phoneNumber,
-            string passwordHash,
             UserRoles role,
             UserAccountStatus accountStatus)
         {
@@ -38,7 +32,6 @@ namespace SmartGrid.Domain.Models
             LastName = lastName;
             Email = email;
             PhoneNumber = phoneNumber;
-            PasswordHash = passwordHash;
             Role = role;
             AccountStatus = accountStatus;
         }
@@ -50,7 +43,6 @@ namespace SmartGrid.Domain.Models
                 string lastName,
                 string email,
                 string phoneNumber,
-                string passwordHash,
                 UserRoles role = UserRoles.User,
                 UserAccountStatus accountStatus = UserAccountStatus.WaitingForConfirmation)
         {
@@ -65,9 +57,6 @@ namespace SmartGrid.Domain.Models
     
                 if (string.IsNullOrWhiteSpace(phoneNumber))
                     return Result<User>.Failure("Phone number is required.", ErrorType.Validation);
-    
-                if (string.IsNullOrWhiteSpace(passwordHash))
-                    return Result<User>.Failure("Password hash is required.", ErrorType.Validation);
                 
                 if(!Enum.IsDefined(typeof(UserRoles), role))
                     return Result<User>.Failure("Invalid user role.", ErrorType.Validation);
@@ -75,7 +64,7 @@ namespace SmartGrid.Domain.Models
                 if(!Enum.IsDefined(typeof(UserAccountStatus), accountStatus))
                     return Result<User>.Failure("Invalid account status.", ErrorType.Validation);
 
-                var user = new User(EntityId.New(), firstName, lastName, email, phoneNumber, passwordHash, role, accountStatus);
+                var user = new User(EntityId.New(), firstName, lastName, email, phoneNumber, role, accountStatus);
                     return Result<User>.Success(user);
         }
 
@@ -93,12 +82,33 @@ namespace SmartGrid.Domain.Models
             if (idResult.IsFailure)
                 return Result<User>.Failure(idResult.Error!.Message, ErrorType.Validation);
         
-            var user = new User(idResult.Value, firstName, lastName, email, phoneNumber, passwordHash, role, accountStatus);
+            var user = new User(idResult.Value, firstName, lastName, email, phoneNumber, role, accountStatus);
+
+            user.PasswordHash = passwordHash;
 
             return Result<User>.Success(user);
         }
 
         #endregion
 
+        #region Domain Logic
+        public void UpdatePasswordHash(string newHash)
+        {
+            PasswordHash = newHash;
+        }
+
+        public void UpdateAccountStatus(UserAccountStatus newStatus)
+        {
+            if (!Enum.IsDefined(typeof(UserAccountStatus), newStatus))
+                throw new ArgumentException("Invalid account status.", nameof(newStatus));
+            AccountStatus = newStatus;
+        }
+
+        public string GetFullName()
+        {
+            return $"{FirstName} {LastName}";
+        }
+
+        #endregion
     }
 }

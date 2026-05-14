@@ -1,4 +1,5 @@
 using Microsoft.OpenApi;
+using SmartGrid.Infrastructure.Extensions;
 using SmartGrid.WebApi.Extensions;
 using SmartGrid.WebApi.Hubs;
 
@@ -13,7 +14,8 @@ builder.Services
     .AddWebApiServices(builder.Configuration)
     .AddWebApiCors(reactOrigin)
     .AddWebApiSignalR()
-    .AddWebApiHostedServices();
+    .AddWebApiHostedServices()
+    .AddJwtAuthentification(builder.Configuration);
 
 var app = builder.Build();
 

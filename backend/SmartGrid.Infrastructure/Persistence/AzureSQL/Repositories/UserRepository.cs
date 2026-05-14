@@ -64,6 +64,22 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
             return Task.FromResult(user);
         }
 
+
+        public Task<User> GetByEmailAsync(string email)
+        {
+            var userEntity = _dbContext.Users.FirstOrDefault(u => u.Email == email);
+            if (userEntity == null)
+            {
+                return Task.FromResult<User>(null);
+            }
+            var user = _mapper.ToDomain(userEntity);
+            if (user == null)
+            {
+                return Task.FromResult<User>(null);
+            }
+            return Task.FromResult(user);
+        }
+
         public Task UpdateAsync(User user)
         {
          

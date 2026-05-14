@@ -74,6 +74,7 @@ namespace SmartGrid.Infrastructure.Extensions
 
             services.AddScoped<IAlertQueueService, AlertQueueService>();
             services.AddScoped<IDeviceStatusQueueService, DeviceStatusQueueService>();
+            services.AddScoped<IUserCreatedQueueService, UserCreatedQueueService>();
 
             return services;
         }
