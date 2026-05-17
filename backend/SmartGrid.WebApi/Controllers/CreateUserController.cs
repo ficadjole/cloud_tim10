@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SmartGrid.Application.Features.Users.Commands;
 using SmartGrid.WebApi.DTOs;
 using SmartGrid.WebApi.Extensions;
 using SmartGrid.WebApi.Filters;
@@ -13,7 +14,7 @@ namespace SmartGrid.WebApi.Controllers
     public class CreateUserController(IMediator mediator) : ControllerBase
     {
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "SysAdmin")]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
         {
             var commandResult = request.ToCommand();
@@ -33,7 +34,7 @@ namespace SmartGrid.WebApi.Controllers
 
             var userId = HttpContext.Items["UserId"]?.ToString();
 
-            if(userId == null) return BadRequest("Invalid token.");
+            if (userId == null) return BadRequest("Invalid token.");
 
             var commandResult = request.ToCommand(userId);
 
@@ -41,6 +42,20 @@ namespace SmartGrid.WebApi.Controllers
                 return commandResult.ToActionResult();
 
             var result = await mediator.Send(commandResult.Value);
+
+            return result.ToActionResult();
+        }
+
+        [HttpGet]
+        [Route("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromQuery] string email)
+        {
+            var commandResult = new ResetPasswordCommand() { Email = email };
+
+            if (commandResult == null)
+                return BadRequest("Invalid email.");
+
+            var result = await mediator.Send(commandResult);
 
             return result.ToActionResult();
         }

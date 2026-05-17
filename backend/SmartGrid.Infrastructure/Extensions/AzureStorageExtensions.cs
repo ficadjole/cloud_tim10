@@ -75,6 +75,7 @@ namespace SmartGrid.Infrastructure.Extensions
             services.AddScoped<IAlertQueueService, AlertQueueService>();
             services.AddScoped<IDeviceStatusQueueService, DeviceStatusQueueService>();
             services.AddScoped<IUserCreatedQueueService, UserCreatedQueueService>();
+            services.AddScoped<IResetPasswordQueueService, ResetPasswordQueueService>();
 
             return services;
         }
@@ -83,7 +84,7 @@ namespace SmartGrid.Infrastructure.Extensions
         {
             services.AddSingleton<ISQLTableMapper<ManualStateLog, ManualStateLogEntity>, ManualStateLogMapper>();
             services.AddScoped<IManualStateLogRepository, ManualStateLogRepository>();
-
+            services.AddScoped<IUserRepository, UserRepository>();
             return services;
         }
     }

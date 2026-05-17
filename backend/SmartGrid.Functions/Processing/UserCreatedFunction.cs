@@ -13,7 +13,7 @@ public class UserCreatedFunction(ILogger<UserCreatedFunction> logger, IMediator 
 {
 
     [Function(nameof(UserCreatedFunction))]
-    public async Task Run([QueueTrigger("%AzureQueueOptions:UserQueue%", Connection = "AzureWebJobsStorage")] UserCreatedMessage message)
+    public async Task Run([QueueTrigger("user-queue", Connection = "AzureWebJobsStorage")] UserCreatedMessage message)
     {
         try
         {

@@ -83,7 +83,11 @@ namespace SmartGrid.Application.Features.Users.Commands
 
                 logger.LogInformation("Set password token generated for user ID: {UserId}", user.Id);
 
-                await userCreatedQueueService.SendUserCreatedMessageAsync(user,token,ct);
+                if (token.IsFailure) { 
+                    return Result<string>.Failure("Failed to generate set password token.", ErrorType.Failure);
+                }
+
+                await userCreatedQueueService.SendUserCreatedMessageAsync(user,token.Value,ct);
 
                 logger.LogInformation("User created message sent to queue for user ID: {UserId}", user.Id);
 

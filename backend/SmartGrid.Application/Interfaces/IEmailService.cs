@@ -8,6 +8,8 @@ namespace SmartGrid.Application.Interfaces
 {
     public interface IEmailService
     {
-        Task SendEmailAsync(string email,string fullname,string jwtToken);
+        Task SendUserCreatedEmailAsync(string email,string fullname,string jwtToken);
+
+        Task SendResetPasswordEmailAsync(string email, string jwtToken);
     }
 }
