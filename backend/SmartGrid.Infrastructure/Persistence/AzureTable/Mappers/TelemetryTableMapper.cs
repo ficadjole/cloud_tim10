@@ -20,7 +20,11 @@ namespace SmartGrid.Infrastructure.Persistence.AzureTable.Mappers
                 VoltageL3 = domain.VoltageL3,
                 CurrentL1 = domain.CurrentL1,
                 CurrentL2 = domain.CurrentL2,
-                CurrentL3 = domain.CurrentL3
+                CurrentL3 = domain.CurrentL3,
+                PowerFactorL1 = domain.PowerFactorL1,
+                PowerFactorL2 = domain.PowerFactorL2,
+                PowerFactorL3 = domain.PowerFactorL3
+
             };
         }
 
@@ -40,10 +44,13 @@ namespace SmartGrid.Infrastructure.Persistence.AzureTable.Mappers
                 entity.CurrentLoadKW,
                 entity.VoltageL1,
                 entity.CurrentL1,
+                entity.PowerFactorL1,
                 entity.VoltageL2,
                 entity.VoltageL3,
                 entity.CurrentL2,
-                entity.CurrentL3
+                entity.CurrentL3,
+                entity.PowerFactorL2,
+                entity.PowerFactorL3
             );
 
             if (telemetryResult.IsFailure)

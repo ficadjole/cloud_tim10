@@ -5,26 +5,27 @@ using SmartGrid.Application.Interfaces.Repositories;
 using SmartGrid.Domain.Common;
 using SmartGrid.Domain.Enums;
 using SmartGrid.Domain.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SmartGrid.Application.Features.DeviceStatuses.Queries
 {
-    // QUERY DTO
+
     public record DeviceStatusDto(
         string DeviceId,
         DeviceType DeviceType,
-        double CurrentPower,
-        double LoadPercentage,
-        bool IsOnline,
-        bool IsUnderperforming,
-        bool IsOverloaded,
-        string CurrentFirmwareVersion,
-        string? TargetFirmwareVersion,
-        UpdateStatus UpdateStatus
+        double CurrentLoadKW,
+        DateTime LastHeartbeat,
+        double VoltageL1,
+        double? VoltageL2,
+        double? VoltageL3
     );
 
     public record GetDeviceStatusesQuery() : IRequest<Result<IEnumerable<DeviceStatusDto>>?>;
 
-    // HANDLER
     internal class GetDeviceStatusesHandler(
         IDeviceStatusQueryRepository deviceStatusQueryRepository,
         IMapper<DeviceStatus, DeviceStatusDto> mapper,
@@ -43,9 +44,9 @@ namespace SmartGrid.Application.Features.DeviceStatuses.Queries
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Error while retreiving devices..");
-                    return Result<IEnumerable<DeviceStatusDto>>.Failure("Failed to retrieve devices.",
-                     ErrorType.Failure);
+                logger.LogError(ex, "Error while retrieving device statuses..");
+                return Result<IEnumerable<DeviceStatusDto>>.Failure("Failed to retrieve device statuses.",
+                    ErrorType.Failure);
             }
         }
     }

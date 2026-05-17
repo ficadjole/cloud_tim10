@@ -2,7 +2,8 @@
 {
     public enum DeviceType
     {
-        SolarPanel = 0,
-        WindTurbine = 1,
+        Unknown = 0,
+        SinglePhase = 1,
+        MultiPhase = 2,
     }
 }
