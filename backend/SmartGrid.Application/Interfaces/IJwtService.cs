@@ -12,8 +12,6 @@ namespace SmartGrid.Application.Interfaces
     {
         Result<string> GenerateToken(string userId, string email, string role);
         Result<string> GenerateSetPasswordToken(string userId, string email);
-        public Result<string> GenerateResetPasswordToken(string userId, string email);
-        public Result<ClaimsPrincipal?> ValidateResetPasswordToken(string token);
         public Result<ClaimsPrincipal?> ValidateSetPasswordToken(string token);
     }
 }

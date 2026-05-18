@@ -101,38 +101,5 @@ namespace SmartGrid.Infrastructure.Services
             }
         }
 
-
-        public Result<ClaimsPrincipal?> ValidateResetPasswordToken(string token)
-        {
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.UTF8.GetBytes(_jwtOptions.SecretKey);
-            try
-            {
-                var principal = tokenHandler.ValidateToken(token, new TokenValidationParameters
-                {
-                    ValidateIssuer = true,
-                    ValidIssuer = _jwtOptions.Issuer,
-                    ValidateAudience = true,
-                    ValidAudience = _jwtOptions.Audience,
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidateLifetime = true,
-                    ClockSkew = TimeSpan.Zero
-                }, out SecurityToken validatedToken);
-
-                var purpose = principal.Claims.FirstOrDefault(c => c.Type == "purpose")?.Value;
-
-                if (purpose != "reset-password")
-                {
-                    return Result<ClaimsPrincipal?>.Failure("Invalid JWT token", ErrorType.Authentication);
-                }
-
-                return Result<ClaimsPrincipal?>.Success(principal);
-            }
-            catch
-            {
-                return Result<ClaimsPrincipal?>.Failure("Error while validating token", ErrorType.Authentication);
-            }
-        }
     }
 }
