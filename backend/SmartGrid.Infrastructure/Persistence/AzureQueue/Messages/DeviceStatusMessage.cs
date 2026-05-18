@@ -7,13 +7,12 @@ namespace SmartGrid.Infrastructure.Persistence.AzureQueue.Messages
         public string DeviceId { get; set; } = string.Empty;
         public DeviceType DeviceType { get; set; }
         // SNAPSHOT
-        public double CurrentPower { get; set; }
-        public double LoadPercentage { get; set; }
+        public double CurrentLoadKW { get; set; }
         // STATUS
-        public DateTime LastHeartbeat { get; set; }
+        public DateTime LastTelemetryReceivedAt { get; set; }
         //FIRMWARE STATUS
-        public string CurrentFirmwareVersion { get; set; } = string.Empty;
-        public string? TargetFirmwareVersion { get; set; } = string.Empty;
-        public UpdateStatus UpdateStatus { get; set; } 
+        public double LastVoltageL1 { get; set; }
+        public double? LastVoltageL2 { get; set; }
+        public double? LastVoltageL3 { get; set; }
     }
 }

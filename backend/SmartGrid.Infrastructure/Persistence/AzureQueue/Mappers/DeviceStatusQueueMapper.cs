@@ -13,12 +13,11 @@ namespace SmartGrid.Infrastructure.Persistence.AzureQueue.Mappers
             {
                 DeviceId = model.DeviceId.Value,
                 DeviceType = model.DeviceType,
-                CurrentPower = model.CurrentPower.Value,
-                LoadPercentage = model.LoadPercentage,
-                LastHeartbeat = model.LastHeartbeat,
-                CurrentFirmwareVersion = model.CurrentFirmwareVersion.Value,
-                TargetFirmwareVersion = model.TargetFirmwareVersion?.Value,
-                UpdateStatus = model.UpdateStatus
+                CurrentLoadKW = model.CurrentLoadKW,
+                LastTelemetryReceivedAt = model.LastTelemetryReceivedAt,
+                LastVoltageL1 = model.LastVoltageL1,
+                LastVoltageL2 = model.LastVoltageL2,
+                LastVoltageL3 = model.LastVoltageL3
             };
         }
 
@@ -27,12 +26,11 @@ namespace SmartGrid.Infrastructure.Persistence.AzureQueue.Mappers
             var deviceStatusResult = DeviceStatus.Load(
                 message.DeviceId,
                 message.DeviceType,
-                message.CurrentPower,
-                message.LoadPercentage,
-                message.LastHeartbeat,
-                message.CurrentFirmwareVersion,
-                message.TargetFirmwareVersion,
-                message.UpdateStatus
+                message.LastTelemetryReceivedAt,
+                message.CurrentLoadKW,
+                message.LastVoltageL1,
+                message.LastVoltageL2,
+                message.LastVoltageL3
             );
 
             if (deviceStatusResult.IsFailure)

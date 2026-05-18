@@ -8,103 +8,81 @@ namespace SmartGrid.Domain.Models
     public class DeviceStatus
     {
         public EntityId DeviceId { get; private set; }
-        public DeviceType DeviceType { get; private set; } = DeviceType.Unknown;
+        public DeviceType DeviceType { get; private set; }
 
-        // SNAPSHOT
-        public Power CurrentPower { get; private set; }
-        public Percentage LoadPercentage { get; private set; }
-        public DateTime LastHeartbeat { get; private set; }
+        public DateTime LastTelemetryReceivedAt { get; private set; }
 
-        // STATUS
-        public bool IsOnline(DateTime currentTime) => currentTime - LastHeartbeat < DeviceStatusLimits.OfflineThreshold;
-        public bool IsUnderperforming => LoadPercentage < DeviceStatusLimits.UnderperformingLoad;
-        public bool IsOverloaded => LoadPercentage > DeviceStatusLimits.OverloadedLoad;
+        public double CurrentLoadKW { get; private set; }
 
-        //FIRMWARE STASUS
-        public FirmwareVersion CurrentFirmwareVersion { get; private set; }
-        public FirmwareVersion? TargetFirmwareVersion { get; private set; }
-        public UpdateStatus UpdateStatus { get; private set; } = UpdateStatus.UpToDate;
+        public double LastVoltageL1 { get; private set; }
+        public double? LastVoltageL2 { get; private set; }
+        public double? LastVoltageL3 { get; private set; }
 
         private DeviceStatus(
             EntityId deviceId,
             DeviceType deviceType,
-            Power currentPower,
-            Percentage loadPercentage,
-            DateTime lastHeartbeat,
-            FirmwareVersion currentFirmwareVersion,
-            UpdateStatus updateStatus,
-            FirmwareVersion? targetFirmwareVersion = null)
+            DateTime lastTelemetry,
+            double currentLoadKW,
+            double lastVoltageL1,
+            double? lastVoltageL2,
+            double? lastVoltageL3)
         {
             DeviceId = deviceId;
             DeviceType = deviceType;
-            CurrentPower = currentPower;
-            LoadPercentage = loadPercentage;
-            LastHeartbeat = lastHeartbeat;
-            CurrentFirmwareVersion = currentFirmwareVersion;
-            TargetFirmwareVersion = targetFirmwareVersion;
-            UpdateStatus = updateStatus;
+            LastTelemetryReceivedAt = lastTelemetry;
+            CurrentLoadKW = currentLoadKW;
+            LastVoltageL1 = lastVoltageL1;
+            LastVoltageL2 = lastVoltageL2;
+            LastVoltageL3 = lastVoltageL3;
+
         }
 
-        #region Factory Method
+        #region Factory
 
-        public static DeviceStatus CreateDefault(EntityId deviceId, DeviceType deviceType, DateTime now)
+        public static DeviceStatus CreateDefault(
+            EntityId deviceId,
+            DeviceType deviceType,
+            DateTime now)
         {
             return new DeviceStatus(
                 deviceId,
                 deviceType,
-                Power.Create(0).Value,
-                Percentage.Zero(),
                 now,
-                FirmwareVersion.Create("V1.0.0").Value,
-                UpdateStatus.UpToDate
+                0,
+                0,
+                null,
+                null
             );
         }
+
         public static Result<DeviceStatus> Load(
             string deviceId,
             DeviceType deviceType,
-            double currentPower,
-            double loadPercentage,
-            DateTime lastHeartbeat,
-            string currentFirmwareVersion,
-            string? targetFirmwareVersion,
-            UpdateStatus updateStatus)
+            DateTime lastTelemetry,
+            double currentLoadKW,
+            double lastVoltageL1,
+            double? lastVoltageL2,
+            double? lastVoltageL3)
         {
-            var deviceIdResult = EntityId.Create(deviceId);
-            if (deviceIdResult.IsFailure) 
-                return Result<DeviceStatus>.Failure(deviceIdResult.Error!.Message, ErrorType.Validation);
+            var idResult = EntityId.Create(deviceId);
 
-            var powerResult = Power.Create(currentPower);
-            if (powerResult.IsFailure)
-                return Result<DeviceStatus>.Failure(powerResult.Error!.Message, ErrorType.Validation);
-
-            var loadResult = Percentage.Create(loadPercentage);
-            if (loadResult.IsFailure) 
-                return Result<DeviceStatus>.Failure(loadResult.Error!.Message, ErrorType.Validation);
-
-            var currentFwResult = FirmwareVersion.Create(currentFirmwareVersion);
-            if (currentFwResult.IsFailure) 
-                return Result<DeviceStatus>.Failure(currentFwResult.Error!.Message, ErrorType.Validation);
-
-            FirmwareVersion? targetFw = null;
-            if (!string.IsNullOrWhiteSpace(targetFirmwareVersion))
+            if (idResult.IsFailure)
             {
-                var targetFwResult = FirmwareVersion.Create(targetFirmwareVersion);
-                if (targetFwResult.IsFailure)
-                    return Result<DeviceStatus>.Failure(targetFwResult.Error!.Message, ErrorType.Validation);
-
-                targetFw = targetFwResult.Value;
+                return Result<DeviceStatus>.Failure(
+                    idResult.Error!.Message,
+                    ErrorType.Validation);
             }
 
-            return Result<DeviceStatus>.Success(new DeviceStatus(
-                deviceIdResult.Value,
-                deviceType,
-                powerResult.Value,
-                Percentage.FromRaw(loadResult.Value),
-                lastHeartbeat,
-                currentFwResult.Value,
-                updateStatus,
-                targetFw
-            ));
+            return Result<DeviceStatus>.Success(
+                new DeviceStatus(
+                    idResult.Value,
+                    deviceType,
+                    lastTelemetry,
+                    currentLoadKW,
+                    lastVoltageL1,
+                    lastVoltageL2,
+                    lastVoltageL3
+                ));
         }
 
         #endregion
@@ -113,55 +91,41 @@ namespace SmartGrid.Domain.Models
 
         public void UpdateTelemetry(Telemetry telemetry)
         {
-            LastHeartbeat = telemetry.Timestamp;
+            LastTelemetryReceivedAt = telemetry.Timestamp;
 
-            CurrentPower = Power.Create(telemetry.CurrentLoadKW).Value;
+            CurrentLoadKW = telemetry.CurrentLoadKW;
 
-            LoadPercentage = Percentage.Create(telemetry.CurrentLoadKW > 0 ? 50 : 0).Value;
-
-            // FIRMWARE: Pošto smo izbacili Firmware iz telemetrije, 
-            // ovde više ne možemo raditi proveru dok ne odlučimo gde ćemo čuvati verziju.
-            // Privremeno komentarišemo da ne bi bacalo grešku.
-            /*
-            if (UpdateStatus == UpdateStatus.PendingUpdate &&
-                TargetFirmwareVersion != null &&
-                telemetry.FirmwareVersion == TargetFirmwareVersion)
+            LastVoltageL1 = telemetry.VoltageL1;
+            if(telemetry.VoltageL2.HasValue)
             {
-                CurrentFirmwareVersion = telemetry.FirmwareVersion;
-                UpdateStatus = UpdateStatus.UpToDate;
-                TargetFirmwareVersion = null;
+                LastVoltageL2 = telemetry.VoltageL2.Value;
             }
-            */
+
+            if(telemetry.VoltageL3.HasValue)
+            {
+                LastVoltageL3 = telemetry.VoltageL3.Value;
+            }
         }
 
-        public void SetTargetVersion(FirmwareVersion newTarget)
+        public bool IsOnline(DateTime currentTime)
         {
-            TargetFirmwareVersion = newTarget;
-
-            if (CurrentFirmwareVersion.CompareTo(newTarget) < 0)
-            {
-                UpdateStatus = UpdateStatus.PendingUpdate;
-            }
-            else
-            {
-                UpdateStatus = UpdateStatus.UpToDate;
-            }
+            return currentTime - LastTelemetryReceivedAt <
+                   DeviceStatusLimits.OfflineThreshold;
         }
-        public void InitializeFirmwareVersion(FirmwareVersion latestAvailableVersion)
+
+        public bool HasVoltageDrop()
         {
-            if (latestAvailableVersion is null || string.IsNullOrWhiteSpace(latestAvailableVersion.Value))
-                return;
+            bool l1Drop = LastVoltageL1 < 190;
 
-            if (CurrentFirmwareVersion != latestAvailableVersion)
-            {
-                TargetFirmwareVersion = latestAvailableVersion;
-                UpdateStatus = UpdateStatus.PendingUpdate;
-            }
-            else
-            {
-                UpdateStatus = UpdateStatus.UpToDate;
-            }
+            bool l2Drop = LastVoltageL2.HasValue &&
+                          LastVoltageL2.Value < 190;
+
+            bool l3Drop = LastVoltageL3.HasValue &&
+                          LastVoltageL3.Value < 190;
+
+            return l1Drop || l2Drop || l3Drop;
         }
+
         public Alert? GetCurrentAnomaly(DateTime currentTime)
         {
             if (!IsOnline(currentTime))
@@ -169,23 +133,17 @@ namespace SmartGrid.Domain.Models
                 return Alert.Create(
                     DeviceId,
                     AlertType.Critical,
-                    $"Heartbeat missing. Device has been offline since {LastHeartbeat} UTC.").Value;
+                    $"Device offline. Last heartbeat: {LastTelemetryReceivedAt}"
+                ).Value;
             }
 
-            if (IsOverloaded)
+            if (HasVoltageDrop())
             {
                 return Alert.Create(
                     DeviceId,
                     AlertType.Critical,
-                    $"Critical load detected: {LoadPercentage}%. Overload threshold exceeded.").Value;
-            }
-
-            if (IsUnderperforming)
-            {
-                return Alert.Create(
-                    DeviceId,
-                    AlertType.Warning,
-                    $"Device is underperforming. Current load is only {LoadPercentage}.").Value;
+                    $"Voltage drop detected: L1={LastVoltageL1}V, L2={LastVoltageL2}V, L3={LastVoltageL3}V"
+                ).Value;
             }
 
             return null;

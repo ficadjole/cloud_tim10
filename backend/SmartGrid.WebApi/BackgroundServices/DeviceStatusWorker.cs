@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.SignalR;
-using SmartGrid.Application.Features.DeviceStatuses.Queries;
 using SmartGrid.Application.Interfaces;
 using SmartGrid.Application.Interfaces.Messaging;
-using SmartGrid.Domain.Models;
+using SmartGrid.Application.Interfaces.Repositories;
+using SmartGrid.Domain.ValueObjects;
 using SmartGrid.WebApi.Hubs;
 
 namespace SmartGrid.WebApi.BackgroundServices
@@ -10,12 +10,11 @@ namespace SmartGrid.WebApi.BackgroundServices
     internal class DeviceStatusWorker(
         IServiceProvider serviceProvider,
         IHubContext<DeviceHub> hubContext,
-        IMapper<DeviceStatus, DeviceStatusDto> deviceStatusMapper,
         ILogger<DeviceStatusWorker> logger) : BackgroundService
     {
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            logger.LogInformation("[WORKER] Device Status Worker started listening...");
+            logger.LogInformation("[WORKER] Alert & Status Worker started listening...");
 
             while (!stoppingToken.IsCancellationRequested)
             {
@@ -25,35 +24,45 @@ namespace SmartGrid.WebApi.BackgroundServices
                 {
                     using var scope = serviceProvider.CreateScope();
 
-                    var queueService = scope.ServiceProvider.GetRequiredService<IDeviceStatusQueueService>();
+                    var alertQueueService = scope.ServiceProvider.GetRequiredService<IAlertQueueService>();
+                    var alertRepository = scope.ServiceProvider.GetRequiredService<IAlertRepository>();
 
-                    var message = await queueService.ReceiveStatusUpdateAsync(stoppingToken);
+
+                    var message = await alertQueueService.ReceiveAlertAsync(stoppingToken);
 
                     if (message != null)
                     {
                         foundMessage = true;
-                        var deviceStatus = message.Body;
-                        
-                        logger.LogInformation("[WORKER] Received update for device: {DeviceId}",
-                            deviceStatus.DeviceId);
+                        var alert = message.Body; 
 
-                        var deviceStatusDto = deviceStatusMapper.Map(deviceStatus);
+                        logger.LogInformation("[WORKER] Received alert for device: {DeviceId} - Type: {Type}",
+                            alert.DeviceId.Value, alert.AlertType);
 
-                        await hubContext.Clients.All.SendAsync("ReceiveStatusUpdate",
-                                                               deviceStatusDto,
-                                                               stoppingToken);
+                        await alertRepository.UpsertAsync(alert, stoppingToken);
+                        logger.LogInformation("[WORKER] Alert successfully persisted to Table Storage.");
+
+                        await hubContext.Clients.Group("Admins").SendAsync(
+                            "ReceiveAlert",
+                            new
+                            {
+                                deviceId = alert.DeviceId.Value,
+                                alertType = alert.AlertType.ToString(),
+                                message = alert.Message.Value,
+                                timestamp = alert.Timestamp
+                            },
+                            stoppingToken);
 
                         await message.CompleteAsync();
 
-                        logger.LogInformation("[WORKER] Update broadcasted to clients and message deleted.");
+                        logger.LogInformation("[WORKER] Alert broadcasted to Admins and message deleted from queue.");
                     }
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError(ex, "[ERROR] Error processing device status queue.");
+                    logger.LogError(ex, "[ERROR] Error processing alert queue.");
                 }
 
-                if(!foundMessage)
+                if (!foundMessage)
                 {
                     await Task.Delay(2000, stoppingToken);
                 }
@@ -61,4 +70,3 @@ namespace SmartGrid.WebApi.BackgroundServices
         }
     }
 }
-

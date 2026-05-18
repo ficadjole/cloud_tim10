@@ -42,8 +42,8 @@ namespace SmartGrid.Application.Features.Telemetries.Commands
             RuleFor(t => t.SmartMeterId)
                 .NotEmpty();
 
-            RuleFor(t => t.DeviceToken)
-                .NotEmpty();
+            //RuleFor(t => t.DeviceToken)
+               // .NotEmpty();
 
             RuleFor(t => t.TotalConsumptionKWh)
                 .GreaterThanOrEqualTo(0);
@@ -61,7 +61,8 @@ namespace SmartGrid.Application.Features.Telemetries.Commands
                 .InclusiveBetween(0, 1);
 
             RuleFor(t => t.Timestamp)
-                .LessThanOrEqualTo(DateTime.UtcNow);
+                    .LessThanOrEqualTo(_ => DateTime.UtcNow.AddMinutes(1))
+                    .WithMessage("Timestamp cannot be in the future (allowed up to 1 min network clock skew).");
 
             When(t => t.DeviceType == DeviceType.MultiPhase, () =>
             {
@@ -94,11 +95,14 @@ namespace SmartGrid.Application.Features.Telemetries.Commands
                 request.TotalConsumptionKWh,
                 request.CurrentLoadKW,       
                 request.VoltageL1,          
-                request.CurrentL1,           
+                request.CurrentL1,
+                request.PowerFactorL1,
                 request.VoltageL2,           
                 request.VoltageL3,           
                 request.CurrentL2,       
-                request.CurrentL3         
+                request.CurrentL3  ,
+                request.PowerFactorL2,
+                request.PowerFactorL3
             );
 
             if (telemetryResult.IsFailure)

@@ -17,5 +17,8 @@ namespace SmartGrid.Infrastructure.Persistence.AzureTable.Entities
         public double? CurrentL2 { get; set; }
         public double? VoltageL3 { get; set; }
         public double? CurrentL3 { get; set; }
+        public double PowerFactorL1 { get; set; }
+        public double? PowerFactorL2 { get; set; }
+        public double? PowerFactorL3 { get; set; }
     }
 }

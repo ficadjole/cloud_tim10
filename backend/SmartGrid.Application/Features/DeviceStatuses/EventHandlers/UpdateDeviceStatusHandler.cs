@@ -2,6 +2,9 @@
 using Microsoft.Extensions.Logging;
 using SmartGrid.Application.Features.Telemetries.Events;
 using SmartGrid.Application.Interfaces.Repositories;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SmartGrid.Application.Features.DeviceStatuses.EventHandlers;
 
@@ -28,6 +31,15 @@ internal class UpdateDeviceStatusHandler(
             }
 
             device.ProcessTelemetry(telemetry);
+
+            var anomalyAlert = device.Status.GetCurrentAnomaly(DateTime.UtcNow);
+
+            if (anomalyAlert is not null)
+            {
+                logger.LogCritical("[CRITICAL ANOMALY DETECTED] Device: {DeviceId}. Message: {Message}",
+                    telemetry.SmartMeterId, anomalyAlert.Message);
+
+            }
 
             await deviceRepository.SaveStatusAsync(device.Status, ct);
 
