@@ -46,15 +46,6 @@ namespace SmartGrid.Infrastructure
 
             services.AddJsonSerializer();
 
-            services.AddScoped<IJwtService, JwtService>();
-            services.AddScoped<IPasswordHasher, PasswordHasher>();
-
-            services.AddScoped<IUserRepository, UserRepository>();
-
-            services.AddSingleton<UserEntityMapper>();
-
-            services.AddScoped<IEmailService, SendGridEmailService>();
-
             services
                 .AddServices()
                 .AddAzureTables(tableConn)

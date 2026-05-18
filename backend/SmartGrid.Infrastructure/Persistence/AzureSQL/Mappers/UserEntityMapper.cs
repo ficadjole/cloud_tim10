@@ -1,6 +1,7 @@
 ﻿using SmartGrid.Domain.Enums;
 using SmartGrid.Domain.Models;
 using SmartGrid.Domain.ValueObjects;
+using SmartGrid.Infrastructure.Persistence.AzureSQL.Common;
 using SmartGrid.Infrastructure.Persistence.AzureSQL.Entities;
 using System;
 using System.Collections.Generic;
@@ -10,10 +11,10 @@ using System.Threading.Tasks;
 
 namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Mappers
 {
-    public class UserEntityMapper
+    internal class UserEntityMapper : ISQLTableMapper<User, UserEntity>
     {
 
-        public UserEntity ToEntity(User user)
+        public UserEntity MapToEntity(User user)
         {
             return new UserEntity
             {
@@ -28,7 +29,7 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Mappers
             };
         }
 
-        public User? ToDomain(UserEntity entity)
+        public User? MapToDomain(UserEntity entity)
         {
             
             var role = Enum.TryParse<UserRoles>(entity.Role.ToString(), out var parsedRole) ? parsedRole : UserRoles.User;

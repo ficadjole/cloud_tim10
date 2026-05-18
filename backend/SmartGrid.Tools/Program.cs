@@ -11,7 +11,7 @@ Console.WriteLine();
 
 var tables = new[] { "Devices", "Telemetries", "DeviceStatuses", "Firmwares"};
 var blobs = new[] { "firmware-updates" };
-var queues = new[] { "alert-queue", "device-status-queue" };
+var queues = new[] { "alert-queue", "device-status-queue", "user-queue", "reset-password-queue"};
 
 var tableServiceClient = new TableServiceClient(ConnectionString);
 var blobServiceClient = new BlobServiceClient(ConnectionString);

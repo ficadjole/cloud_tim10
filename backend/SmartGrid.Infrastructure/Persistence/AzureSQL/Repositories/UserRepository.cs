@@ -2,17 +2,19 @@
 using SmartGrid.Application.Interfaces.Repositories;
 using SmartGrid.Domain.Models;
 using SmartGrid.Domain.ValueObjects;
+using SmartGrid.Infrastructure.Persistence.AzureSQL.Common;
 using SmartGrid.Infrastructure.Persistence.AzureSQL.Context;
+using SmartGrid.Infrastructure.Persistence.AzureSQL.Entities;
 using SmartGrid.Infrastructure.Persistence.AzureSQL.Mappers;
 
 namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
 {
-    public class UserRepository : IUserRepository
+    internal class UserRepository : IUserRepository
     {
         private readonly SmartMeteringDbContext _dbContext;
-        private readonly UserEntityMapper _mapper;
+        private readonly ISQLTableMapper<User, UserEntity> _mapper;
 
-        public UserRepository(SmartMeteringDbContext dbContext, UserEntityMapper mapper)
+        public UserRepository(SmartMeteringDbContext dbContext, ISQLTableMapper<User, UserEntity> mapper)
         {
             _dbContext = dbContext;
             _mapper = mapper;
@@ -20,7 +22,7 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
 
         public Task AddAsync(User user)
         {
-            var userEntity = _mapper.ToEntity(user);
+            var userEntity = _mapper.MapToEntity(user);
 
             _dbContext.Users.Add(userEntity);
 
@@ -42,7 +44,7 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
 
         public Task<IEnumerable<User?>> GetAllAsync()
         {
-            return _dbContext.Users.Select(userEntity => _mapper.ToDomain(userEntity)).ToListAsync().ContinueWith(task => task.Result.AsEnumerable());
+            return _dbContext.Users.Select(userEntity => _mapper.MapToDomain(userEntity)).ToListAsync().ContinueWith(task => task.Result.AsEnumerable());
         }
 
         public Task<User> GetByIdAsync(EntityId id)
@@ -54,7 +56,7 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
                 return Task.FromResult<User>(null);
             }
 
-            var user = _mapper.ToDomain(userEntity);
+            var user = _mapper.MapToDomain(userEntity);
 
             if(user == null)
             {
@@ -72,7 +74,7 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
             {
                 return Task.FromResult<User>(null);
             }
-            var user = _mapper.ToDomain(userEntity);
+            var user = _mapper.MapToDomain(userEntity);
             if (user == null)
             {
                 return Task.FromResult<User>(null);
@@ -83,7 +85,7 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
         public Task UpdateAsync(User user)
         {
          
-            var userEntity = _mapper.ToEntity(user);
+            var userEntity = _mapper.MapToEntity(user);
 
             _dbContext.Users.Update(userEntity);
 

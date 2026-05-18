@@ -16,12 +16,12 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Context
         {
             // 1. Dobijamo putanju do foldera gde se nalazi tvoje celo rešenje (.sln)
             // Directory.GetCurrentDirectory() obično vraća koren projekta ako pokrećeš iz terminala
-            var rootPath = Directory.GetCurrentDirectory();
+            var basePath = Path.Combine(Directory.GetCurrentDirectory(), "..", "SmartGrid.Functions");
 
 
             // 3. Gradimo konfiguraciju direktno iz tog drugog foldera
             var configuration = new ConfigurationBuilder()
-                .SetBasePath(rootPath) // Ovde mu kažemo: "Gledaj u Functions folder!"
+                .SetBasePath(basePath) // Ovde mu kažemo: "Gledaj u Functions folder!"
                 .AddJsonFile("local.settings.json", optional: false)
                 .Build();
 

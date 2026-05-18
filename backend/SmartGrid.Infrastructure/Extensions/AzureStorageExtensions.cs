@@ -81,7 +81,14 @@ namespace SmartGrid.Infrastructure.Extensions
 
         public static IServiceCollection AddAzureSqlServices(this IServiceCollection services)
         {
+            // Mappers
+            services.AddSingleton<ISQLTableMapper<User, UserEntity>, UserEntityMapper>();
+            services.AddSingleton<ISQLTableMapper<SmartMeter, SmartMeterEntity>, SmartMeterMapper>();
             services.AddSingleton<ISQLTableMapper<ManualStateLog, ManualStateLogEntity>, ManualStateLogMapper>();
+
+            // Repositories
+            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<ISmartMeterRepository, SmartMeterRepository>();
             services.AddScoped<IManualStateLogRepository, ManualStateLogRepository>();
 
             return services;

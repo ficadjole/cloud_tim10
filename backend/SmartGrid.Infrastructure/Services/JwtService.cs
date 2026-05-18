@@ -64,7 +64,7 @@ namespace SmartGrid.Infrastructure.Services
                 signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
             );
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            return Result<string>.Success(new JwtSecurityTokenHandler().WriteToken(token));
         }
 
         public Result<ClaimsPrincipal?> ValidateSetPasswordToken(string token)
