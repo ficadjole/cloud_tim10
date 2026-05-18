@@ -3,7 +3,10 @@ using SmartGrid.ITSimulator.Enums;
 using SmartGrid.ITSimulator.Services;
 using SmartGrid.ITSimulator.UI;
 using SmartGrid.ITSimulator.Models;
-
+using System;
+using System.IO;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 // Load configuration
 var configuration = new ConfigurationBuilder()
@@ -24,9 +27,8 @@ string deviceName = ConsoleUI.GetDeviceNameInput();
 DeviceType deviceType = ConsoleUI.GetDeviceTypeInput();
 double nominalPower = ConsoleUI.GetNominalPowerInput();
 string location = ConsoleUI.GetLocationInput();
-string currentVersion = "V1.0.0";
 
-using var httpClient = new HttpClient { BaseAddress = new Uri(baseApiUrl)};
+using var httpClient = new HttpClient { BaseAddress = new Uri(baseApiUrl) };
 
 var deviceClient = new DeviceClient(httpClient);
 
@@ -61,17 +63,17 @@ try
 {
     while (true)
     {
-        var telemetry = simulator.GenerateTelemetry(deviceId, 
-                                                    deviceName, 
+        var telemetry = simulator.GenerateTelemetry(deviceId,
+                                                    deviceName,
                                                     nominalPower,
-                                                    currentVersion, 
                                                     deviceType);
+
         var (success, errorMessage) = await publisher.PublishSafeAsync(telemetry);
 
         if (success)
         {
             Console.ForegroundColor = ConsoleColor.Green;
-            ConsoleUI.PrintSuccess(telemetry.CurrentPower, telemetry.NominalPower);
+            ConsoleUI.PrintSuccess(telemetry.CurrentLoadKW, nominalPower);
             Console.ResetColor();
         }
         else

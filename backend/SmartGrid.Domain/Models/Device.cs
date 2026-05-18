@@ -97,10 +97,6 @@ namespace SmartGrid.Domain.Models
             Status.UpdateTelemetry(telemetry);
         }
 
-        public void ApplyInitialFirmware(FirmwareVersion latestVersion)
-        {
-            Status.InitializeFirmwareVersion(latestVersion);
-        }
 
         public void EvaluateMonitoring(DateTime currentTime)
         {

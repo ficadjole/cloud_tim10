@@ -25,9 +25,6 @@ namespace SmartGrid.Application.Features.Users.Commands
 
             RuleFor(t => t.fullname)
                 .NotEmpty().WithMessage("Full name is required.");
-
-
-               RuleFor(t => t.token).Length(256).WithMessage("Token must be 256 characters long.");
         }
     }
 
@@ -35,7 +32,7 @@ namespace SmartGrid.Application.Features.Users.Commands
     {
         public async Task<Result> Handle(ProcessCreatedUserCommand request, CancellationToken ct)
         {
-            await emailService.SendEmailAsync(request.Email, request.fullname, request.token);
+            await emailService.SendUserCreatedEmailAsync(request.Email, request.fullname, request.token);
 
             logger.LogInformation("Processed created user with email: {Email}", request.Email);
 

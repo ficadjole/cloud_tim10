@@ -22,6 +22,7 @@ namespace SmartGrid.Domain.Models
         public string? Note {  get; private set; } //nije obavezna
         public SmartMeterStatus Status { get; private set; }
         public UserLimit? UserLimit { get; private set; }
+        public DateTime? LastLimitAlertSent { get; private set; } //cuva godinu i mesec
         public DateTime RegisteredAt { get; private set; }
 
         private SmartMeter(EntityId id, SerialNumber serialNumber, ConnectionType connectionType, PowerLimit maxPower, SmartMeterStatus status, DateTime registeredAt, string? note, UserLimit? userLimit = null)
@@ -69,7 +70,8 @@ namespace SmartGrid.Domain.Models
             SmartMeterStatus status,
             DateTime registeredAt,
             string? note,
-            UserLimit? userLimit)
+            UserLimit? userLimit,
+            DateTime? lastLimitAlertSent)
         {
             var idResult = EntityId.Create(id);
             if (idResult.IsFailure)
@@ -79,7 +81,7 @@ namespace SmartGrid.Domain.Models
 
             var powerResult = PowerLimit.Create(maxPowerValue);
 
-            return Result<SmartMeter>.Success(new SmartMeter(
+            var meter = new SmartMeter(
                 idResult.Value,
                 serialResult.Value,
                 type,
@@ -87,7 +89,11 @@ namespace SmartGrid.Domain.Models
                 status,
                 registeredAt,
                 note,
-                userLimit));
+                userLimit);
+
+            meter.LastLimitAlertSent = lastLimitAlertSent;
+
+            return Result<SmartMeter>.Success(meter);
         }
 
         #endregion
@@ -133,6 +139,19 @@ namespace SmartGrid.Domain.Models
         //metode za upravljanje zivotnim ciklusom (dodavanje i brisanje objekta)
         public void Pair() => Status = SmartMeterStatus.Paired;
         public void UnPair() => Status = SmartMeterStatus.UnPaired;
+
+        public void MarkAlertAsSent()
+        {
+            LastLimitAlertSent = DateTime.UtcNow;
+        }
+
+        public bool ShouldSendAlert()
+        {
+            if(UserLimit == null) return false;
+            if(LastLimitAlertSent == null) return true;
+
+            return LastLimitAlertSent.Value.Month != DateTime.UtcNow.Month || LastLimitAlertSent.Value.Year != DateTime.UtcNow.Year;
+        }
 
         #endregion
     }

@@ -11,32 +11,30 @@ namespace SmartGrid.Infrastructure.Persistence.AzureTable.Mappers
         {
             return new DeviceStatusEntity
             {
-                CurrentPower = domain.CurrentPower.Value,
-                LoadPercentage = domain.LoadPercentage,
-                LastHeartbeat = domain.LastHeartbeat,
-                CurrentFirmwareVersion = domain.CurrentFirmwareVersion.ToString(),
-                TargetFirmwareVersion = domain.TargetFirmwareVersion?.ToString(),
-                UpdateStatus = domain.UpdateStatus.ToString()
+                CurrentLoadKW = domain.CurrentLoadKW,
+                LastTelemetryReceived = domain.LastTelemetryReceivedAt,
+                LastVoltageL1 = domain.LastVoltageL1,
+                LastVoltageL2 = domain.LastVoltageL2,
+                LastVoltageL3 = domain.LastVoltageL3,
             };
+            
         }
         public DeviceStatus? ToDomain(DeviceStatusEntity entity)
         {
             var deviceType = Enum.TryParse<DeviceType>(entity.PartitionKey, out var parsedType)
                              ? parsedType : DeviceType.Unknown;
 
-            var updateStatus = Enum.TryParse<UpdateStatus>(entity.UpdateStatus, out var parsedStatus)
-                               ? parsedStatus : UpdateStatus.UpToDate;
+
 
             var deviceStatusResult = DeviceStatus.Load(
-                entity.RowKey,
-                deviceType,
-                entity.CurrentPower,
-                entity.LoadPercentage,
-                entity.LastHeartbeat,
-                entity.CurrentFirmwareVersion,
-                entity.TargetFirmwareVersion,
-                updateStatus
-            );
+                 entity.RowKey,
+                 deviceType,
+                 entity.LastTelemetryReceived,
+                 entity.CurrentLoadKW,
+                 entity.LastVoltageL1,
+                 entity.LastVoltageL2,
+                 entity.LastVoltageL2
+             );
 
             if (deviceStatusResult.IsFailure)
                 return null;

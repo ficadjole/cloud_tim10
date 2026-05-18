@@ -14,14 +14,11 @@ namespace SmartGrid.Application.Features.DeviceStatuses.Mappers
             return new DeviceStatusDto(
                 source.DeviceId.ToString(),
                 source.DeviceType,
-                source.CurrentPower.Value,
-                source.LoadPercentage.Value,
-                source.IsOnline(now),
-                source.IsUnderperforming,
-                source.IsOverloaded,
-                source.CurrentFirmwareVersion.Value,
-source.TargetFirmwareVersion?.Value,
-                source.UpdateStatus
+                source.CurrentLoadKW,
+                now,
+                source.LastVoltageL1,
+                source.LastVoltageL2,
+                source.LastVoltageL3
             );
         }
     }

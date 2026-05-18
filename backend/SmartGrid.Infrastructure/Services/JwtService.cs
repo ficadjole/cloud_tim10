@@ -22,7 +22,7 @@ namespace SmartGrid.Infrastructure.Services
             _jwtOptions = jwtOptions.Value;
         }
 
-        public string GenerateToken(string userId, string email, string role)
+        public Result<string> GenerateToken(string userId, string email, string role)
         {
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.SecretKey));
@@ -42,10 +42,11 @@ namespace SmartGrid.Infrastructure.Services
                 signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
             );
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
+
+            return Result<string>.Success(new JwtSecurityTokenHandler().WriteToken(token));
         }
 
-        public string GenerateSetPasswordToken(string userId, string email)
+        public Result<string> GenerateSetPasswordToken(string userId, string email)
         {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.SecretKey));
             var claims = new[]
@@ -97,6 +98,40 @@ namespace SmartGrid.Infrastructure.Services
             catch 
             {
                 return Result<ClaimsPrincipal?>.Failure("Error while validating token",ErrorType.Authentication);
+            }
+        }
+
+
+        public Result<ClaimsPrincipal?> ValidateResetPasswordToken(string token)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes(_jwtOptions.SecretKey);
+            try
+            {
+                var principal = tokenHandler.ValidateToken(token, new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidIssuer = _jwtOptions.Issuer,
+                    ValidateAudience = true,
+                    ValidAudience = _jwtOptions.Audience,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero
+                }, out SecurityToken validatedToken);
+
+                var purpose = principal.Claims.FirstOrDefault(c => c.Type == "purpose")?.Value;
+
+                if (purpose != "reset-password")
+                {
+                    return Result<ClaimsPrincipal?>.Failure("Invalid JWT token", ErrorType.Authentication);
+                }
+
+                return Result<ClaimsPrincipal?>.Success(principal);
+            }
+            catch
+            {
+                return Result<ClaimsPrincipal?>.Failure("Error while validating token", ErrorType.Authentication);
             }
         }
     }

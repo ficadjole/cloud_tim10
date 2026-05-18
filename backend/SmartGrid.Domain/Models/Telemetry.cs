@@ -20,6 +20,10 @@ namespace SmartGrid.Domain.Models
         public double CurrentL1 { get; private set; }
         public double? CurrentL2 { get; private set; }
         public double? CurrentL3 { get; private set; }
+        //faktori snage za sve faze
+        public double PowerFactorL1 { get; private set; }
+        public double? PowerFactorL2 { get; private set; }
+        public double? PowerFactorL3 { get; private set; }
 
         private Telemetry(
             EntityId id,
@@ -30,10 +34,13 @@ namespace SmartGrid.Domain.Models
             double currentLoadKW,
             double voltageL1,
             double currentL1,
+            double powerFactorL1,
             double? voltageL2 = null,
             double? voltageL3 = null,
             double? currentL2 = null,
-            double? currentL3 = null)
+            double? currentL3 = null,
+            double? powerFactorL2 = null,
+            double? powerFactorL3 = null)
         {
             Id = id;
             SmartMeterId = smartMeterId;
@@ -43,10 +50,13 @@ namespace SmartGrid.Domain.Models
             CurrentLoadKW = currentLoadKW;
             VoltageL1 = voltageL1;
             CurrentL1 = currentL1;
+            PowerFactorL1 = powerFactorL1;
             VoltageL2 = voltageL2;
             VoltageL3 = voltageL3;
             CurrentL2 = currentL2;
             CurrentL3 = currentL3;
+            PowerFactorL2 = powerFactorL2;
+            PowerFactorL3 = powerFactorL3;
         }
 
         #region Factory Methods
@@ -59,10 +69,13 @@ namespace SmartGrid.Domain.Models
             double currentLoadKW,
             double voltageL1,
             double currentL1,
+            double powerFactorL1,
             double? voltageL2 = null,
             double? voltageL3 = null,
             double? currentL2 = null,
-            double? currentL3 = null)
+            double? currentL3 = null,
+            double? powerFactorL2 = null,
+            double? powerFactorL3 = null)
         {
             var idResult = EntityId.Create(smartMeterId);
             if (idResult.IsFailure)
@@ -83,10 +96,13 @@ namespace SmartGrid.Domain.Models
                 currentLoadKW,
                 voltageL1,
                 currentL1,
+                powerFactorL1,
                 voltageL2,
                 voltageL3,
                 currentL2,
-                currentL3
+                currentL3,
+                powerFactorL2,
+                powerFactorL3
             ));
         }
 
@@ -99,10 +115,13 @@ namespace SmartGrid.Domain.Models
             double currentLoadKW,
             double voltageL1,
             double currentL1,
+            double powerFactorL1,
             double? voltageL2,
             double? voltageL3,
             double? currentL2,
-            double? currentL3)
+            double? currentL3,
+            double? powerFactorL2,
+            double? powerFactorL3)
         {
             var idResult = EntityId.Create(id);
             var meterIdResult = EntityId.Create(smartMeterId);
@@ -119,10 +138,13 @@ namespace SmartGrid.Domain.Models
                 currentLoadKW,
                 voltageL1,
                 currentL1,
+                powerFactorL1,
                 voltageL2,
                 voltageL3,
                 currentL2,
-                currentL3));
+                currentL3,
+                powerFactorL2,
+                powerFactorL3));
         }
 
         #endregion

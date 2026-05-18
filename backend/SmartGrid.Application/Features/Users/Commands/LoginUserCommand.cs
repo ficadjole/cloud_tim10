@@ -59,7 +59,7 @@ namespace SmartGrid.Application.Features.Users.Commands
 
                 logger.LogInformation("User with email {Email} logged in successfully.", request.Email);
 
-                return Result<string>.Success(jwtToken);
+                return Result<string>.Success(jwtToken.Value);
 
             }
             catch (Exception ex)

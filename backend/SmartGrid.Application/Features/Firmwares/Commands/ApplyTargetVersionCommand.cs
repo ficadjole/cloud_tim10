@@ -70,7 +70,7 @@ namespace SmartGrid.Application.Features.Firmwares.Commands
                     {
                         Interlocked.Increment(ref total);
 
-                        status.SetTargetVersion(version);
+                       // status.SetTargetVersion(version);
                         await deviceRepository.SaveStatusAsync(status, token);
 
                         logger.LogInformation("[FIRMWARE] Target version {Ver} set for Device {Id}",

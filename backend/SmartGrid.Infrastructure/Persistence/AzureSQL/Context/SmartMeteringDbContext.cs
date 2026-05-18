@@ -31,7 +31,7 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Context
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(SmartMeteringDbContext).Assembly);
 
             modelBuilder.Entity<TariffModelEntity>().HasKey(t => t.Id);
-            modelBuilder.Entity<ManualStateLogEntity>().HasKey(m => m.SmartMeterId);
+            modelBuilder.Entity<ManualStateLogEntity>().HasKey(m => m.Id);
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

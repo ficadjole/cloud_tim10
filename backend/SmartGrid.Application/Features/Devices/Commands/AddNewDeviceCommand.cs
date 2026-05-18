@@ -70,7 +70,7 @@ namespace SmartGrid.Application.Features.Devices.Commands
 
                 if (latestVersion is not null)
                 {
-                    device.ApplyInitialFirmware(latestVersion);
+                    Console.WriteLine("nesto nek pise dok ne sredim ovo");
                 }
 
                 await deviceRepository.SaveAsync(device, ct);

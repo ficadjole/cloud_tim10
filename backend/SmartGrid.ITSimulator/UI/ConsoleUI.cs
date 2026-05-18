@@ -21,16 +21,16 @@ namespace SmartGrid.ITSimulator.UI
         public static DeviceType GetDeviceTypeInput()
         {
             Console.WriteLine("[INPUT] Select Device Type:");
-            Console.WriteLine("  1. SolarPanel");
-            Console.WriteLine("  2. WindTurbine");
+            Console.WriteLine("  1.Single Phase ");
+            Console.WriteLine("  2. MultiPhase");
             Console.Write("Selection (1-2): ");
 
             string choice = Console.ReadLine() ?? "1";
             return choice switch
             {
-                "1" => DeviceType.SolarPanel,
-                "2" => DeviceType.WindTurbine,
-                _ => DeviceType.SolarPanel
+                "1" => DeviceType.SinglePhase,
+                "2" => DeviceType.MultiPhase,
+                _ => DeviceType.Unknown
             };
         }
         public static double GetNominalPowerInput()

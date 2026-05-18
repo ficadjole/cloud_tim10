@@ -7,5 +7,6 @@
         public string DevicesTable { get; init; } = string.Empty;
         public string DeviceStatusesTable { get; init; } = string.Empty;
         public string FirmwaresTable { get; init; } = string.Empty;
+        public string AlertsTable { get; init; } = string.Empty;
     }
 }

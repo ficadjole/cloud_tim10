@@ -6,6 +6,7 @@ using SmartGrid.Application.Interfaces.Messaging;
 using SmartGrid.Application.Interfaces.Repositories;
 using SmartGrid.Application.Interfaces.Storage;
 using SmartGrid.Domain.Models;
+using SmartGrid.Domain.ValueObjects;
 using SmartGrid.Infrastructure.Persistence.AzureBlob.Storages;
 using SmartGrid.Infrastructure.Persistence.AzureQueue.Services;
 using SmartGrid.Infrastructure.Persistence.AzureSQL.Common;
@@ -34,18 +35,21 @@ namespace SmartGrid.Infrastructure.Extensions
             services.AddSingleton<ITableMapper<Device, DeviceEntity>, DeviceTableMapper>();
             services.AddSingleton<ITableMapper<DeviceStatus, DeviceStatusEntity>, DeviceStatusTableMapper>();
             services.AddSingleton<ITableMapper<Firmware, FirmwareEntity>, FirmwareTableMapper>();
+            services.AddSingleton<ITableMapper<Alert, AlertEntity>, AlertTableMapper>();
 
             // Key Providers
             services.AddSingleton<ITableKeyProvider<Telemetry>, TelemetryTableKeyProvider>();
             services.AddSingleton<ITableKeyProvider<Device>, DeviceTableKeyProvider>();
             services.AddSingleton<ITableKeyProvider<DeviceStatus>, DeviceStatusTableKeyProvider>();
             services.AddSingleton<ITableKeyProvider<Firmware>, FirmwareTableKeyProvider>();
+            services.AddSingleton<ITableKeyProvider<Alert>, AlertTableKeyProvider>();
 
             // Repositories
             services.AddScoped<ITelemetryRepository, TelemetryRepository>();
             services.AddScoped<IDeviceRepository, DeviceRepository>();
             services.AddScoped<IFirmwareRepository, FirmwareRepository>();
             services.AddScoped<IDeviceStatusQueryRepository, DeviceStatusQueryRepository>();
+            services.AddScoped<IAlertRepository, AlertRepository>();
 
             return services;
         }
@@ -75,6 +79,7 @@ namespace SmartGrid.Infrastructure.Extensions
             services.AddScoped<IAlertQueueService, AlertQueueService>();
             services.AddScoped<IDeviceStatusQueueService, DeviceStatusQueueService>();
             services.AddScoped<IUserCreatedQueueService, UserCreatedQueueService>();
+            services.AddScoped<IResetPasswordQueueService, ResetPasswordQueueService>();
 
             return services;
         }
@@ -90,7 +95,7 @@ namespace SmartGrid.Infrastructure.Extensions
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<ISmartMeterRepository, SmartMeterRepository>();
             services.AddScoped<IManualStateLogRepository, ManualStateLogRepository>();
-
+            services.AddScoped<IUserRepository, UserRepository>();
             return services;
         }
     }
