@@ -13,7 +13,7 @@ namespace SmartGrid.Infrastructure.Services
         {
             var client = new SendGridClient(options.Value.SendGridApiKey);
 
-            var link = $"{options.Value.AppBaseUrl}/reset-password?token={jwtToken}";
+            var link = $"{options.Value.AppBaseUrl}/set-password?token={jwtToken}";
 
             var message = new SendGridMessage
             {
