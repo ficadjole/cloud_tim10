@@ -12,6 +12,22 @@ namespace SmartGrid.Infrastructure.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "ManualStateLogs",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    SmartMeterId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    HighTariffValue = table.Column<double>(type: "float", nullable: false),
+                    LowTariffValue = table.Column<double>(type: "float", nullable: false),
+                    ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ManualStateLogs", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "TariffModels",
                 columns: table => new
                 {
@@ -84,6 +100,7 @@ namespace SmartGrid.Infrastructure.Migrations
                     RegisteredAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UserLimitValue = table.Column<double>(type: "float", nullable: true),
                     UserLimitType = table.Column<int>(type: "int", nullable: true),
+                    LastLimitAlertSent = table.Column<DateTime>(type: "datetime2", nullable: true),
                     ResidentalObjectId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
                 },
                 constraints: table =>
@@ -112,6 +129,9 @@ namespace SmartGrid.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "ManualStateLogs");
+
             migrationBuilder.DropTable(
                 name: "SmartMeters");
 

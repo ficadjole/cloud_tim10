@@ -24,15 +24,12 @@ namespace SmartGrid.Infrastructure.Migrations
 
             modelBuilder.Entity("SmartGrid.Infrastructure.Persistence.AzureSQL.Entities.ManualStateLogEntity", b =>
                 {
-                    b.Property<Guid>("SmartMeterId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<double>("HighTariffValue")
                         .HasColumnType("float");
-
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("ImageUrl")
                         .IsRequired()
@@ -41,10 +38,13 @@ namespace SmartGrid.Infrastructure.Migrations
                     b.Property<double>("LowTariffValue")
                         .HasColumnType("float");
 
+                    b.Property<Guid>("SmartMeterId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.HasKey("SmartMeterId");
+                    b.HasKey("Id");
 
                     b.ToTable("ManualStateLogs");
                 });
@@ -92,6 +92,9 @@ namespace SmartGrid.Infrastructure.Migrations
 
                     b.Property<int>("ConnectionType")
                         .HasColumnType("int");
+
+                    b.Property<DateTime?>("LastLimitAlertSent")
+                        .HasColumnType("datetime2");
 
                     b.Property<double>("MaxPower")
                         .HasColumnType("float");

@@ -2,10 +2,15 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SmartGrid.Application.Common.Options;
+using SmartGrid.Application.Interfaces.Repositories;
+using SmartGrid.Domain.Models;
 using SmartGrid.Infrastructure.Common.Options;
 using SmartGrid.Infrastructure.Extensions;
+using SmartGrid.Infrastructure.Persistence.AzureSQL.Common;
 using SmartGrid.Infrastructure.Persistence.AzureSQL.Context;
+using SmartGrid.Infrastructure.Persistence.AzureSQL.Entities;
 using SmartGrid.Infrastructure.Persistence.AzureSQL.Mappers;
+using SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories;
 
 namespace SmartGrid.Infrastructure
 {
@@ -54,6 +59,12 @@ namespace SmartGrid.Infrastructure
 
 
             services.AddSingleton<UserEntityMapper>();
+            services.AddSingleton<ISQLTableMapper<SmartMeter, SmartMeterEntity>, SmartMeterMapper>();
+            services.AddSingleton<ISQLTableMapper<ManualStateLog, ManualStateLogEntity>, ManualStateLogMapper>();
+
+            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<ISmartMeterRepository, SmartMeterRepository>();
+            services.AddScoped<IManualStateLogRepository, ManualStateLogRepository>();
 
             services
                 .AddServices(configuration)
