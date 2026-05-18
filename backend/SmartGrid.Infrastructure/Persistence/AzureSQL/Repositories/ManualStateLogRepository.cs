@@ -1,14 +1,11 @@
-﻿using SmartGrid.Application.Interfaces.Repositories;
+﻿using Microsoft.EntityFrameworkCore;
+using SmartGrid.Application.Interfaces.Repositories;
 using SmartGrid.Domain.Models;
+using SmartGrid.Domain.ValueObjects;
 using SmartGrid.Infrastructure.Persistence.AzureSQL.Common;
 using SmartGrid.Infrastructure.Persistence.AzureSQL.Context;
 using SmartGrid.Infrastructure.Persistence.AzureSQL.Entities;
-using SmartGrid.Infrastructure.Persistence.AzureSQL.Mappers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
 {
@@ -22,11 +19,29 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
             _mapper = mapper;
         }
 
+        public async Task<ManualStateLog?> GetById(EntityId id, CancellationToken ct = default)
+        {
+            var entity =  await _dbContext.ManualStateLogs.AsNoTracking().FirstOrDefaultAsync(e => e.Id.ToString() == id.ToString(), ct);
+            
+            if(entity == null)
+                return null;
+
+            return _mapper.MapToDomain(entity);
+        }
+
         public async Task SaveAsync(ManualStateLog log, CancellationToken ct = default)
         {
             var entity = _mapper.MapToEntity(log);
 
             await _dbContext.ManualStateLogs.AddAsync(entity, ct);
+            await _dbContext.SaveChangesAsync(ct);
+        }
+
+        public async Task UpdateStatusAsync(ManualStateLog log, CancellationToken ct = default)
+        {
+            var entity = _mapper.MapToEntity(log);
+
+             _dbContext.ManualStateLogs.Update(entity);
             await _dbContext.SaveChangesAsync(ct);
         }
     }

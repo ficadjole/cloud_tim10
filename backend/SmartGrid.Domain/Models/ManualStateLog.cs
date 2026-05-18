@@ -72,6 +72,9 @@ namespace SmartGrid.Domain.Models
 
         public void MarkAsProcessed()
         {
+            if(Status != ProcessingStatus.WaitingForProcessing)
+                throw new InvalidOperationException("Only logs that are waiting for processing can be marked as processed.");
+
             Status = ProcessingStatus.Processed;
         }   
         #endregion

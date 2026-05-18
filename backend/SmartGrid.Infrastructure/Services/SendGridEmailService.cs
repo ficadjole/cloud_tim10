@@ -52,5 +52,22 @@ namespace SmartGrid.Infrastructure.Services
 
             await client.SendEmailAsync(message);
         }
+
+        public async Task SendWarningAsync(string email, string subject, string body)
+        {
+            var client = new SendGridClient(options.Value.SendGridApiKey);
+
+
+            var message = new SendGridMessage
+            {
+                From = new EmailAddress(options.Value.FromEmail, options.Value.FromName),
+                Subject = subject,
+                HtmlContent = body
+            };
+
+            message.AddTo(new EmailAddress(email));
+
+            await client.SendEmailAsync(message);
+        }
     }
 }

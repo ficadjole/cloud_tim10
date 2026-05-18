@@ -148,7 +148,7 @@ namespace SmartGrid.Domain.Models
         public bool ShouldSendAlert()
         {
             if(UserLimit == null) return false;
-            if(LastLimitAlertSent == null) return false;
+            if(LastLimitAlertSent == null) return true;
 
             return LastLimitAlertSent.Value.Month != DateTime.UtcNow.Month || LastLimitAlertSent.Value.Year != DateTime.UtcNow.Year;
         }

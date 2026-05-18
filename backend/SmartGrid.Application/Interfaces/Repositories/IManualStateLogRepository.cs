@@ -1,15 +1,13 @@
-﻿using SmartGrid.Domain.Enums;
-using SmartGrid.Domain.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using SmartGrid.Domain.Models;
+using SmartGrid.Domain.ValueObjects;
+
 
 namespace SmartGrid.Application.Interfaces.Repositories
 {
     public interface IManualStateLogRepository
     {
         Task SaveAsync(ManualStateLog log, CancellationToken ct = default);
+        Task UpdateStatusAsync(ManualStateLog log, CancellationToken ct = default);
+        Task<ManualStateLog?> GetById(EntityId id, CancellationToken ct = default);
     }
 }
