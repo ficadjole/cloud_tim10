@@ -90,12 +90,17 @@ namespace SmartGrid.Infrastructure.Extensions
             services.AddSingleton<ISQLTableMapper<User, UserEntity>, UserEntityMapper>();
             services.AddSingleton<ISQLTableMapper<SmartMeter, SmartMeterEntity>, SmartMeterMapper>();
             services.AddSingleton<ISQLTableMapper<ManualStateLog, ManualStateLogEntity>, ManualStateLogMapper>();
+            services.AddSingleton<ISQLTableMapper<TariffModel, TariffModelEntity>, TariffModelMapper>();
+            services.AddSingleton<ISQLTableMapper<ResidentalObject, ResidentalObjectEntity>, ResidentalObjectMapper>();
 
             // Repositories
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<ISmartMeterRepository, SmartMeterRepository>();
             services.AddScoped<IManualStateLogRepository, ManualStateLogRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<ITariffModelRepository, TariffModelRepository>();
+            services.AddScoped<IResidentalObjectRepository, ResidentalObjectRepository>();
+
             return services;
         }
     }

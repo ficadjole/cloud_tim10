@@ -1,0 +1,57 @@
+﻿using Microsoft.EntityFrameworkCore;
+using SmartGrid.Application.Interfaces.Repositories;
+using SmartGrid.Domain.Models;
+using SmartGrid.Domain.ValueObjects;
+using SmartGrid.Infrastructure.Persistence.AzureSQL.Common;
+using SmartGrid.Infrastructure.Persistence.AzureSQL.Context;
+using SmartGrid.Infrastructure.Persistence.AzureSQL.Entities;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
+{
+    internal class ResidentalObjectRepository : IResidentalObjectRepository
+    {
+        private readonly SmartMeteringDbContext _dbContext;
+        private readonly ISQLTableMapper<ResidentalObject, ResidentalObjectEntity> _mapper;
+
+        public ResidentalObjectRepository(SmartMeteringDbContext dbContext, ISQLTableMapper<ResidentalObject, ResidentalObjectEntity> mapper)
+        {
+            _dbContext = dbContext;
+            _mapper = mapper;
+        }
+
+        public async Task AddAsync(ResidentalObject residentalObject)
+        {
+            var entity = _mapper.MapToEntity(residentalObject);
+            await _dbContext.ResidentalObjects.AddAsync(entity);
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task<ResidentalObject?> GetByIdAsync(EntityId id)
+        {
+            var entity = await _dbContext.ResidentalObjects.Include(x => x.ConnectedMeter).FirstOrDefaultAsync(x => x.Id == Guid.Parse(id.Value));
+            return entity != null ? _mapper.MapToDomain(entity) : null;
+        }
+
+        public async Task<IEnumerable<ResidentalObject>> GetByOwnerIdAsync(EntityId ownerId)
+        {
+            var entities = await _dbContext.ResidentalObjects
+                .Include(x=>x.ConnectedMeter)
+                .Where(x => x.OwnerId == Guid.Parse(ownerId.Value))
+                .ToListAsync();
+
+            return entities.Select(e => _mapper.MapToDomain(e)!).Where(x => x != null);
+        }
+
+        public async Task UpdateAsync(ResidentalObject residentalObject)
+        {
+            var entity = _mapper.MapToEntity(residentalObject);
+            _dbContext.ResidentalObjects.Update(entity);
+            await _dbContext.SaveChangesAsync();
+        }
+    }
+}
