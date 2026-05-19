@@ -14,5 +14,6 @@ namespace SmartGrid.Application.Interfaces.Repositories
         Task<IEnumerable<ResidentalObject>> GetByOwnerIdAsync(EntityId ownerId, CancellationToken ct = default);
         Task AddAsync(ResidentalObject residentalObject, CancellationToken ct = default);
         Task UpdateAsync(ResidentalObject residentalObject, CancellationToken ct = default);   
+        Task<ResidentalObject?> GetByMeterIdAsync(EntityId meterId,  CancellationToken ct = default);
     }
 }

@@ -53,5 +53,14 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
             _dbContext.ResidentalObjects.Update(entity);
             await _dbContext.SaveChangesAsync(ct);
         }
+
+        public async Task<ResidentalObject?> GetByMeterIdAsync(EntityId meterId, CancellationToken ct = default)
+        {
+            var entity = await _dbContext.ResidentalObjects
+                .Include(x => x.ConnectedMeter)
+                .FirstOrDefaultAsync(x => x.ConnectedMeter != null && x.ConnectedMeter.Id == Guid.Parse(meterId.Value), ct);
+
+            return entity != null ? _mapper.MapToDomain(entity) : null;
+        }
     }
 }
