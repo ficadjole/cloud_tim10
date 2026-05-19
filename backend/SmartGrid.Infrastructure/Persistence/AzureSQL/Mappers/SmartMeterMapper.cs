@@ -30,7 +30,9 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Mappers
                 entity.RegisteredAt,
                 entity.Note,
                 limit,
-                entity.LastLimitAlertSent);
+                entity.LastLimitAlertSent,
+                entity.DeviceGuid,
+                entity.AccessToken);
 
             if (result.IsFailure) return null;
 
@@ -50,7 +52,9 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Mappers
                 RegisteredAt = domain.RegisteredAt,
                 UserLimitValue = domain.UserLimit?.Value,
                 UserLimitType = domain.UserLimit?.Type,
-                LastLimitAlertSent = domain.LastLimitAlertSent
+                LastLimitAlertSent = domain.LastLimitAlertSent,
+                DeviceGuid = domain.DeviceGuid,
+                AccessToken = domain.AccessToken
             };
         }
     }

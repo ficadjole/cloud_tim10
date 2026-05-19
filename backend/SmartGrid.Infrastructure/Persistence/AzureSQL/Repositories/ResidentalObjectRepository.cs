@@ -24,34 +24,34 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
             _mapper = mapper;
         }
 
-        public async Task AddAsync(ResidentalObject residentalObject)
+        public async Task AddAsync(ResidentalObject residentalObject, CancellationToken ct = default)
         {
             var entity = _mapper.MapToEntity(residentalObject);
-            await _dbContext.ResidentalObjects.AddAsync(entity);
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.ResidentalObjects.AddAsync(entity, ct);
+            await _dbContext.SaveChangesAsync(ct);
         }
 
-        public async Task<ResidentalObject?> GetByIdAsync(EntityId id)
+        public async Task<ResidentalObject?> GetByIdAsync(EntityId id, CancellationToken ct = default)
         {
-            var entity = await _dbContext.ResidentalObjects.Include(x => x.ConnectedMeter).FirstOrDefaultAsync(x => x.Id == Guid.Parse(id.Value));
+            var entity = await _dbContext.ResidentalObjects.Include(x => x.ConnectedMeter).FirstOrDefaultAsync(x => x.Id == Guid.Parse(id.Value), ct);
             return entity != null ? _mapper.MapToDomain(entity) : null;
         }
 
-        public async Task<IEnumerable<ResidentalObject>> GetByOwnerIdAsync(EntityId ownerId)
+        public async Task<IEnumerable<ResidentalObject>> GetByOwnerIdAsync(EntityId ownerId, CancellationToken ct = default)
         {
             var entities = await _dbContext.ResidentalObjects
                 .Include(x=>x.ConnectedMeter)
                 .Where(x => x.OwnerId == Guid.Parse(ownerId.Value))
-                .ToListAsync();
+                .ToListAsync(ct);
 
             return entities.Select(e => _mapper.MapToDomain(e)!).Where(x => x != null);
         }
 
-        public async Task UpdateAsync(ResidentalObject residentalObject)
+        public async Task UpdateAsync(ResidentalObject residentalObject, CancellationToken ct = default)
         {
             var entity = _mapper.MapToEntity(residentalObject);
             _dbContext.ResidentalObjects.Update(entity);
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync(ct);
         }
     }
 }

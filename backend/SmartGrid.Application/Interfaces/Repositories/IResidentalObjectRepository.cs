@@ -10,9 +10,9 @@ namespace SmartGrid.Application.Interfaces.Repositories
 {
     public interface IResidentalObjectRepository
     {
-        Task<ResidentalObject?> GetByIdAsync(EntityId id);
-        Task<IEnumerable<ResidentalObject>> GetByOwnerIdAsync(EntityId ownerId);
-        Task AddAsync(ResidentalObject residentalObject);
-        Task UpdateAsync(ResidentalObject residentalObject);   
+        Task<ResidentalObject?> GetByIdAsync(EntityId id, CancellationToken ct = default);
+        Task<IEnumerable<ResidentalObject>> GetByOwnerIdAsync(EntityId ownerId, CancellationToken ct = default);
+        Task AddAsync(ResidentalObject residentalObject, CancellationToken ct = default);
+        Task UpdateAsync(ResidentalObject residentalObject, CancellationToken ct = default);   
     }
 }

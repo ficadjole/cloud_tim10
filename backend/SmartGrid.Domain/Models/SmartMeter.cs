@@ -24,6 +24,8 @@ namespace SmartGrid.Domain.Models
         public UserLimit? UserLimit { get; private set; }
         public DateTime? LastLimitAlertSent { get; private set; } //cuva godinu i mesec
         public DateTime RegisteredAt { get; private set; }
+        public string? DeviceGuid { get; private set; } //UUID koji salje fizicki uredjaj
+        public string? AccessToken { get; private set; } //token koji se generise nakon uspesne aktivacije
 
         private SmartMeter(EntityId id, SerialNumber serialNumber, ConnectionType connectionType, PowerLimit maxPower, SmartMeterStatus status, DateTime registeredAt, string? note, UserLimit? userLimit = null)
         {
@@ -71,7 +73,9 @@ namespace SmartGrid.Domain.Models
             DateTime registeredAt,
             string? note,
             UserLimit? userLimit,
-            DateTime? lastLimitAlertSent)
+            DateTime? lastLimitAlertSent,
+            string? deviceGuid,
+            string? accessToken)
         {
             var idResult = EntityId.Create(id);
             if (idResult.IsFailure)
@@ -92,6 +96,8 @@ namespace SmartGrid.Domain.Models
                 userLimit);
 
             meter.LastLimitAlertSent = lastLimitAlertSent;
+            meter.DeviceGuid = deviceGuid;
+            meter.AccessToken = accessToken;
 
             return Result<SmartMeter>.Success(meter);
         }
@@ -151,6 +157,18 @@ namespace SmartGrid.Domain.Models
             if(LastLimitAlertSent == null) return true;
 
             return LastLimitAlertSent.Value.Month != DateTime.UtcNow.Month || LastLimitAlertSent.Value.Year != DateTime.UtcNow.Year;
+        }
+
+        public Result Activate(string deviceGuid, string accessToken)
+        {
+            if (Status == SmartMeterStatus.Paired)
+                return Result.Failure("Device is already activated.", ErrorType.Conflict);
+
+            DeviceGuid = deviceGuid;
+            AccessToken = accessToken;
+            Status = SmartMeterStatus.Paired;
+
+            return Result.Success();
         }
 
         #endregion

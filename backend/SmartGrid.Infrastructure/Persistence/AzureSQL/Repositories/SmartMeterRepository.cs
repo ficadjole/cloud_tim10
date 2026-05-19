@@ -26,51 +26,51 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
             _mapper = mapper;
         }
 
-        public async Task AddAsync(SmartMeter meter)
+        public async Task AddAsync(SmartMeter meter , CancellationToken ct = default)
         {
             var entity = _mapper.MapToEntity(meter);
-            await _dbContext.SmartMeters.AddAsync(entity);
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.SmartMeters.AddAsync(entity, ct);
+            await _dbContext.SaveChangesAsync(ct);
         }
 
-        public async Task UpdateAsync(SmartMeter meter)
+        public async Task UpdateAsync(SmartMeter meter, CancellationToken ct = default)
         {
             var entity = _mapper.MapToEntity(meter);
             _dbContext.SmartMeters.Update(entity);
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync(ct);
         }
 
-        public async Task DeleteAsync(EntityId id)
+        public async Task DeleteAsync(EntityId id, CancellationToken ct = default)
         {
             var entity = await _dbContext.SmartMeters.FindAsync(Guid.Parse(id.Value));
             if(entity != null)
             {
                 _dbContext.SmartMeters.Remove(entity);
-                await _dbContext.SaveChangesAsync();
+                await _dbContext.SaveChangesAsync(ct);
             }
         }
 
-        public async Task<IEnumerable<SmartMeter>> GetAllAsync()
+        public async Task<IEnumerable<SmartMeter>> GetAllAsync(CancellationToken ct = default)
         {
-            var entities = await _dbContext.SmartMeters.ToListAsync();
+            var entities = await _dbContext.SmartMeters.ToListAsync(ct);
             return entities.Select(e => _mapper.MapToDomain(e)!).Where(m => m != null);
         }
 
-        public async Task<SmartMeter?> GetByIdAsync(EntityId id)
+        public async Task<SmartMeter?> GetByIdAsync(EntityId id, CancellationToken ct = default)
         {
-            var entity = await _dbContext.SmartMeters.FirstOrDefaultAsync(x => x.Id == Guid.Parse(id.Value));
+            var entity = await _dbContext.SmartMeters.FirstOrDefaultAsync(x => x.Id == Guid.Parse(id.Value), ct);
             return entity != null ? _mapper.MapToDomain(entity) : null;
         }
 
-        public async Task<SmartMeter?> GetBySerialNumberAsync(string serialNumber)
+        public async Task<SmartMeter?> GetBySerialNumberAsync(string serialNumber, CancellationToken ct = default)
         {
-            var entity = await _dbContext.SmartMeters.FirstOrDefaultAsync(x => x.SerialNumber == serialNumber);
+            var entity = await _dbContext.SmartMeters.FirstOrDefaultAsync(x => x.SerialNumber == serialNumber, ct);
             return entity != null ? _mapper.MapToDomain(entity) : null;
         }
 
-        public async Task<IEnumerable<SmartMeter>> GetMetersWithActiveLimitAsync()
+        public async Task<IEnumerable<SmartMeter>> GetMetersWithActiveLimitAsync(CancellationToken ct = default)
         {
-            var entities = await _dbContext.SmartMeters.Where(x => x.UserLimitValue != null).ToListAsync();
+            var entities = await _dbContext.SmartMeters.Where(x => x.UserLimitValue != null).ToListAsync(ct);
             return entities.Select(e => _mapper.MapToDomain(e)!).Where(m => m != null);
         }
     }

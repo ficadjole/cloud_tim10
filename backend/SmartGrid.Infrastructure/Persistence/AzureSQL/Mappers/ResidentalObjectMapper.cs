@@ -29,6 +29,7 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Mappers
                 entity.Street,
                 entity.Number,
                 entity.City,
+                entity.Description,
                 entity.OwnerId.ToString(),
                 meter);
 
@@ -45,6 +46,7 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Mappers
                 Street = domain.Address.Street,
                 Number = domain.Address.Number,
                 City = domain.Address.City,
+                Description = domain.Description,
                 OwnerId = Guid.Parse(domain.OwnerId.Value), //ovo nez da li treba ovako
                 ConnectedMeter = domain.ConnectedMeter != null ? _meterMapper.MapToEntity(domain.ConnectedMeter) : null
             };

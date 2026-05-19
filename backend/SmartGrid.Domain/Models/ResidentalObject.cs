@@ -18,17 +18,20 @@ namespace SmartGrid.Domain.Models
         public string Name { get; private set; } = string.Empty;
         public ObjectType Type { get; private set; }
         public Address Address { get; private set; }
+        public string? Description { get; private set; }
         public EntityId OwnerId { get; private set; }
         //brojilo koji je povezan sa ovim objektom, on je opcioni na pocetku zato imam upitnik
         public SmartMeter? ConnectedMeter { get; private set; }
 
+
         //nema u konstruktoru SmartMeter je to child
-        private ResidentalObject(EntityId id, string name, ObjectType type, Address address, EntityId ownerId)
+        private ResidentalObject(EntityId id, string name, ObjectType type, Address address, string? description, EntityId ownerId)
         {
             Id = id;
             Name = name;
             Type = type;
             Address = address;
+            Description = description;
             OwnerId = ownerId;
         }
 
@@ -40,6 +43,7 @@ namespace SmartGrid.Domain.Models
            string street,
            string number,
            string city,
+           string? description,
            string ownerId)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -62,6 +66,7 @@ namespace SmartGrid.Domain.Models
                 name,
                 type,
                 addressResult.Value,
+                description,
                 ownerIdResult.Value);
 
             //zato nisam stavila ovakvo kreiranje za brojilo kao Device-DeviceStatus, jer objekat moze da postoji na pocetku bez brojila
@@ -78,6 +83,7 @@ namespace SmartGrid.Domain.Models
             string street,
             string number,
             string city,
+            string? description,
             string ownerId,
             SmartMeter? connectedMeter = null)
         {
@@ -98,6 +104,7 @@ namespace SmartGrid.Domain.Models
                 name,
                 type,
                 addressResult.Value,
+                description,
                 ownerIdResult.Value)
             {
                 ConnectedMeter = connectedMeter
@@ -129,7 +136,7 @@ namespace SmartGrid.Domain.Models
         }
 
         //izmena naziva i tipa objekta
-        public Result UpdateBasicInfo(string newName, ObjectType newType)
+        public Result UpdateBasicInfo(string newName, ObjectType newType, string? newDescription)
         {
             if (string.IsNullOrWhiteSpace(newName))
                 return Result.Failure("Object name cannot be empty.", ErrorType.Validation);
@@ -139,6 +146,7 @@ namespace SmartGrid.Domain.Models
 
             Name = newName;
             Type = newType;
+            Description = newDescription;
 
             return Result.Success();
         }

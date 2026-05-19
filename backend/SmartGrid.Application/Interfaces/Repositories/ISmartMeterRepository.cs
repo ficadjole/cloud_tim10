@@ -10,13 +10,13 @@ namespace SmartGrid.Application.Interfaces.Repositories
 {
     public interface ISmartMeterRepository
     {
-        Task<SmartMeter?> GetByIdAsync(EntityId id);
-        Task<SmartMeter?> GetBySerialNumberAsync(string serialNumber);
-        Task<IEnumerable<SmartMeter>> GetAllAsync();
+        Task<SmartMeter?> GetByIdAsync(EntityId id, CancellationToken ct = default);
+        Task<SmartMeter?> GetBySerialNumberAsync(string serialNumber, CancellationToken ct = default);
+        Task<IEnumerable<SmartMeter>> GetAllAsync(CancellationToken ct = default);
         //za proveru limita
-        Task<IEnumerable<SmartMeter>> GetMetersWithActiveLimitAsync();
-        Task AddAsync(SmartMeter meter);
-        Task UpdateAsync(SmartMeter meter);
-        Task DeleteAsync(EntityId id);
+        Task<IEnumerable<SmartMeter>> GetMetersWithActiveLimitAsync(CancellationToken ct = default);
+        Task AddAsync(SmartMeter meter, CancellationToken ct = default);
+        Task UpdateAsync(SmartMeter meter, CancellationToken ct = default);
+        Task DeleteAsync(EntityId id, CancellationToken ct = default);
     }
 }

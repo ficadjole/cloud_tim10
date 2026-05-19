@@ -17,6 +17,7 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Entities
         public string Street { get; set; } = null!;
         public string Number { get; set; } = null!;
         public string City { get; set; } = null!;
+        public string? Description { get; set; }
         public Guid OwnerId { get; set; }
         public UserEntity Owner { get; set; } = null!;
         public SmartMeterEntity? ConnectedMeter {  get; set; }

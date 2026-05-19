@@ -23,6 +23,8 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Entities
         public DateTime? LastLimitAlertSent { get; set; }
         public Guid? ResidentalObjectId { get; set; }
         public ResidentalObjectEntity? ResidentalObject { get; set; }
+        public string? DeviceGuid { get; set; }
+        public string? AccessToken { get; set; }
 
     }
 }
