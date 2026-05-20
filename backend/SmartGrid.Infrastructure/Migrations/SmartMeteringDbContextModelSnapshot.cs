@@ -59,6 +59,9 @@ namespace SmartGrid.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -90,8 +93,14 @@ namespace SmartGrid.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("AccessToken")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("ConnectionType")
                         .HasColumnType("int");
+
+                    b.Property<string>("DeviceGuid")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("LastLimitAlertSent")
                         .HasColumnType("datetime2");

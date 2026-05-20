@@ -66,7 +66,7 @@ namespace SmartGrid.Application.Features.SmartMeters.Commands
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error during activation of smart meter {SerialNumber}", request.SerialNumber);
-                return Result<string>.Failure("An unexpected error occured during activation.", ErrorType.Failure);
+                return Result<string>.Failure("An unexpected error occurred during activation.", ErrorType.Failure);
             }
         }
     }

@@ -32,7 +32,8 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Mappers
                 limit,
                 entity.LastLimitAlertSent,
                 entity.DeviceGuid,
-                entity.AccessToken);
+                entity.AccessToken,
+                entity.ResidentalObjectId?.ToString());
 
             if (result.IsFailure) return null;
 
@@ -54,7 +55,8 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Mappers
                 UserLimitType = domain.UserLimit?.Type,
                 LastLimitAlertSent = domain.LastLimitAlertSent,
                 DeviceGuid = domain.DeviceGuid,
-                AccessToken = domain.AccessToken
+                AccessToken = domain.AccessToken,
+                ResidentalObjectId = domain.ResidentalObjectId != null ? Guid.Parse(domain.ResidentalObjectId.Value) : null
             };
         }
     }

@@ -1,4 +1,5 @@
-﻿using SmartGrid.Domain.Models;
+﻿using SmartGrid.Domain.Common;
+using SmartGrid.Domain.Models;
 using SmartGrid.Domain.ValueObjects;
 using System;
 using System.Collections.Generic;
@@ -16,7 +17,7 @@ namespace SmartGrid.Application.Interfaces.Repositories
         //za proveru limita
         Task<IEnumerable<SmartMeter>> GetMetersWithActiveLimitAsync(CancellationToken ct = default);
         Task AddAsync(SmartMeter meter, CancellationToken ct = default);
-        Task UpdateAsync(SmartMeter meter, CancellationToken ct = default);
+        Task<Result> UpdateAsync(SmartMeter meter, CancellationToken ct = default);
         Task DeleteAsync(EntityId id, CancellationToken ct = default);
     }
 }

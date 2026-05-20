@@ -18,7 +18,7 @@ namespace SmartGrid.WebApi.Controllers
         public async Task<IActionResult> Create([FromForm] CreateResidentalObjectRequest request)
         {
             var ownerId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if(ownerId == null) 
+            if (ownerId == null)
                 return Unauthorized();
 
             var commandResult = request.ToCommand(ownerId);

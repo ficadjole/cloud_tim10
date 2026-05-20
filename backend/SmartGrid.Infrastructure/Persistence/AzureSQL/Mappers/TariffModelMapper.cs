@@ -34,7 +34,7 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Mappers
         {
             return new TariffModelEntity
             {
-                Id = Guid.NewGuid(), //u modelu nema id pa zato
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"), //jer uvek imam jedan tarifni model i ona ce se update-ovati
                 GHT = domain.PriceZones.Green_HT,
                 GLT = domain.PriceZones.Green_LT,
                 BHT = domain.PriceZones.Blue_HT,

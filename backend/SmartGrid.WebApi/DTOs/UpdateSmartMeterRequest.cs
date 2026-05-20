@@ -11,6 +11,10 @@ namespace SmartGrid.WebApi.DTOs
         public ConnectionType ConnectionType { get; set; }
         [FromForm(Name = "Note")]
         public string? Note { get; set; }
+        [FromForm(Name = "LimitValue")]
+        public double? LimitValue { get; set; }
+        [FromForm(Name = "LimitType")]
+        public LimitType? LimitType { get; set; }
 
         public Result<UpdateSmartMeterCommand> ToCommand(string id)
         {
@@ -21,7 +25,9 @@ namespace SmartGrid.WebApi.DTOs
             {
                 Id = id,
                 ConnectionType = ConnectionType,
-                Note = Note?.Trim()
+                Note = Note?.Trim(),
+                LimitValue = LimitValue,
+                LimitType = LimitType
             });
         }
     }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SmartGrid.Application.Interfaces.Repositories;
+using SmartGrid.Domain.Common;
 using SmartGrid.Domain.Models;
 using SmartGrid.Domain.ValueObjects;
 using SmartGrid.Infrastructure.Persistence.AzureSQL.Common;
@@ -47,11 +48,24 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
             return entities.Select(e => _mapper.MapToDomain(e)!).Where(x => x != null);
         }
 
-        public async Task UpdateAsync(ResidentalObject residentalObject, CancellationToken ct = default)
+        public async Task<Result> UpdateAsync(ResidentalObject residentalObject, CancellationToken ct = default)
         {
-            var entity = _mapper.MapToEntity(residentalObject);
-            _dbContext.ResidentalObjects.Update(entity);
+            var entity = await _dbContext.ResidentalObjects
+                .FirstOrDefaultAsync(x => x.Id == Guid.Parse(residentalObject.Id.Value), ct);
+
+            if (entity == null)
+                return Result.Failure($"Residental object with ID {residentalObject.Id.Value} not found.");
+
+            entity.Name = residentalObject.Name;
+            entity.Type = residentalObject.Type;
+            entity.Street = residentalObject.Address.Street;
+            entity.Number = residentalObject.Address.Number;
+            entity.City = residentalObject.Address.City;
+            entity.Description = residentalObject.Description;
+
             await _dbContext.SaveChangesAsync(ct);
+
+            return Result.Success();
         }
 
         public async Task<ResidentalObject?> GetByMeterIdAsync(EntityId meterId, CancellationToken ct = default)

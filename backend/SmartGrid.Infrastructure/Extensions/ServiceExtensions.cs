@@ -23,6 +23,8 @@ namespace SmartGrid.Infrastructure.Extensions
 
             services.AddScoped<IEmailService, SendGridEmailService>();
 
+            services.AddScoped<IAccessTokenService, AccessTokenService>();
+
             return services;
         }
     }

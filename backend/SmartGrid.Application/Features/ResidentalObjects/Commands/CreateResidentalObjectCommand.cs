@@ -31,7 +31,7 @@ namespace SmartGrid.Application.Features.ResidentalObjects.Commands
         public CreateResidentalObjectValidator()
         {
             RuleFor(x => x.Name).NotEmpty().WithMessage("Name is required");
-            RuleFor(x => x.Type).NotEmpty().WithMessage("Type (House, Apartment, Cottage) is required");
+            RuleFor(x => x.Type).IsInEnum().WithMessage("Please select a valid object type."); 
             RuleFor(x => x.City).NotEmpty().WithMessage("City is required.");
             RuleFor(x => x.Street).NotEmpty().WithMessage("Street is required.");
             RuleFor(x => x.Number).NotEmpty().WithMessage("Number is required.");
@@ -66,7 +66,7 @@ namespace SmartGrid.Application.Features.ResidentalObjects.Commands
 
                 await residentalObjectRepository.AddAsync(residentalObject);
 
-                logger.LogInformation("Residental object Name} created successfully with ID {Id}",
+                logger.LogInformation("Residental object {Name} created successfully with ID {Id}",
                     residentalObject.Name, residentalObject.Id.Value);
 
                 return Result<string>.Success(residentalObject.Id.Value);

@@ -26,8 +26,9 @@ namespace SmartGrid.Domain.Models
         public DateTime RegisteredAt { get; private set; }
         public string? DeviceGuid { get; private set; } //UUID koji salje fizicki uredjaj
         public string? AccessToken { get; private set; } //token koji se generise nakon uspesne aktivacije
+        public EntityId? ResidentalObjectId { get; private set; }
 
-        private SmartMeter(EntityId id, SerialNumber serialNumber, ConnectionType connectionType, PowerLimit maxPower, SmartMeterStatus status, DateTime registeredAt, string? note, UserLimit? userLimit = null)
+        private SmartMeter(EntityId id, SerialNumber serialNumber, ConnectionType connectionType, PowerLimit maxPower, SmartMeterStatus status, DateTime registeredAt, string? note, UserLimit? userLimit = null, EntityId? residentalObjectId = null)
         {
             Id = id;
             SerialNumber = serialNumber;
@@ -37,6 +38,7 @@ namespace SmartGrid.Domain.Models
             RegisteredAt = registeredAt;
             Note = note;
             UserLimit = userLimit;
+            ResidentalObjectId = residentalObjectId;
         }
 
         #region Factory Methods
@@ -75,7 +77,8 @@ namespace SmartGrid.Domain.Models
             UserLimit? userLimit,
             DateTime? lastLimitAlertSent,
             string? deviceGuid,
-            string? accessToken)
+            string? accessToken,
+            string? residentalObjectId)
         {
             var idResult = EntityId.Create(id);
             if (idResult.IsFailure)
@@ -93,7 +96,8 @@ namespace SmartGrid.Domain.Models
                 status,
                 registeredAt,
                 note,
-                userLimit);
+                userLimit,
+                residentalObjectId != null ? EntityId.Create(residentalObjectId).Value : null);
 
             meter.LastLimitAlertSent = lastLimitAlertSent;
             meter.DeviceGuid = deviceGuid;
@@ -170,6 +174,8 @@ namespace SmartGrid.Domain.Models
 
             return Result.Success();
         }
+        
+        public void AssignToResidentalObject(EntityId id) => ResidentalObjectId = id;
 
         #endregion
     }

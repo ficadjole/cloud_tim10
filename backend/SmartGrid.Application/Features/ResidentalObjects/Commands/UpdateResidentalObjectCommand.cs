@@ -35,8 +35,7 @@ namespace SmartGrid.Application.Features.ResidentalObjects.Commands
             RuleFor(x => x.City).NotEmpty().WithMessage("City is required.");
             RuleFor(x => x.Street).NotEmpty().WithMessage("Street is required.");
             RuleFor(x => x.Number).NotEmpty().WithMessage("Number is required");
-            RuleFor(x => x.Type).NotEmpty().WithMessage("Object type must be specified.");
-
+            RuleFor(x => x.Type).IsInEnum().WithMessage("Please select a valid object type.");
         }
     }
 

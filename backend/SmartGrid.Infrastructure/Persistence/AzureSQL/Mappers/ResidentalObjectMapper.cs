@@ -40,7 +40,8 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Mappers
         {
             return new ResidentalObjectEntity
             {
-                Id = string.IsNullOrEmpty(domain.Id.Value) ? Guid.NewGuid() : Guid.Parse(domain.Id.Value),
+                //Id = string.IsNullOrEmpty(domain.Id.Value) ? Guid.NewGuid() : Guid.Parse(domain.Id.Value),
+                Id = Guid.Parse(domain.Id.Value),
                 Name = domain.Name,
                 Type = domain.Type,
                 Street = domain.Address.Street,

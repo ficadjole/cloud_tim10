@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using MediatR;
+using Microsoft.Extensions.Logging;
 using SmartGrid.Application.Interfaces.Repositories;
 using SmartGrid.Domain.Common;
 using SmartGrid.Domain.Enums;
@@ -27,28 +28,38 @@ namespace SmartGrid.Application.Features.SmartMeters.Commands
     //HANDLER
     internal class DeleteSmartMeterHandler(
         ISmartMeterRepository smartMeterRepository,
-        IResidentalObjectRepository residentalObjectRepository) : IRequestHandler<DeleteSmartMeterCommand, Result>
+        IResidentalObjectRepository residentalObjectRepository,
+        ILogger<DeleteSmartMeterHandler> logger) : IRequestHandler<DeleteSmartMeterCommand, Result>
     {
         public async Task<Result> Handle(DeleteSmartMeterCommand request, CancellationToken cancellationToken)
         {
-            var idResult = EntityId.Create(request.Id);
-            if (idResult.IsFailure)
-                return Result.Failure("Invalid ID format", ErrorType.Validation);
-
-            var meter = await smartMeterRepository.GetByIdAsync(idResult.Value, cancellationToken);
-            if (meter == null)
-                return Result.Failure("Smart meter not found.", ErrorType.NotFound);
-
-            var residentalObject = await residentalObjectRepository.GetByMeterIdAsync(idResult.Value, cancellationToken);
-            if(residentalObject != null)
+            try
             {
-                residentalObject.DisconnectMeter();
-                await residentalObjectRepository.UpdateAsync(residentalObject, cancellationToken);
+                var idResult = EntityId.Create(request.Id);
+                if (idResult.IsFailure)
+                    return Result.Failure("Invalid ID format", ErrorType.Validation);
+
+                var meter = await smartMeterRepository.GetByIdAsync(idResult.Value, cancellationToken);
+                if (meter == null)
+                    return Result.Failure("Smart meter not found.", ErrorType.NotFound);
+
+                var residentalObject = await residentalObjectRepository.GetByMeterIdAsync(idResult.Value, cancellationToken);
+                if(residentalObject != null)
+                {
+                    residentalObject.DisconnectMeter();
+                    await residentalObjectRepository.UpdateAsync(residentalObject, cancellationToken);
+                }
+
+                await smartMeterRepository.DeleteAsync(idResult.Value, cancellationToken);
+
+                logger.LogInformation("Smart meter {Id} deleted and disconnected from its object.", request.Id);
+                return Result.Success();
+            } 
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error occurred while deleting smart meter {Id}", request.Id);
+                return Result.Failure("An unexpected error occurred during delete.", ErrorType.Failure);
             }
-
-            await smartMeterRepository.DeleteAsync(idResult.Value, cancellationToken);
-
-            return Result.Success();
         }
     }
 

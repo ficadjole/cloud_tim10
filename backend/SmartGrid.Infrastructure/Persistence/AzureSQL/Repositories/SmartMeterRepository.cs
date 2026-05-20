@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SmartGrid.Application.Interfaces.Repositories;
+using SmartGrid.Domain.Common;
+using SmartGrid.Domain.Enums;
 using SmartGrid.Domain.Models;
 using SmartGrid.Domain.ValueObjects;
 using SmartGrid.Infrastructure.Persistence.AzureSQL.Common;
@@ -33,11 +35,28 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
             await _dbContext.SaveChangesAsync(ct);
         }
 
-        public async Task UpdateAsync(SmartMeter meter, CancellationToken ct = default)
+        public async Task<Result> UpdateAsync(SmartMeter meter, CancellationToken ct = default)
         {
-            var entity = _mapper.MapToEntity(meter);
-            _dbContext.SmartMeters.Update(entity);
+            var entity = await _dbContext.SmartMeters
+         .FirstOrDefaultAsync(x => x.Id == Guid.Parse(meter.Id.Value), ct);
+
+            if (entity == null)
+                return Result.Failure($"Smart meter with ID {meter.Id.Value} not found.", ErrorType.NotFound);
+
+            entity.Note = meter.Note;
+            entity.ConnectionType = meter.ConnectionType;
+            entity.MaxPower = meter.MaxPower.Value;
+
+            entity.UserLimitValue = meter.UserLimit?.Value;
+            entity.UserLimitType = meter.UserLimit?.Type;
+
+            entity.Status = meter.Status;
+            entity.DeviceGuid = meter.DeviceGuid;
+            entity.AccessToken = meter.AccessToken;
+
             await _dbContext.SaveChangesAsync(ct);
+
+            return Result.Success();
         }
 
         public async Task DeleteAsync(EntityId id, CancellationToken ct = default)

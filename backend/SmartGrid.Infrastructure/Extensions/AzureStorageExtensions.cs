@@ -97,7 +97,6 @@ namespace SmartGrid.Infrastructure.Extensions
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<ISmartMeterRepository, SmartMeterRepository>();
             services.AddScoped<IManualStateLogRepository, ManualStateLogRepository>();
-            services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<ITariffModelRepository, TariffModelRepository>();
             services.AddScoped<IResidentalObjectRepository, ResidentalObjectRepository>();
 
