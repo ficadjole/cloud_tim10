@@ -20,23 +20,23 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
             _mapper = mapper;
         }
 
-        public Task AddAsync(User user)
+        public Task AddAsync(User user, CancellationToken ct = default)
         {
             var userEntity = _mapper.MapToEntity(user);
 
-            _dbContext.Users.Add(userEntity);
+            _dbContext.Users.AddAsync(userEntity,ct);
 
             return _dbContext.SaveChangesAsync();
         }
 
-        public Task DeleteAsync(EntityId id)
+        public Task DeleteAsync(EntityId id, CancellationToken ct = default)
         {
             
             var userEntity = _dbContext.Users.Find(id.Value);
             if (userEntity != null)
             {
                 _dbContext.Users.Remove(userEntity);
-                return _dbContext.SaveChangesAsync();
+                return _dbContext.SaveChangesAsync(ct);
             }
             return Task.CompletedTask;
 
@@ -47,49 +47,49 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
             return _dbContext.Users.Select(userEntity => _mapper.MapToDomain(userEntity)).ToListAsync().ContinueWith(task => task.Result.AsEnumerable());
         }
 
-        public Task<User> GetByIdAsync(EntityId id)
+        public async Task<User> GetByIdAsync(EntityId id, CancellationToken ct = default)
         {
-            var userEntity = _dbContext.Users.Find(id.Value);
+            var userEntity = await _dbContext.Users.FindAsync(id.Value,ct);
 
             if(userEntity == null)
             {
-                return Task.FromResult<User>(null);
+                return null;
             }
 
             var user = _mapper.MapToDomain(userEntity);
 
             if(user == null)
             {
-                return Task.FromResult<User>(null);
+                return null;
             }
 
-            return Task.FromResult(user);
+            return user;
         }
 
 
-        public Task<User> GetByEmailAsync(string email)
+        public async Task<User> GetByEmailAsync(string email, CancellationToken ct = default)
         {
-            var userEntity = _dbContext.Users.FirstOrDefault(u => u.Email == email);
+            var userEntity = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == email,ct);
             if (userEntity == null)
             {
-                return Task.FromResult<User>(null);
+                return null;
             }
             var user = _mapper.MapToDomain(userEntity);
             if (user == null)
             {
-                return Task.FromResult<User>(null);
+                return null;
             }
-            return Task.FromResult(user);
+            return user;
         }
 
-        public Task UpdateAsync(User user)
+        public Task UpdateAsync(User user,CancellationToken ct = default)
         {
          
             var userEntity = _mapper.MapToEntity(user);
 
             _dbContext.Users.Update(userEntity);
 
-            return _dbContext.SaveChangesAsync();
+            return _dbContext.SaveChangesAsync(ct);
 
         }
     }

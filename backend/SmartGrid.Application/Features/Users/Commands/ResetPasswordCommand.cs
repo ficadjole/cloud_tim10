@@ -34,7 +34,7 @@ namespace SmartGrid.Application.Features.Users.Commands
     {
         public async Task<Result> Handle(ResetPasswordCommand request, CancellationToken ct)
         {
-            var user = await userRepository.GetByEmailAsync(request.Email);
+            var user = await userRepository.GetByEmailAsync(request.Email, ct);
 
             if (user == null)
                 return Result.Failure("No user found with the provided email.", ErrorType.NotFound);

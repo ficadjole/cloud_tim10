@@ -51,7 +51,7 @@ namespace SmartGrid.Application.Features.Users.Commands
 
             try
             {
-                var user = await userRepository.GetByIdAsync(entityId.Value);
+                var user = await userRepository.GetByIdAsync(entityId.Value, ct);
 
                 if (user == null)
                     return Result<string>.Failure("User not found.", ErrorType.NotFound);
