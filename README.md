@@ -10,6 +10,9 @@ Ovo će kreirati odgovarajući SQL Server kontejner.
 
 Nakon toga otvorite SQL Server Management Studio (SSMS) i unesite connection string kako biste se povezali na server.
 
+![SSMS Connection](https://github.com/user-attachments/assets/bd49dfe2-cb4b-433a-ab4e-acb7f32b5e45)
+
+
 Možda će biti potrebno da unutar foldera **Databases** kreirate bazu podataka sa nazivom:
 
 ```text
