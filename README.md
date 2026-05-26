@@ -23,7 +23,15 @@ SmartMeteringDB
 
 ## Kreiranje i izmena tabela
 
-Kada kreirate bazu podataka, unutar Visual Studio-a otvorite **Package Manager Console** i unesite sledeću komandu:
+Kada kreirate bazu podataka, unutar Visual Studio-a dodajte **local.settings.json** u **SmartGrid.Functions**.
+
+> **Hint:** Potrebno je da unutar **local.settings.json** bude connection string ka bazi ste upravo napravili.
+
+Nakon toga otvorite **Package Manager Console**, postavite **SmartGrid.Infrastructure** kao Default project
+
+![PMC Default project](https://github.com/user-attachments/assets/e61b2109-6856-491f-bfa1-d95f5bba734a)
+
+i unesite sledeću komandu:
 
 ```powershell
 Update-Database
