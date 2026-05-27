@@ -13,7 +13,7 @@ namespace SmartGrid.WebApi.Controllers
 
         [HttpPost]
         [Route("login")]
-        public async Task<IActionResult> Login([FromForm] LoginUserRequest request)
+        public async Task<IActionResult> Login([FromBody] LoginUserRequest request)
         {
             var commandResult = request.ToCommand();
 

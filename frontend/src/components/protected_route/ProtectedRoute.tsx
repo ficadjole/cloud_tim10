@@ -1,8 +1,7 @@
 import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/auth/useAuthHook";
-import { Layout } from "../layout/Layout";
-import { Spinner } from "../ui/UI";
+
 
 export const ProtectedRoute: React.FC<{ children: React.ReactNode; requiredRole: string }> = ({ children, requiredRole }) => {
   const { isAuthenticated, user, isLoading, logout } = useAuth();
@@ -10,13 +9,17 @@ export const ProtectedRoute: React.FC<{ children: React.ReactNode; requiredRole:
 
   if (isLoading) return (
     <div className="min-h-screen bg-[#080808] flex items-center justify-center">
-      <Spinner size={24} />
+
     </div>
   );
 
   if (!isAuthenticated) return <Navigate to="/login" state={{ from: location }} replace />;
 
-  if (user?.role !== requiredRole) return (
+  console.log("user:", user);
+console.log("user.role:", user?.role);
+console.log("requiredRole:", requiredRole);
+
+  if (user?.role.toLowerCase() !== requiredRole.toLowerCase()) return (
     <div className="min-h-screen bg-[#080808] flex items-center justify-center">
       <div className="border border-red-500/20 bg-red-500/10 rounded-2xl p-10 text-center max-w-sm">
         <p className="text-red-400 text-sm mb-4">You don't have permission to access this page.</p>
@@ -24,6 +27,6 @@ export const ProtectedRoute: React.FC<{ children: React.ReactNode; requiredRole:
       </div>
     </div>
   );
+  return <>{children}</>;
 
-  return <Layout>{children}</Layout>;
 };

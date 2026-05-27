@@ -1,1 +1,1 @@
-export type AuthUser = { id: number; username: string; role: string };
+export type AuthUser = { id: string; username: string; role: string };

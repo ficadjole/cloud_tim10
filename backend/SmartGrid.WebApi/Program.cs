@@ -24,6 +24,7 @@ app.UseCors(corsPolicyName);
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    app.UseDeveloperExceptionPage();
     app.UseSwagger(options =>
     {
         options.OpenApiVersion = OpenApiSpecVersion.OpenApi3_1;
@@ -32,7 +33,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapHub<DeviceHub>(deviceHubRoute);

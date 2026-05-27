@@ -1,30 +1,52 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 import { useAuth } from "../../hooks/auth/useAuthHook";
 import type { IAuthAPIService } from "../../api_services/auth/IAuthAPIService";
+import { isAuthError } from "../../types/auth/AuthResponse";
 
 export function LoginForm({ authApi }: { authApi: IAuthAPIService }) {
   const { login } = useAuth();
-  const [username, setUsername] = useState("");
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const inputClass =
+    "w-full h-[45px] rounded-xl border border-[#469FFE] bg-white/4 px-4 py-3 text-sm text-[#469FFE] shadow-[0_0_0_1.5px_#469FFE,0_0_25px_-17px_#000] outline-none transition-all duration-200 ease-[cubic-bezier(0.19,1,0.22,1)] placeholder:text-[#469FFE] hover:shadow-[0_0_0_2.5px_#67afff,0_0_25px_-15px_#000]  focus:scale-[0.98]  active:scale-[0.95] cursor-text";
 
   const submit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault(); setError(""); setLoading(true);
-    const res = await authApi.login(username, password);
-    setLoading(false);
-    if (!res.success || !res.data) { setError(res.message ?? "Invalid credentials"); return; }
-    login(res.data);
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    const res = await authApi.login(email, password);
+
+    if (isAuthError(res)) {
+      setError(res.message ?? "Invalid credentials");
+      return;
+}
+
+
+
+const claims = jwtDecode<{ 
+  "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"?: string 
+}>(res.token);
+login(res.token);
+
+const role = claims?.["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+const target = role === "SysAdmin" ? "/admindashboard" : "/dashboard";
+navigate(target, { replace: true });
   };
 
   return (
-    <div className="w-full max-w-sm">
+    <div className="w-full max-w-sm rounded-2xl bg-linear-to-b from-[#FAFAFA] to-white/1 backdrop-blur-2xl border border-white/40 px-4 py-4 shadow-lg">
+      <div className="bg-[#FAFAFA] rounded-2xl p-6">
       <div className="text-center mb-10">
         <div className="w-12 h-12 rounded-2xl bg-white/8 border border-white/12 flex items-center justify-center mx-auto mb-4">
           <span className="text-white/60 text-lg">◈</span>
         </div>
-        <h1 className="text-xl font-semibold text-white">Welcome back</h1>
-        <p className="text-sm text-white/35 mt-1">Sign in to your account</p>
+        <h1 className="text-[#469FFE] montserrat_bold text-3xl">Welcome back</h1>
+        <p className="text-md text-[#363636] mt-1 montserrat_medium">Sign in to your account</p>
       </div>
 
       {error && (
@@ -35,27 +57,24 @@ export function LoginForm({ authApi }: { authApi: IAuthAPIService }) {
 
       <form onSubmit={submit} className="flex flex-col gap-4">
         <div>
-          <label className="block text-xs text-white/40 mb-2 font-medium">Username</label>
-          <input type="text" value={username} onChange={e => setUsername(e.target.value)} required
-            className="w-full bg-white/4 border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-white/20 focus:outline-none focus:border-white/30 transition-colors"
-            placeholder="your_username" />
+          <label className="block text-xs text-[#469FFE] mb-2 font-medium montserrat_semibold">email</label>
+          <input type="text" value={email} onChange={e => setEmail(e.target.value)} required
+            className={inputClass}
+            placeholder="your_email" />
         </div>
         <div>
-          <label className="block text-xs text-white/40 mb-2 font-medium">Password</label>
+          <label className="block text-xs text-[#469FFE] mb-2 font-medium montserrat_semibold">Password</label>
           <input type="password" value={password} onChange={e => setPassword(e.target.value)} required
-            className="w-full bg-white/4 border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-white/20 focus:outline-none focus:border-white/30 transition-colors"
+            className={inputClass}
             placeholder="••••••••" />
         </div>
         <button type="submit" disabled={loading}
-          className="mt-2 bg-white hover:bg-white/90 disabled:opacity-50 text-black font-semibold rounded-xl py-3 text-sm transition-colors">
+          className="mt-2 px-8 z-30 montserrat_semibold py-2.5 bg-[#469FFE] hover:bg-[#2b7bdc] rounded-md text-white relative after:content-[''] after:-z-20 after:absolute after:h-1 after:w-1 after:bg-[#2b7bdc] after:left-5 overflow-hidden after:bottom-0 after:translate-y-full after:rounded-md hover:after:scale-[300] hover:after:transition-all hover:after:duration-700 after:transition-all after:duration-700 transition-all duration-700 [text-shadow:3px_5px_2px_#1f5fb0] hover:[text-shadow:2px_2px_2px_#b5e0ff] text-lg disabled:opacity-50 cursor-pointer">
           {loading ? "Signing in…" : "Sign in"}
         </button>
       </form>
 
-      <p className="text-center text-white/30 text-sm mt-6">
-        Don't have an account?{" "}
-        <a href="/register" className="text-white/60 hover:text-white transition-colors">Create one</a>
-      </p>
+      </div>
     </div>
   );
 }
