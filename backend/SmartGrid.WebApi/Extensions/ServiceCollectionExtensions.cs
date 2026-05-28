@@ -4,6 +4,7 @@ using SmartGrid.Infrastructure;
 using SmartGrid.WebApi.BackgroundServices;
 using System.Text.Json.Serialization;
 using Microsoft.OpenApi;
+using Swashbuckle.AspNetCore.Filters;
 
 namespace SmartGrid.WebApi.Extensions
 {

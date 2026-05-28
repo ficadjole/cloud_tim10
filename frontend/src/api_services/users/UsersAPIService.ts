@@ -1,31 +1,30 @@
+import client from "../axios/axiosClient";
 import axios from "axios";
 import type { IUsersAPIService, ApiResponse } from "./IUsersAPIService";
-import type { UserDto } from "../../models/user/UserTypes";
-import { readItem } from "../../helpers/local_storage";
-
-const BASE = import.meta.env.VITE_API_URL + "users";
-
-const authHeader = () => {
-  const token = readItem("authToken");
-  return token ? { Authorization: `Bearer ${token}` } : {};
-};
+import type { CreateUserDto, UserDto } from "../../models/user/UserTypes";
 
 const err = <T>(e: unknown, fallback: string): ApiResponse<T> => ({
   success: false,
-  message: axios.isAxiosError(e) ? (e.response?.data as { message?: string })?.message ?? fallback : fallback,
+  message: axios.isAxiosError(e)
+    ? (e.response?.data as { message?: string })?.message ?? fallback
+    : fallback,
 });
 
 export const usersApi: IUsersAPIService = {
   async getAll() {
-    return axios.get<ApiResponse<UserDto[]>>(BASE, { headers: authHeader() })
+    return client.get<ApiResponse<UserDto[]>>("/users")
       .then(r => r.data).catch(e => err(e, "Failed to load users"));
   },
   async getById(id) {
-    return axios.get<ApiResponse<UserDto>>(`${BASE}/${id}`, { headers: authHeader() })
+    return client.get<ApiResponse<UserDto>>(`/users/${id}`)
       .then(r => r.data).catch(e => err(e, "Failed to load user"));
   },
   async deactivate(id) {
-    return axios.patch<ApiResponse<void>>(`${BASE}/${id}/deactivate`, {}, { headers: authHeader() })
+    return client.patch<ApiResponse<void>>(`/users/${id}/deactivate`, {})
       .then(r => r.data).catch(e => err(e, "Failed to deactivate user"));
   },
+  async create(dto: CreateUserDto) {
+  return client.post<ApiResponse<void>>("/CreateUser", dto)
+    .then(r => r.data).catch(e => err(e, "Failed to create user"));
+},
 };
