@@ -59,7 +59,7 @@ namespace SmartGrid.Infrastructure
 
             services
                 .AddServices(configuration)
-                .AddAzureTables(tableConn)
+                .AddAzureTables(tableConn, configuration)
                 .AddAzureBlobs(blobConn)
                 .AddAzureQueues(queueConn)
                 .AddAzureSqlServices();

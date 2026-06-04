@@ -1,6 +1,7 @@
 ﻿using Azure.Data.Tables;
 using Azure.Storage.Blobs;
 using Azure.Storage.Queues;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SmartGrid.Application.Interfaces.Messaging;
 using SmartGrid.Application.Interfaces.Repositories;
@@ -25,26 +26,42 @@ namespace SmartGrid.Infrastructure.Extensions
     {
         public static IServiceCollection AddAzureTables(
             this IServiceCollection services,
-            string connectionString)
+            string connectionString,
+            IConfiguration configuration)
         {
-            // Table Service Client
-            services.AddSingleton(new TableServiceClient(connectionString));
+            var tableServiceClient = new TableServiceClient(connectionString);
+            services.AddSingleton(tableServiceClient);
 
-            // Mappers
+            var section = configuration.GetSection("AzureTableOptions");
+            var tables = new[]
+            {
+                section.GetValue<string>("DevicesTable"),
+                section.GetValue<string>("FirmwaresTable"),
+                section.GetValue<string>("DeviceStatusesTable"),
+                section.GetValue<string>("TelemetriesTable"),
+                section.GetValue<string>("AlertsTable")
+            };
+
+            foreach (var table in tables)
+            {
+                if (!string.IsNullOrEmpty(table))
+                {
+                    tableServiceClient.GetTableClient(table).CreateIfNotExists();
+                }
+            }
+
             services.AddSingleton<ITableMapper<Telemetry, TelemetryEntity>, TelemetryTableMapper>();
             services.AddSingleton<ITableMapper<Device, DeviceEntity>, DeviceTableMapper>();
             services.AddSingleton<ITableMapper<DeviceStatus, DeviceStatusEntity>, DeviceStatusTableMapper>();
             services.AddSingleton<ITableMapper<Firmware, FirmwareEntity>, FirmwareTableMapper>();
             services.AddSingleton<ITableMapper<Alert, AlertEntity>, AlertTableMapper>();
 
-            // Key Providers
             services.AddSingleton<ITableKeyProvider<Telemetry>, TelemetryTableKeyProvider>();
             services.AddSingleton<ITableKeyProvider<Device>, DeviceTableKeyProvider>();
             services.AddSingleton<ITableKeyProvider<DeviceStatus>, DeviceStatusTableKeyProvider>();
             services.AddSingleton<ITableKeyProvider<Firmware>, FirmwareTableKeyProvider>();
             services.AddSingleton<ITableKeyProvider<Alert>, AlertTableKeyProvider>();
 
-            // Repositories
             services.AddScoped<ITelemetryRepository, TelemetryRepository>();
             services.AddScoped<IDeviceRepository, DeviceRepository>();
             services.AddScoped<IFirmwareRepository, FirmwareRepository>();
@@ -53,6 +70,7 @@ namespace SmartGrid.Infrastructure.Extensions
 
             return services;
         }
+
         public static IServiceCollection AddAzureBlobs(
             this IServiceCollection services,
             string connectionString)
@@ -64,6 +82,7 @@ namespace SmartGrid.Infrastructure.Extensions
 
             return services;
         }
+
         public static IServiceCollection AddAzureQueues(
             this IServiceCollection services,
             string connectionString)
@@ -86,14 +105,12 @@ namespace SmartGrid.Infrastructure.Extensions
 
         public static IServiceCollection AddAzureSqlServices(this IServiceCollection services)
         {
-            // Mappers
             services.AddSingleton<ISQLTableMapper<User, UserEntity>, UserEntityMapper>();
             services.AddSingleton<ISQLTableMapper<SmartMeter, SmartMeterEntity>, SmartMeterMapper>();
             services.AddSingleton<ISQLTableMapper<ManualStateLog, ManualStateLogEntity>, ManualStateLogMapper>();
             services.AddSingleton<ISQLTableMapper<TariffModel, TariffModelEntity>, TariffModelMapper>();
             services.AddSingleton<ISQLTableMapper<ResidentalObject, ResidentalObjectEntity>, ResidentalObjectMapper>();
 
-            // Repositories
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<ISmartMeterRepository, SmartMeterRepository>();
             services.AddScoped<IManualStateLogRepository, ManualStateLogRepository>();
