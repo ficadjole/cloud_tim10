@@ -22,6 +22,57 @@ namespace SmartGrid.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("SmartGrid.Infrastructure.Persistence.AzureSQL.Entities.BillEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("newid()");
+
+                    b.Property<DateTime>("BillingPeriod")
+                        .HasColumnType("datetime2");
+
+                    b.Property<double>("BlueZoneAmount")
+                        .HasColumnType("float");
+
+                    b.Property<double>("FixedCostsAmount")
+                        .HasColumnType("float");
+
+                    b.Property<double>("GreenZoneAmount")
+                        .HasColumnType("float");
+
+                    b.Property<double>("HighTariffKWh")
+                        .HasColumnType("float");
+
+                    b.Property<double>("LowTariffKWh")
+                        .HasColumnType("float");
+
+                    b.Property<Guid>("OwnerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<double>("RedZoneAmount")
+                        .HasColumnType("float");
+
+                    b.Property<Guid>("SmartMeterId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("StripeSessionId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("TotalAmount")
+                        .HasColumnType("float");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OwnerId");
+
+                    b.ToTable("Bills");
+                });
+
             modelBuilder.Entity("SmartGrid.Infrastructure.Persistence.AzureSQL.Entities.ManualStateLogEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -215,6 +266,17 @@ namespace SmartGrid.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("SmartGrid.Infrastructure.Persistence.AzureSQL.Entities.BillEntity", b =>
+                {
+                    b.HasOne("SmartGrid.Infrastructure.Persistence.AzureSQL.Entities.UserEntity", "Owner")
+                        .WithMany()
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Owner");
                 });
 
             modelBuilder.Entity("SmartGrid.Infrastructure.Persistence.AzureSQL.Entities.ResidentalObjectEntity", b =>

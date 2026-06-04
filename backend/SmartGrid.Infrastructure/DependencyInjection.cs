@@ -30,6 +30,7 @@ namespace SmartGrid.Infrastructure
             services.Configure<AzureSQLOptions>(configuration.GetSection("AzureSQLOptions"));
             services.Configure<EmailOptions>(configuration.GetSection("EmailOptions"));
             services.Configure<JwtOptions>(configuration.GetSection("JwtOptions"));
+            services.Configure<StripeOptions>(configuration.GetSection("StripeOptions"));
 
             if (configuration.GetSection("EmailOptions").Exists())
             {

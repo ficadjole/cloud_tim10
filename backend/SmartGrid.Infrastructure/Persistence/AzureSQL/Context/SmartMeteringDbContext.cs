@@ -23,7 +23,7 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Context
         public DbSet<SmartMeterEntity> SmartMeters { get; set; }
         public DbSet<TariffModelEntity> TariffModels { get; set; }
         public DbSet<ManualStateLogEntity> ManualStateLogs { get; set; }
-
+        public DbSet<BillEntity> Bills { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

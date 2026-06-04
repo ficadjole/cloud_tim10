@@ -3,6 +3,7 @@ using Azure.Storage.Blobs;
 using Azure.Storage.Queues;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SmartGrid.Application.Interfaces;
 using SmartGrid.Application.Interfaces.Messaging;
 using SmartGrid.Application.Interfaces.Repositories;
 using SmartGrid.Application.Interfaces.Storage;
@@ -19,6 +20,7 @@ using SmartGrid.Infrastructure.Persistence.AzureTable.Entities;
 using SmartGrid.Infrastructure.Persistence.AzureTable.KeyProviders;
 using SmartGrid.Infrastructure.Persistence.AzureTable.Mappers;
 using SmartGrid.Infrastructure.Persistence.AzureTable.Repositories;
+using SmartGrid.Infrastructure.Services;
 
 namespace SmartGrid.Infrastructure.Extensions
 {
@@ -110,12 +112,15 @@ namespace SmartGrid.Infrastructure.Extensions
             services.AddSingleton<ISQLTableMapper<ManualStateLog, ManualStateLogEntity>, ManualStateLogMapper>();
             services.AddSingleton<ISQLTableMapper<TariffModel, TariffModelEntity>, TariffModelMapper>();
             services.AddSingleton<ISQLTableMapper<ResidentalObject, ResidentalObjectEntity>, ResidentalObjectMapper>();
+            services.AddSingleton<ISQLTableMapper<Bill, BillEntity>, BillEntityMapper>();
 
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<ISmartMeterRepository, SmartMeterRepository>();
             services.AddScoped<IManualStateLogRepository, ManualStateLogRepository>();
             services.AddScoped<ITariffModelRepository, TariffModelRepository>();
             services.AddScoped<IResidentalObjectRepository, ResidentalObjectRepository>();
+            services.AddScoped<IBillRepository, BillRepository>();
+            services.AddScoped<IPaymentService, PaymentService>();
 
             return services;
         }
