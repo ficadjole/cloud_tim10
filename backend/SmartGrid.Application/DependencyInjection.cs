@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using SmartGrid.Application.Common.Behaviors;
 using SmartGrid.Application.Extensions;
+using SmartGrid.Domain.Services;
 using System.Reflection;
 
 namespace SmartGrid.Application
@@ -21,7 +22,7 @@ namespace SmartGrid.Application
                 cfg.RegisterServicesFromAssembly(assembly);
                 cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
             });
-
+            services.AddScoped<IBillingCalculationService, BillingCalculationService>();
             return services;
         }
     }

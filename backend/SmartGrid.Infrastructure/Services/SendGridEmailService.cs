@@ -69,5 +69,25 @@ namespace SmartGrid.Infrastructure.Services
 
             await client.SendEmailAsync(message);
         }
+        public async Task SendBillGeneratedEmailAsync(string email, string fullName, string billId, double totalAmount, DateTime billingPeriod)
+        {
+            var client = new SendGridClient(options.Value.SendGridApiKey);
+
+            var message = new SendGridMessage
+            {
+                From = new EmailAddress(options.Value.FromEmail, options.Value.FromName),
+                Subject = $"New SmartGrid Invoice Available - {billingPeriod:MM/yyyy}",
+                HtmlContent = $@"
+                <h3>Hello {fullName},</h3>
+                <p>A new monthly bill has been successfully generated for your property.</p>
+                <p><strong>Invoice ID:</strong> {billId}</p>
+                <p><strong>Billing Period:</strong> {billingPeriod:MM/yyyy}</p>
+                <p><strong>Total Amount Due:</strong> {totalAmount:F2} RSD</p>
+                <p>Please log in to your dashboard to view the complete consumption details and complete your payment.</p>"
+            };
+
+            message.AddTo(new EmailAddress(email, fullName));
+            await client.SendEmailAsync(message);
+        }
     }
 }

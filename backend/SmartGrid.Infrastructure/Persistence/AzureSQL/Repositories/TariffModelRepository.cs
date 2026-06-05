@@ -4,10 +4,7 @@ using SmartGrid.Domain.Models;
 using SmartGrid.Infrastructure.Persistence.AzureSQL.Common;
 using SmartGrid.Infrastructure.Persistence.AzureSQL.Context;
 using SmartGrid.Infrastructure.Persistence.AzureSQL.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
@@ -23,9 +20,9 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
             _mapper = mapper;
         }
 
-        public async Task<TariffModel?> GetActiveTariffAsync()
+        public async Task<TariffModel?> GetActiveTariffAsync(CancellationToken ct = default)
         {
-            var entity = await _dbContext.TariffModels.FirstOrDefaultAsync(); // Uzimamo prvi (i jedini) red iz tabele
+            var entity = await _dbContext.TariffModels.FirstOrDefaultAsync(ct);
             return entity != null ? _mapper.MapToDomain(entity) : null;
         }
 
@@ -33,7 +30,7 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
         {
             var existingEntity = await _dbContext.TariffModels.FirstOrDefaultAsync();
 
-            if(existingEntity == null)
+            if (existingEntity == null)
             {
                 var newEntity = _mapper.MapToEntity(tariff);
                 await _dbContext.TariffModels.AddAsync(newEntity);
