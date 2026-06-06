@@ -30,5 +30,20 @@ namespace SmartGrid.Infrastructure.Persistence.AzureBlob.Storages
 
             await blobClient.UploadAsync(stream, overwrite: true, cancellationToken: ct);
         }
+
+        public async Task<string> GetBillTextReportAsync(string blobName, CancellationToken ct = default)
+        {
+            var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
+            var blobClient = containerClient.GetBlobClient(blobName);
+
+            if (!await blobClient.ExistsAsync(ct))
+            {
+                return string.Empty;
+            }
+
+            var downloadInfo = await blobClient.DownloadAsync(ct);
+            using var reader = new StreamReader(downloadInfo.Value.Content, Encoding.UTF8);
+            return await reader.ReadToEndAsync(ct);
+        }
     }
 }

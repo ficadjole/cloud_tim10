@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using SmartGrid.Application.Features.Bills.Queries.GetBillPdf;
 using SmartGrid.Application.Features.Bills.Queries.GetBillsByMeter;
 using SmartGrid.WebApi.DTOs;
 using SmartGrid.WebApi.Extensions;
@@ -33,6 +34,20 @@ namespace SmartGrid.WebApi.Controllers
             var query = new GetBillsByMeterQuery(smartMeterId, pageNumber, pageSize);
             var result = await mediator.Send(query);
             return result.ToActionResult();
+        }
+
+        [HttpGet("{id}/download")]
+        public async Task<IActionResult> DownloadBillPdf([FromRoute] string id)
+        {
+            var query = new GetBillPdfQuery(id);
+            var result = await mediator.Send(query);
+
+            if (result.IsFailure)
+            {
+                return result.ToActionResult();
+            }
+
+            return File(result.Value, "application/pdf", $"Invoice_{id}.pdf");
         }
     }
 }

@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SmartGrid.Application.Common.Options;
+using SmartGrid.Application.Interfaces;
 using SmartGrid.Application.Interfaces.Repositories;
 using SmartGrid.Application.Interfaces.Storage;
 using SmartGrid.Domain.Models;
@@ -13,6 +14,7 @@ using SmartGrid.Infrastructure.Persistence.AzureSQL.Context;
 using SmartGrid.Infrastructure.Persistence.AzureSQL.Entities;
 using SmartGrid.Infrastructure.Persistence.AzureSQL.Mappers;
 using SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories;
+using SmartGrid.Infrastructure.Services;
 
 namespace SmartGrid.Infrastructure
 {
@@ -59,6 +61,7 @@ namespace SmartGrid.Infrastructure
             services.AddJsonSerializer();
             services.AddScoped<IBillBlobStorage, BillBlobStorage>();
             services.AddScoped<IBillUserRepository, BillUserRepository>();
+            services.AddScoped<IPdfExportService, PdfExportService>();
 
             services
                 .AddServices(configuration)
