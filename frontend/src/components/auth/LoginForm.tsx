@@ -13,7 +13,7 @@ export function LoginForm({ authApi }: { authApi: IAuthAPIService }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const inputClass =
-    "w-full h-[45px] rounded-xl border border-[#469FFE] bg-white/4 px-4 py-3 text-sm text-[#469FFE] shadow-[0_0_0_1.5px_#469FFE,0_0_25px_-17px_#000] outline-none transition-all duration-200 ease-[cubic-bezier(0.19,1,0.22,1)] placeholder:text-[#469FFE] hover:shadow-[0_0_0_2.5px_#67afff,0_0_25px_-15px_#000]  focus:scale-[0.98]  active:scale-[0.95] cursor-text";
+    "w-full h-[45px] rounded-xl  border-[#469FFE]  bg-white/4 px-4 py-3 text-sm text-[#469FFE] shadow-[0_0_0_1.5px_#469FFE,0_0_25px_-17px_#000] outline-none transition-all duration-200 ease-[cubic-bezier(0.19,1,0.22,1)] placeholder:text-gray-500 hover:shadow-[0_0_0_2.5px_#67afff,0_0_25px_-15px_#000]  focus:scale-[0.98]  active:scale-[0.95] cursor-text";
 
   const submit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

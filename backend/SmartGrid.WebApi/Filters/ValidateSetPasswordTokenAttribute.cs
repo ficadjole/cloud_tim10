@@ -21,7 +21,9 @@ namespace SmartGrid.WebApi.Filters
                 return;
             }
 
-            var userId = principal.Value?.Claims.FirstOrDefault(c => c.Type == "userId")?.Value;
+            var userId = principal.Value?.Claims
+                .FirstOrDefault(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")
+                ?.Value;
 
             context.HttpContext.Items["UserId"] = userId;
 

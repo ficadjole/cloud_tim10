@@ -62,6 +62,7 @@ namespace SmartGrid.Application.Features.Users.Commands
                     return Result<string>.Failure("Failed to hash the password.", ErrorType.Failure);
 
                 user.UpdatePasswordHash(hashedPassword);
+                user.UpdateAccountStatus(UserAccountStatus.Active);
 
                 await userRepository.UpdateAsync(user);
 

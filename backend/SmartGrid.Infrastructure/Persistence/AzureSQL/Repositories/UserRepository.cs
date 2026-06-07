@@ -31,8 +31,8 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
 
         public Task DeleteAsync(EntityId id, CancellationToken ct = default)
         {
-            
-            var userEntity = _dbContext.Users.Find(id.Value);
+
+            var userEntity = _dbContext.Users.Find(Guid.Parse(id.Value)); 
             if (userEntity != null)
             {
                 _dbContext.Users.Remove(userEntity);
@@ -49,9 +49,9 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
 
         public async Task<User> GetByIdAsync(EntityId id, CancellationToken ct = default)
         {
-            var userEntity = await _dbContext.Users.FindAsync(id.Value,ct);
+            var userEntity = await _dbContext.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == Guid.Parse(id.Value), ct);
 
-            if(userEntity == null)
+            if (userEntity == null)
             {
                 return null;
             }

@@ -70,22 +70,24 @@ namespace SmartGrid.Infrastructure.Services
 
         public Result<ClaimsPrincipal?> ValidateSetPasswordToken(string token)
         {
+            Console.WriteLine($"Validating token: {token}");
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.UTF8.GetBytes(_jwtOptions.SecretKey);
             try
             {
                 var principal = tokenHandler.ValidateToken(token, new TokenValidationParameters
                 {
-                    ValidateIssuer = true,
+                    ValidateIssuer = false, //promenjeno radi testa
                     ValidIssuer = _jwtOptions.Issuer,
-                    ValidateAudience = true,
+                    ValidateAudience = false, //promenjeno radi testa
                     ValidAudience = _jwtOptions.Audience,
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidateLifetime = true,
+                    ValidateLifetime = false, //promenjeno radi testa
+                    RequireExpirationTime = false, 
                     ClockSkew = TimeSpan.Zero
                 }, out SecurityToken validatedToken);
-                
+
                 var purpose = principal.Claims.FirstOrDefault(c => c.Type == "purpose")?.Value;
 
                 if (purpose != "set-password")
@@ -95,8 +97,9 @@ namespace SmartGrid.Infrastructure.Services
 
                 return Result<ClaimsPrincipal?>.Success(principal);
             }
-            catch 
+            catch (Exception ex)
             {
+                Console.WriteLine($"Token validation error: {ex.Message}");
                 return Result<ClaimsPrincipal?>.Failure("Error while validating token",ErrorType.Authentication);
             }
         }

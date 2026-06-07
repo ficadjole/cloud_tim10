@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { ProtectedRoute } from "./components/protected_route/ProtectedRoute";
+import SetPasswordPage from "./pages/auth/SetPasswordPage";
 
 import LoginPage    from "./pages/auth/LoginPage";
 import NotFoundPage from "./pages/not_found/NotFoundPage";
@@ -16,8 +17,10 @@ export default function App() {
       <Route path="/dashboard" element={<ProtectedRoute requiredRole="User"><UserDashboard /></ProtectedRoute>} />
 
       {/* Admin routes */}
-      {/*<Route path="/admindashboard"       element={<ProtectedRoute requiredRole="SysAdmin"><AdminDashboard /></ProtectedRoute>} />*/}
-      <Route path="/admindashboard" element={<AdminDashboard />} />
+      <Route path="/admindashboard" element={<ProtectedRoute requiredRole="SysAdmin"><AdminDashboard /></ProtectedRoute>} />
+      {/*<Route path="/admindashboard" element={<AdminDashboard />} />*/}
+
+      <Route path="/set-password" element={<SetPasswordPage />} />
 
       <Route path="/"    element={<Navigate to="/login" replace />} />
       <Route path="/404" element={<NotFoundPage />} />
