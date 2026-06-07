@@ -10,7 +10,6 @@ using SmartGrid.Domain.Models;
 
 namespace SmartGrid.Application.Features.Telemetries.Commands
 {
-    // COMMAND
     public record ProcessTelemetryCommand : IRequest<Result>
     {
         public string SmartMeterId { get; init; } = string.Empty;
@@ -34,7 +33,6 @@ namespace SmartGrid.Application.Features.Telemetries.Commands
         public double? PowerFactorL3 { get; init; }
     }
 
-    // VALIDATOR
     public class ProcessTelemetryValidator : AbstractValidator<ProcessTelemetryCommand>
     {
         public ProcessTelemetryValidator()
@@ -42,8 +40,9 @@ namespace SmartGrid.Application.Features.Telemetries.Commands
             RuleFor(t => t.SmartMeterId)
                 .NotEmpty();
 
-            //RuleFor(t => t.DeviceToken)
-               // .NotEmpty();
+            RuleFor(t => t.DeviceToken)
+                .NotEmpty()
+                .WithMessage("Device token is required.");
 
             RuleFor(t => t.TotalConsumptionKWh)
                 .GreaterThanOrEqualTo(0);
@@ -78,29 +77,51 @@ namespace SmartGrid.Application.Features.Telemetries.Commands
         }
     }
 
-    // HANDLER
     internal class ProcessTelemetryHandler(
-    ITelemetryRepository telemetryRepository,
-    IMediator mediator,
-    ILogger<ProcessTelemetryHandler> logger)
-    : IRequestHandler<ProcessTelemetryCommand, Result>
+        ITelemetryRepository telemetryRepository,
+        ISmartMeterRepository smartMeterRepository, 
+        IMediator mediator,
+        ILogger<ProcessTelemetryHandler> logger)
+        : IRequestHandler<ProcessTelemetryCommand, Result>
     {
         public async Task<Result> Handle(ProcessTelemetryCommand request, CancellationToken ct)
         {
-            //moram dodati ovo za token dok provjerim kako tacno to ide 
+            var idResult = Domain.ValueObjects.EntityId.Create(request.SmartMeterId);
+            if (idResult.IsFailure)
+            {
+                logger.LogWarning("[TELEMETRY] Loš format ID-a: {Id}", request.SmartMeterId);
+                return Result.Failure("Neispravan format SmartMeterId.", ErrorType.Validation);
+            }
+
+            var meterId = idResult.Value;
+
+            var smartMeter = await smartMeterRepository.GetByIdAsync(meterId, ct);
+
+            if (smartMeter == null)
+            {
+                logger.LogWarning("[TELEMETRY] Refused. Smart meter with ID {MeterId} not found.", request.SmartMeterId);
+                return Result.Failure($"Smart meter {request.SmartMeterId} does not exist.", ErrorType.NotFound);
+            }
+
+            if (smartMeter.AccessToken != request.DeviceToken)
+            {
+                logger.LogWarning("[TELEMETRY] Refused. Invalid device token for meter {MeterId}.", request.SmartMeterId);
+                return Result.Failure("Authentication failed: Invalid device token.", ErrorType.Validation);
+            }
+
             var telemetryResult = Telemetry.Create(
-                request.SmartMeterId,       
+                request.SmartMeterId,
                 request.DeviceType,
                 request.Timestamp,
                 request.TotalConsumptionKWh,
-                request.CurrentLoadKW,       
-                request.VoltageL1,          
+                request.CurrentLoadKW,
+                request.VoltageL1,
                 request.CurrentL1,
                 request.PowerFactorL1,
-                request.VoltageL2,           
-                request.VoltageL3,           
-                request.CurrentL2,       
-                request.CurrentL3  ,
+                request.VoltageL2,
+                request.VoltageL3,
+                request.CurrentL2,
+                request.CurrentL3,
                 request.PowerFactorL2,
                 request.PowerFactorL3
             );

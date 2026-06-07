@@ -1,4 +1,5 @@
 ﻿using SmartGrid.ITSimulator.Enums;
+using System;
 
 namespace SmartGrid.ITSimulator.UI
 {
@@ -9,19 +10,21 @@ namespace SmartGrid.ITSimulator.UI
             Console.Clear();
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("======================================");
-            Console.WriteLine("   SMART GRID INVERTER SIMULATOR v1.0   ");
+            Console.WriteLine("  SMART METER ACTIVATION SIMULATOR    ");
             Console.WriteLine("======================================\n");
             Console.ResetColor();
         }
-        public static string GetDeviceNameInput()
+
+        public static string GetSerialNumberInput()
         {
-            Console.Write("[INPUT] Enter Device Friendly Name: ");
-            return Console.ReadLine()?.Trim() ?? "Generic Inverter";
+            Console.Write("[INPUT] Enter Smart Meter Serial Number (e.g. SM-2026-12345): ");
+            return Console.ReadLine()?.Trim() ?? string.Empty;
         }
+
         public static DeviceType GetDeviceTypeInput()
         {
-            Console.WriteLine("[INPUT] Select Device Type:");
-            Console.WriteLine("  1.Single Phase ");
+            Console.WriteLine("[INPUT] Select Meter Type:");
+            Console.WriteLine("  1. Single Phase ");
             Console.WriteLine("  2. MultiPhase");
             Console.Write("Selection (1-2): ");
 
@@ -30,38 +33,25 @@ namespace SmartGrid.ITSimulator.UI
             {
                 "1" => DeviceType.SinglePhase,
                 "2" => DeviceType.MultiPhase,
-                _ => DeviceType.Unknown
+                _ => DeviceType.SinglePhase
             };
         }
-        public static double GetNominalPowerInput()
-        {
-            Console.Write("[INPUT] Enter Nominal Power (Watts): ");
-            if (double.TryParse(Console.ReadLine(), out double nominalPower) && nominalPower > 0)
-            {
-                return nominalPower;
-            }
-            return 1000.0;
-        }
-        public static string GetLocationInput()
-        {
-            Console.Write("[INPUT] Enter Location (e.g., Belgrade_Plant_A): ");
-            return Console.ReadLine()?.Trim() ?? "Unknown_Location";
-        }
-        public static void PrintStartMessage(string deviceName, string apiUrl)
+
+        public static void PrintStartMessage(string serialNumber, string apiUrl)
         {
             Console.WriteLine("\n--------------------------------------");
             Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine($"[SYSTEM] Starting simulation for: {deviceName}");
+            Console.WriteLine($"[SYSTEM] Starting simulation for: {serialNumber}");
             Console.WriteLine($"[SYSTEM] Target API: {apiUrl}");
             Console.ResetColor();
             Console.WriteLine("[SYSTEM] Press Ctrl+C to stop simulation.");
             Console.WriteLine("--------------------------------------\n");
         }
 
-        public static void PrintSuccess(double currentPower, double nominalPower)
+        public static void PrintSuccess(double currentLoad, double nominalPower)
         {
             string timestamp = DateTime.Now.ToString("HH:mm:ss");
-            Console.WriteLine($"[{timestamp}] [SENT] Power: {currentPower,8:F2}W | Load: {(currentPower / nominalPower) * 100,5:F1}%");
+            Console.WriteLine($"[{timestamp}] [SENT] Load: {currentLoad,8:F2} kW");
         }
 
         public static void PrintError(string message)
@@ -70,6 +60,7 @@ namespace SmartGrid.ITSimulator.UI
             Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] [ERROR] {message}");
             Console.ResetColor();
         }
+
         public static void PrintCritical(string message)
         {
             Console.BackgroundColor = ConsoleColor.Red;

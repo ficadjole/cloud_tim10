@@ -13,6 +13,8 @@ namespace SmartGrid.Application.Features.Telemetries.Handlers
         ISmartMeterRepository smartMeterRepository,
         IEmailService emailService,
         IAlertQueueService alertQueueService,
+        IResidentalObjectRepository residentalObjectRepository,
+        IUserRepository userRepository,
         ILogger<CheckUserLimitOnTelemetryProcessed> logger)
         : INotificationHandler<TelemetryProcessedEvent>
     {
@@ -60,7 +62,17 @@ namespace SmartGrid.Application.Features.Telemetries.Handlers
 
                 logger.LogWarning("[LIMIT] Limit exceeded for smart meter {MeterId}! Initiating email dispatch...", meter.Id.Value);
 
-                string emailTo = "korisnik@example.com"; //trenutno dok ne rijesimo repozitorijum za residental object pa da dodjemo do korisnikovog emaila
+                var residentalObject = await residentalObjectRepository.GetByMeterIdAsync(telemetry.SmartMeterId);
+
+                if (residentalObject == null)
+                {
+                    logger.LogError("[LIMIT] No residental object found for smart meter {MeterId}. Cannot retrieve user information for email notification.", telemetry.SmartMeterId.Value);
+                    return;
+                }
+
+                var user = await userRepository.GetByIdAsync(residentalObject.OwnerId);
+
+                string emailTo = user.Email;
                 string subject = "Warning: Consumption Limit Exceeded!";
                 string body = $"Dear customer, your accumulated consumption has exceeded your configured limit of {limit.Value} {limit.Type}.";
 
@@ -69,7 +81,7 @@ namespace SmartGrid.Application.Features.Telemetries.Handlers
                     await emailService.SendWarningAsync(emailTo, subject, body);
 
                     meter.MarkAlertAsSent();
-                    await smartMeterRepository.AddAsync(meter);
+                    await smartMeterRepository.UpdateAsync(meter);
 
                     logger.LogInformation("[LIMIT] Alert notification successfully sent and database updated.");
                 }

@@ -16,44 +16,44 @@ namespace SmartGrid.ITSimulator.Services
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
             _jsonOptions = new JsonSerializerOptions
             {
-                PropertyNamingPolicy = null // Zadržava PascalCase
+                PropertyNamingPolicy = null
             };
         }
 
-        public async Task<(bool Success, string Message)> PublishAsync(TelemetryDTO telemetry)
+        public async Task<(bool Success, string Message)> PublishAsync(string accessToken, TelemetryDTO telemetry)
         {
             ArgumentNullException.ThrowIfNull(telemetry);
 
+            if (string.IsNullOrWhiteSpace(accessToken))
+                return (false, "Access token is missing.");
+
             try
             {
-                var response = await _httpClient.PostAsJsonAsync(
-                    $"{_httpClient.BaseAddress}api/ReceiveTelemetry",
-                    telemetry,
-                    _jsonOptions
-                );
+                var request = new HttpRequestMessage(HttpMethod.Post, "api/ReceiveTelemetry");
+
+                request.Headers.Add("X-Device-Token", accessToken);
+
+                request.Content = JsonContent.Create(telemetry, options: _jsonOptions);
+
+                var response = await _httpClient.SendAsync(request);
 
                 if (response.IsSuccessStatusCode)
-                {
                     return (true, "Success");
-                }
-                else
-                {
-                    // ISPRAVLJENO: Čitamo čist string bez one moje izmišljene metode
-                    string errorContent = await response.Content.ReadAsStringAsync();
-                    return (false, errorContent);
-                }
+
+                string errorContent = await response.Content.ReadAsStringAsync();
+                return (false, $"Status: {response.StatusCode}, Content: {errorContent}");
             }
-            catch (HttpRequestException ex)
+            catch (Exception ex)
             {
-                throw new InvalidOperationException($"Failed to publish telemetry.", ex);
+                return (false, ex.Message);
             }
         }
 
-        public async Task<(bool Success, string? ErrorMessage)> PublishSafeAsync(TelemetryDTO telemetry)
+        public async Task<(bool Success, string? ErrorMessage)> PublishSafeAsync(string accessToken, TelemetryDTO telemetry)
         {
             try
             {
-                var (success, message) = await PublishAsync(telemetry);
+                var (success, message) = await PublishAsync(accessToken, telemetry);
                 return (success, success ? null : message);
             }
             catch (Exception ex)

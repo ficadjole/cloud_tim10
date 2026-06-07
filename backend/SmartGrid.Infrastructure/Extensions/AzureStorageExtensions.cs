@@ -66,6 +66,7 @@ namespace SmartGrid.Infrastructure.Extensions
 
             services.AddScoped<ITelemetryRepository, TelemetryRepository>();
             services.AddScoped<IDeviceRepository, DeviceRepository>();
+            services.AddScoped<IDeviceStatusRepository, DeviceStatusRepository>();
             services.AddScoped<IFirmwareRepository, FirmwareRepository>();
             services.AddScoped<IDeviceStatusQueryRepository, DeviceStatusQueryRepository>();
             services.AddScoped<IAlertRepository, AlertRepository>();

@@ -24,7 +24,7 @@ namespace SmartGrid.WebApi.Controllers
         }
 
         [HttpPost("activate")]
-        [Authorize(Roles = "User")]
+        //[Authorize(Roles = "User")]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> Activate([FromForm] ActivateSmartMeterRequest request)
         {

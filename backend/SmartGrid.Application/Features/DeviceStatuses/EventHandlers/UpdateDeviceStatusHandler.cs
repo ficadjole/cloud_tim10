@@ -1,53 +1,45 @@
 ﻿using MediatR;
 using Microsoft.Extensions.Logging;
 using SmartGrid.Application.Features.Telemetries.Events;
+using SmartGrid.Application.Interfaces;
+using SmartGrid.Application.Interfaces.Messaging;
 using SmartGrid.Application.Interfaces.Repositories;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
+using SmartGrid.Domain.Models;
 
-namespace SmartGrid.Application.Features.DeviceStatuses.EventHandlers;
-
-internal class UpdateDeviceStatusHandler(
-        IDeviceRepository deviceRepository,
-        ILogger<UpdateDeviceStatusHandler> logger) : INotificationHandler<TelemetryProcessedEvent>
+namespace SmartGrid.Application.Features.DeviceStatuses.EventHandlers
 {
-    public async Task Handle(TelemetryProcessedEvent notification, CancellationToken ct)
+    internal class UpdateDeviceStatusHandler(
+        IDeviceStatusRepository deviceStatusRepository,
+        IAlertQueueService alertQueueService,
+        IDateTimeProvider dateTimeProvider,
+        ILogger<UpdateDeviceStatusHandler> logger)
+        : INotificationHandler<TelemetryProcessedEvent>
     {
-        var telemetry = notification.Telemetry;
-
-        try
+        public async Task Handle(TelemetryProcessedEvent notification, CancellationToken ct)
         {
-            var device = await deviceRepository.GetWithStatusByIdAsync(
-                telemetry.DeviceType,
-                telemetry.SmartMeterId,
-                ct);
+            var telemetry = notification.Telemetry;
 
-            if (device is null)
+            var status = await deviceStatusRepository.GetByIdAsync(
+                telemetry.DeviceType, telemetry.SmartMeterId, ct)
+                ?? DeviceStatus.CreateDefault(
+                    telemetry.SmartMeterId,
+                    telemetry.DeviceType,
+                    dateTimeProvider.UtcNow);
+
+            status.UpdateTelemetry(telemetry);
+
+            var anomaly = status.GetCurrentAnomaly(dateTimeProvider.UtcNow);
+            if (anomaly is not null)
             {
-                logger.LogWarning("Cannot update status: Device {DeviceId} of type {DeviceType} not found.",
-                    telemetry.SmartMeterId, telemetry.DeviceType);
-                return;
+                logger.LogCritical("[ANOMALY] Meter {MeterId}: {Message}",
+                    telemetry.SmartMeterId, anomaly.Message);
+                await alertQueueService.SendAlertAsync(anomaly, ct);
             }
 
-            device.ProcessTelemetry(telemetry);
+            await deviceStatusRepository.SaveAsync(status, ct);
 
-            var anomalyAlert = device.Status.GetCurrentAnomaly(DateTime.UtcNow);
-
-            if (anomalyAlert is not null)
-            {
-                logger.LogCritical("[CRITICAL ANOMALY DETECTED] Device: {DeviceId}. Message: {Message}",
-                    telemetry.SmartMeterId, anomalyAlert.Message);
-
-            }
-
-            await deviceRepository.SaveStatusAsync(device.Status, ct);
-
-            logger.LogInformation("Successfully updated status for device {DeviceId}.", telemetry.SmartMeterId);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error asynchronously updating status for device {DeviceId}", telemetry.SmartMeterId);
+            logger.LogInformation("[STATUS] Updated status for meter {MeterId}.",
+                telemetry.SmartMeterId);
         }
     }
 }

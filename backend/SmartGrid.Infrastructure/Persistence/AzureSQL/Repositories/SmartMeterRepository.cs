@@ -53,6 +53,7 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
             entity.Status = meter.Status;
             entity.DeviceGuid = meter.DeviceGuid;
             entity.AccessToken = meter.AccessToken;
+            entity.LastLimitAlertSent = meter.LastLimitAlertSent;
 
             await _dbContext.SaveChangesAsync(ct);
 

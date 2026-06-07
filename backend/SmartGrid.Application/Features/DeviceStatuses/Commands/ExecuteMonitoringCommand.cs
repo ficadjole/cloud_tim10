@@ -8,24 +8,22 @@ using SmartGrid.Domain.Enums;
 
 namespace SmartGrid.Application.Features.DeviceStatuses.Commands;
 
-// COMMAND - Empty
 public record ExecuteMonitoringCommand : IRequest<Result>;
 
-// HANDLER
 internal class ExecuteMonitoringHandler(
-    IDeviceRepository deviceRepository,
-    IDomainEventDispatcher dispatcher,
+    IDeviceStatusRepository deviceStatusRepository,
+    IAlertQueueService alertQueueService,
     IDeviceStatusQueueService deviceStatusQueueService,
     IParallelSettingsProvider parallelSettings,
     ILogger<ExecuteMonitoringHandler> logger,
     IDateTimeProvider dateTimeProvider
-    ) : IRequestHandler<ExecuteMonitoringCommand, Result>
+) : IRequestHandler<ExecuteMonitoringCommand, Result>
 {
     public async Task<Result> Handle(ExecuteMonitoringCommand request, CancellationToken ct)
     {
         try
         {
-            var devices = deviceRepository.GetAllWithStatusStreamingAsync(ct);
+            var statuses = await deviceStatusRepository.GetAllAsync(ct);
 
             var options = new ParallelOptions
             {
@@ -33,23 +31,27 @@ internal class ExecuteMonitoringHandler(
                 CancellationToken = ct
             };
 
-            await Parallel.ForEachAsync(devices, options, async (device, token) =>
+            await Parallel.ForEachAsync(statuses, options, async (status, token) =>
             {
                 try
                 {
-                    await deviceStatusQueueService.SendStatusUpdateAsync(device.Status, token);
+                    // Šalje status u queue (za SignalR / dashboard)
+                    await deviceStatusQueueService.SendStatusUpdateAsync(status, token);
 
-                    device.EvaluateMonitoring(dateTimeProvider.UtcNow);
-
-                    if (device.DomainEvents.Count != 0)
+                    // Provjeri anomalije
+                    var alert = status.GetCurrentAnomaly(dateTimeProvider.UtcNow);
+                    if (alert != null)
                     {
-                        await dispatcher.DispatchAsync(device.DomainEvents, token);
-                        device.ClearDomainEvents();
+                        logger.LogCritical(
+                            "[MONITORING] Anomaly detected for meter {Id}: {Message}",
+                            status.DeviceId.Value, alert.Message);
+
+                        await alertQueueService.SendAlertAsync(alert, token);
                     }
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError(ex, "[MONITORING] Failed processing for Device {Id}", device.Id.Value);
+                    logger.LogError(ex, "[MONITORING] Failed processing for meter {Id}", status.DeviceId.Value);
                 }
             });
 
@@ -57,7 +59,7 @@ internal class ExecuteMonitoringHandler(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Monitoring cycle failed due to an unexpected error.");
+            logger.LogError(ex, "Monitoring cycle failed.");
             return Result.Failure("Critical monitoring failure.", ErrorType.Failure);
         }
     }

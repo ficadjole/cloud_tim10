@@ -115,13 +115,11 @@ namespace SmartGrid.Domain.Models
 
         public bool HasVoltageDrop()
         {
+            if (LastVoltageL1 == 0) return false; // nije inicijalizovan a detektuje ga kao pad i upisuje u tabelu a ne treba
+
             bool l1Drop = LastVoltageL1 < 190;
-
-            bool l2Drop = LastVoltageL2.HasValue &&
-                          LastVoltageL2.Value < 190;
-
-            bool l3Drop = LastVoltageL3.HasValue &&
-                          LastVoltageL3.Value < 190;
+            bool l2Drop = LastVoltageL2.HasValue && LastVoltageL2.Value < 190;
+            bool l3Drop = LastVoltageL3.HasValue && LastVoltageL3.Value < 190;
 
             return l1Drop || l2Drop || l3Drop;
         }
@@ -139,11 +137,11 @@ namespace SmartGrid.Domain.Models
 
             if (HasVoltageDrop())
             {
-                return Alert.Create(
-                    DeviceId,
-                    AlertType.Critical,
-                    $"Voltage drop detected: L1={LastVoltageL1}V, L2={LastVoltageL2}V, L3={LastVoltageL3}V"
-                ).Value;
+                var message = $"Voltage drop detected: L1={LastVoltageL1}V" +
+                    (LastVoltageL2.HasValue ? $", L2={LastVoltageL2}V" : "") +
+                    (LastVoltageL3.HasValue ? $", L3={LastVoltageL3}V" : "");
+
+                return Alert.Create(DeviceId, AlertType.Critical, message).Value;
             }
 
             return null;

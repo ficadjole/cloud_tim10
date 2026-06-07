@@ -1,41 +1,45 @@
 ﻿using SmartGrid.ITSimulator.Models;
+using System;
 using System.Net.Http.Json;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace SmartGrid.ITSimulator.Services
 {
     public class DeviceClient
     {
         private readonly HttpClient _httpClient;
+
         public DeviceClient(HttpClient httpClient)
         {
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         }
-        public async Task<string?> RegisterDeviceAsync(DeviceDTO deviceDTO)
-        {
-            var payload = new
-            {
-                Name = deviceDTO.DeviceName,
-                DeviceType = deviceDTO.DeviceType.ToString(),
-                deviceDTO.NominalPower,
-                deviceDTO.Location
-            };
 
+        public async Task<ActivationResponse?> RegisterDeviceAsync(DeviceDTO deviceDTO)
+        {
             try
             {
-                var response = await _httpClient.PostAsJsonAsync($"{_httpClient.BaseAddress}api/ReceiveDevice", payload);
-                
+                using var content = new MultipartFormDataContent();
+                content.Add(new StringContent(deviceDTO.SerialNumber), "SerialNumber");
+                content.Add(new StringContent(deviceDTO.DeviceGuid), "DeviceGuid");
+
+                var response = await _httpClient.PostAsync("api/SmartMeter/activate", content);
+
                 if (response.IsSuccessStatusCode)
                 {
-                    var responseBody = await response.Content.ReadFromJsonAsync<ApiResponse<string>>();
-
-                    return responseBody?.Data;
+                    var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                    var activation = await response.Content.ReadFromJsonAsync<ActivationResponse>(options);
+                    Console.WriteLine($"[DEBUG] Aktivirano. MeterId: {activation?.SmartMeterId}");
+                    return activation;
                 }
 
+                Console.WriteLine($"[DEBUG] Greška: {await response.Content.ReadAsStringAsync()}");
                 return null;
             }
-            catch (HttpRequestException ex)
+            catch (Exception ex)
             {
-                throw new InvalidOperationException($"Failed to register device.", ex);
+                Console.WriteLine($"[DEBUG] Exception: {ex.Message}");
+                return null;
             }
         }
     }
