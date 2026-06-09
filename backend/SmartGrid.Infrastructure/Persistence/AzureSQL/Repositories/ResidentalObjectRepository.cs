@@ -41,7 +41,7 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
         public async Task<IEnumerable<ResidentalObject>> GetByOwnerIdAsync(EntityId ownerId, CancellationToken ct = default)
         {
             var entities = await _dbContext.ResidentalObjects
-                .Include(x=>x.ConnectedMeter)
+                .Include(x => x.ConnectedMeter)
                 .Where(x => x.OwnerId == Guid.Parse(ownerId.Value))
                 .ToListAsync(ct);
 
@@ -75,6 +75,16 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
                 .FirstOrDefaultAsync(x => x.ConnectedMeter != null && x.ConnectedMeter.Id == Guid.Parse(meterId.Value), ct);
 
             return entity != null ? _mapper.MapToDomain(entity) : null;
+        }
+
+        public async Task<Result> DeleteAsync(EntityId id, CancellationToken ct = default)
+        {
+            var entity = await _dbContext.ResidentalObjects.FirstOrDefaultAsync(x => x.Id == Guid.Parse(id.Value), ct);
+            if (entity == null)
+                return Result.Failure($"Residental object with ID {id.Value} not found.");
+            _dbContext.ResidentalObjects.Remove(entity);
+            await _dbContext.SaveChangesAsync(ct);
+            return Result.Success();
         }
     }
 }

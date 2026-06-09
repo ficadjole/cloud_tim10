@@ -16,5 +16,6 @@ namespace SmartGrid.Application.Interfaces.Repositories
         Task AddAsync(ResidentalObject residentalObject, CancellationToken ct = default);
         Task<Result> UpdateAsync(ResidentalObject residentalObject, CancellationToken ct = default);   
         Task<ResidentalObject?> GetByMeterIdAsync(EntityId meterId,  CancellationToken ct = default);
+        Task<Result> DeleteAsync(EntityId id, CancellationToken ct = default);
     }
 }

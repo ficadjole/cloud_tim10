@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SmartGrid.Application.Features.ResidentalObjects.Commands;
 using SmartGrid.Application.Features.ResidentalObjects.Queries;
 using SmartGrid.WebApi.DTOs;
 using SmartGrid.WebApi.Extensions;
@@ -10,7 +11,7 @@ namespace SmartGrid.WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "User")] //ja msm da je user
+    [Authorize(Roles = "SysAdmin, User")] //ja msm da je user
     public class ResidentalObjectController(IMediator mediator) : ControllerBase
     {
         [HttpPost]
@@ -22,11 +23,11 @@ namespace SmartGrid.WebApi.Controllers
                 return Unauthorized();
 
             var commandResult = request.ToCommand(ownerId);
-            if(commandResult.IsFailure)
+            if (commandResult.IsFailure)
                 return commandResult.ToActionResult();
 
             var result = await mediator.Send(commandResult.Value);
-            
+
             return result.ToActionResult();
         }
 
@@ -35,7 +36,7 @@ namespace SmartGrid.WebApi.Controllers
         public async Task<IActionResult> Update(string id, [FromForm] UpdateResidentalObjectRequest request)
         {
             var commandResult = request.ToCommand(id);
-            if(commandResult.IsFailure)
+            if (commandResult.IsFailure)
                 return commandResult.ToActionResult();
 
             var result = await mediator.Send(commandResult.Value);
@@ -56,6 +57,14 @@ namespace SmartGrid.WebApi.Controllers
             if (result is null)
                 return StatusCode(StatusCodes.Status500InternalServerError, "Unexpected error.");
 
+            return result.ToActionResult();
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(string id)
+        {
+            var command = new DeleteResidentalObjectCommand { Id = id };
+            var result = await mediator.Send(command);
             return result.ToActionResult();
         }
     }
