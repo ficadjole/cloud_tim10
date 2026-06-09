@@ -31,9 +31,15 @@ export function LoginForm({ authApi }: { authApi: IAuthAPIService }) {
 const claims = jwtDecode<{ 
   "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"?: string 
 }>(res.token);
-login(res.token);
+login(res.token, {
+  id: res.user.id,
+  name: res.user.name,
+  email: res.user.email,
+  username: res.user.email,
+  role: res.user.role,
+});
 
-const role = claims?.["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+const role = res.user.role ?? claims?.["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
 const target = role === "SysAdmin" ? "/admindashboard" : "/dashboard";
 navigate(target, { replace: true });
   };

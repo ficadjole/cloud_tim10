@@ -6,6 +6,7 @@ import type { JwtTokenClaims } from "../../types/auth/JwtTokenClaims";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const KEY = "authToken";
+const USER_KEY = "authUser";
 
 const decode = (token: string): JwtTokenClaims | null => {
   try {
@@ -28,19 +29,29 @@ const expired = (token: string): boolean => {
 
 const getInitialAuth = () => {
   const saved = localStorage.getItem(KEY);
+  const savedUser = localStorage.getItem(USER_KEY);
   if (saved && !expired(saved)) {
     const claims = decode(saved);
     if (claims) {
       const id = claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"];
       const email = claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"];
       const role = claims["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+      const parsedUser = savedUser ? (JSON.parse(savedUser) as Partial<AuthUser>) : null;
+
       return {
         token: saved,
-        user: { id, username: email, role  } as AuthUser,
+        user: {
+          id,
+          name: parsedUser?.name ?? email,
+          email: parsedUser?.email ?? email,
+          username: parsedUser?.username ?? parsedUser?.email ?? email,
+          role: parsedUser?.role ?? role,
+        } as AuthUser,
       };
     }
   }
   if (saved) localStorage.removeItem(KEY);
+  if (savedUser) localStorage.removeItem(USER_KEY);
   return { token: null, user: null };
 };
 
@@ -51,23 +62,32 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [user, setUser] = useState<AuthUser | null>(initial.user);
   const [isLoading] = useState(false);
 
-const login = (t: string) => {
+const login = (t: string, authUser?: Partial<AuthUser>) => {
   const claims = decode(t);
   if (!claims || expired(t)) return;
 
   const id = claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"];
   const email = claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"];
   const role = claims["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+  const nextUser: AuthUser = {
+    id: authUser?.id ?? id,
+    name: authUser?.name ?? authUser?.email ?? email,
+    email: authUser?.email ?? email,
+    username: authUser?.username ?? authUser?.email ?? email,
+    role: authUser?.role ?? role,
+  };
 
   setToken(t);
-  setUser({ id, username: email, role });
+  setUser(nextUser);
   localStorage.setItem(KEY, t);
+  localStorage.setItem(USER_KEY, JSON.stringify(nextUser));
 };
 
   const logout = () => {
     setToken(null);
     setUser(null);
     localStorage.removeItem(KEY);
+    localStorage.removeItem(USER_KEY);
   };
 
   return (
