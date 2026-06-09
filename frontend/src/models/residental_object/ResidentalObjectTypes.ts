@@ -10,3 +10,14 @@ export type ResidentalObjectDto = {
 export type ConsumerRow = ResidentalObjectDto & {
   isActive: boolean;
 };
+
+export type ResidentalObjectType = "0" | "1" | "2";
+
+export type CreateResidentalObjectDto = {
+  name: string;
+  type: ResidentalObjectType;
+  street: string;
+  number: string;
+  city: string;
+  description?: string;
+};
