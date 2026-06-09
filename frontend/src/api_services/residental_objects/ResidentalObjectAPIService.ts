@@ -73,4 +73,14 @@ export const residentalObjectApi: IResidentalObjectAPIService = {
       }))
       .catch((e) => err(e, "Failed to create consumer object"));
   },
+
+  async delete(id) {
+    return client
+      .delete(`/ResidentalObject/${id}`)
+      .then(() => ({
+        success: true,
+        message: "Consumer object deleted successfully.",
+      }))
+      .catch((e) => err(e, "Failed to delete consumer object"));
+  },
 };

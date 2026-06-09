@@ -54,7 +54,7 @@ export default function DeleteConsumerModal({
           <div className="mb-5 rounded-lg border border-red-100 bg-red-50 px-3 py-3">
             <p className="text-sm text-[#363636] montserrat_semibold">{consumer.name}</p>
             <p className="mt-1 text-xs leading-relaxed text-red-500 montserrat_medium">
-              Ova akcija će obrisati povezano brojilo ako postoji i ukloniti potrošača iz tabele.
+              Ova akcija će trajno obrisati potrošački objekat iz baze.
             </p>
           </div>
 

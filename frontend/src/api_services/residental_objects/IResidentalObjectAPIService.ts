@@ -8,4 +8,5 @@ export type ApiResponse<T> = { success: boolean; message: string; data?: T };
 export interface IResidentalObjectAPIService {
   getMyObjects(): Promise<ApiResponse<ResidentalObjectDto[]>>;
   create(dto: CreateResidentalObjectDto): Promise<ApiResponse<string>>;
+  delete(id: string): Promise<ApiResponse<void>>;
 }

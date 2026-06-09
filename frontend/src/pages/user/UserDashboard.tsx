@@ -12,6 +12,7 @@ import { useAuth } from "../../hooks/auth/useAuthHook";
 import { residentalObjectApi } from "../../api_services/residental_objects/ResidentalObjectAPIService";
 import { smartMeterApi } from "../../api_services/smart_meters/SmartMeterAPIService";
 import type { ConsumerRow } from "../../models/residental_object/ResidentalObjectTypes";
+import ConsumerDetailsModal from "../../components/user/ConsumerDetailsModal";
 import CreateConsumerModal from "../../components/user/CreateConsumerModal";
 import DeleteConsumerModal from "../../components/user/DeleteConsumerModal";
 
@@ -44,6 +45,7 @@ export default function UserDashboard() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [selectedConsumer, setSelectedConsumer] = useState<ConsumerRow | null>(null);
   const [consumerForDelete, setConsumerForDelete] = useState<ConsumerRow | null>(null);
 
   const loadConsumers = async () => {
@@ -125,17 +127,10 @@ export default function UserDashboard() {
   };
 
   const handleDelete = async (consumer: ConsumerRow) => {
-    if (!consumer.connectedMeterId) {
-      setConsumers((prev) => prev.filter((item) => item.id !== consumer.id));
-      setConsumerForDelete(null);
-      setSuccess("Objekat bez brojila je uklonjen iz trenutnog prikaza.");
-      return;
-    }
-
     setError("");
     setSuccess("");
     setBusyId(consumer.id);
-    const response = await smartMeterApi.delete(consumer.connectedMeterId);
+    const response = await residentalObjectApi.delete(consumer.id);
     setBusyId(null);
 
     if (!response.success) {
@@ -145,7 +140,7 @@ export default function UserDashboard() {
 
     setConsumers((prev) => prev.filter((item) => item.id !== consumer.id));
     setConsumerForDelete(null);
-    setSuccess("Brojilo je obrisano i potrošač je uklonjen iz tabele.");
+    setSuccess("Potrošač je obrisan iz baze.");
   };
 
   const handleConfirmDelete = async () => {
@@ -161,6 +156,11 @@ export default function UserDashboard() {
 
   return (
     <div className="relative min-h-screen bg-linear-to-b from-white via-[#FAFAFA] to-[#87BFFC] px-4 py-6 backdrop-blur-md">
+      <ConsumerDetailsModal
+        open={Boolean(selectedConsumer)}
+        consumer={selectedConsumer}
+        onClose={() => setSelectedConsumer(null)}
+      />
       <CreateConsumerModal
         open={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
@@ -267,7 +267,7 @@ export default function UserDashboard() {
                         <th className="px-4 py-3">Adresa</th>
                         <th className="px-4 py-3">Brojilo</th>
                         <th className="px-4 py-3 text-center">Aktivan</th>
-                        <th className="px-4 py-3 text-right">Akcije</th>
+                        <th className="px-4 py-3 text-right">Obriši</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -289,7 +289,11 @@ export default function UserDashboard() {
 
                       {!loading &&
                         consumers.map((consumer) => (
-                          <tr key={consumer.id} className="border-b border-gray-100 last:border-b-0">
+                          <tr
+                            key={consumer.id}
+                            onClick={() => setSelectedConsumer(consumer)}
+                            className="cursor-pointer border-b border-gray-100 transition-colors duration-200 hover:bg-[#87BFFC]/10 last:border-b-0"
+                          >
                             <td className="px-4 py-4">
                               <div className="flex items-center gap-3">
                                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-100">
@@ -316,7 +320,10 @@ export default function UserDashboard() {
                               <div className="flex justify-center">
                                 <button
                                   type="button"
-                                  onClick={() => handleToggle(consumer)}
+                                  onClick={(event) => {
+                                    event.stopPropagation();
+                                    handleToggle(consumer);
+                                  }}
                                   disabled={busyId === consumer.id}
                                   className={`relative h-7 w-12 rounded-full transition-all duration-300 ease-out active:scale-95 disabled:opacity-50 ${consumer.isActive ? "bg-[#469FFE]" : "bg-gray-300"
                                     }`}
@@ -332,7 +339,10 @@ export default function UserDashboard() {
                             <td className="px-4 py-4 text-right">
                               <button
                                 type="button"
-                                onClick={() => setConsumerForDelete(consumer)}
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  setConsumerForDelete(consumer);
+                                }}
                                 disabled={busyId === consumer.id}
                                 className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-red-100 bg-red-50 text-red-400 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-red-200 hover:bg-red-100 active:scale-[0.98] disabled:opacity-50"
                                 aria-label="Obriši potrošača"
