@@ -1,10 +1,11 @@
-import { FaBolt, FaHome, FaInfoCircle, FaMapMarkerAlt, FaTimes } from "react-icons/fa";
+import { FaBolt, FaHome, FaInfoCircle, FaMapMarkerAlt, FaPlus, FaTimes } from "react-icons/fa";
 import type { ConsumerRow } from "../../models/residental_object/ResidentalObjectTypes";
 
 interface ConsumerDetailsModalProps {
   open: boolean;
   consumer: ConsumerRow | null;
   onClose: () => void;
+  onAddMeter: (consumer: ConsumerRow) => void;
 }
 
 const getObjectTypeLabel = (type: string | number) => {
@@ -23,6 +24,7 @@ export default function ConsumerDetailsModal({
   open,
   consumer,
   onClose,
+  onAddMeter,
 }: ConsumerDetailsModalProps) {
   if (!open || !consumer) return null;
 
@@ -81,11 +83,21 @@ export default function ConsumerDetailsModal({
             <div className={detailItemClass}>
               <div className="flex items-start gap-2">
                 <FaBolt className="mt-1 shrink-0 text-[#469FFE]" />
-                <div>
+                <div className="min-w-0 flex-1">
                   <p className="text-[11px] uppercase tracking-widest text-gray-400 montserrat_medium">Brojilo</p>
                   <p className="mt-1 break-all text-sm text-[#363636] montserrat_semibold">
-                    {consumer.connectedMeterId ?? "Nije povezano"}
+                    {consumer.connectedMeterId ?? ""}
                   </p>
+                  {!consumer.connectedMeterId && (
+                    <button
+                      type="button"
+                      onClick={() => onAddMeter(consumer)}
+                      className="mt-3 inline-flex items-center gap-2 rounded-md bg-[#469FFE] px-3 py-2 text-xs text-white montserrat_semibold transition-colors hover:bg-[#2b7bdc]"
+                    >
+                      <FaPlus />
+                      Dodaj brojilo
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -93,11 +105,10 @@ export default function ConsumerDetailsModal({
             <div className={detailItemClass}>
               <p className="text-[11px] uppercase tracking-widest text-gray-400 montserrat_medium">Status</p>
               <span
-                className={`mt-2 inline-flex rounded-lg px-3 py-1.5 text-xs montserrat_semibold ${
-                  consumer.isActive
-                    ? "border border-green-100 bg-green-50 text-green-600"
-                    : "border border-gray-200 bg-gray-50 text-gray-500"
-                }`}
+                className={`mt-2 inline-flex rounded-lg px-3 py-1.5 text-xs montserrat_semibold ${consumer.isActive
+                  ? "border border-green-100 bg-green-50 text-green-600"
+                  : "border border-gray-200 bg-gray-50 text-gray-500"
+                  }`}
               >
                 {consumer.isActive ? "Aktivan" : "Neaktivan"}
               </span>

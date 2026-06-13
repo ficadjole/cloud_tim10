@@ -1,10 +1,13 @@
 import axios from "axios";
 import client from "../axios/axiosClient";
 import type {
-  ActivateSmartMeterDto,
   ApiResponse,
   ISmartMeterAPIService,
 } from "./ISmartMeterAPIService";
+import type {
+  ActivateSmartMeterDto,
+  RegisterSmartMeterDto,
+} from "../../models/smart_meter/SmartMeterTypes";
 
 const err = <T>(e: unknown, fallback: string): ApiResponse<T> => ({
   success: false,
@@ -20,6 +23,22 @@ const ok = <T>(message: string, data?: T): ApiResponse<T> => ({
 });
 
 export const smartMeterApi: ISmartMeterAPIService = {
+  async register(dto: RegisterSmartMeterDto) {
+    const formData = new FormData();
+    formData.append("SerialNumber", dto.serialNumber);
+    formData.append("ConnectionType", dto.connectionType);
+    formData.append("ObjectId", dto.objectId);
+
+    if (dto.note?.trim()) {
+      formData.append("Note", dto.note.trim());
+    }
+
+    return client
+      .post("/SmartMeter/register", formData)
+      .then(() => ok<void>("Smart meter registered successfully."))
+      .catch((e) => err(e, "Failed to register smart meter"));
+  },
+
   async activate(dto: ActivateSmartMeterDto) {
     const formData = new FormData();
     formData.append("SerialNumber", dto.serialNumber);

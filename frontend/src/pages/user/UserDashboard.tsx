@@ -14,6 +14,7 @@ import { smartMeterApi } from "../../api_services/smart_meters/SmartMeterAPIServ
 import type { ConsumerRow } from "../../models/residental_object/ResidentalObjectTypes";
 import ConsumerDetailsModal from "../../components/user/ConsumerDetailsModal";
 import CreateConsumerModal from "../../components/user/CreateConsumerModal";
+import CreateSmartMeterModal from "../../components/user/CreateSmartMeterModal";
 import DeleteConsumerModal from "../../components/user/DeleteConsumerModal";
 
 const panelClass =
@@ -46,6 +47,7 @@ export default function UserDashboard() {
   const [success, setSuccess] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedConsumer, setSelectedConsumer] = useState<ConsumerRow | null>(null);
+  const [consumerForMeter, setConsumerForMeter] = useState<ConsumerRow | null>(null);
   const [consumerForDelete, setConsumerForDelete] = useState<ConsumerRow | null>(null);
 
   const loadConsumers = async () => {
@@ -57,15 +59,16 @@ export default function UserDashboard() {
 
     if (!response.success) {
       setError(response.message);
-      return;
+      return [];
     }
 
-    setConsumers(
-      (response.data ?? []).map((consumer) => ({
-        ...consumer,
-        isActive: Boolean(consumer.connectedMeterId),
-      }))
-    );
+    const loadedConsumers = (response.data ?? []).map((consumer) => ({
+      ...consumer,
+      isActive: Boolean(consumer.connectedMeterId),
+    }));
+
+    setConsumers(loadedConsumers);
+    return loadedConsumers;
   };
 
   useEffect(() => {
@@ -150,8 +153,18 @@ export default function UserDashboard() {
   };
 
   const handleConsumerCreated = async () => {
-    setSuccess("Potrošač je uspešno dodat.");
+    setSuccess("Objekat je uspešno dodat.");
     await loadConsumers();
+  };
+
+  const handleSmartMeterCreated = async () => {
+    setSuccess("Brojilo je uspešno dodato.");
+    const loadedConsumers = await loadConsumers();
+
+    if (consumerForMeter) {
+      const updatedConsumer = loadedConsumers.find((consumer) => consumer.id === consumerForMeter.id);
+      setSelectedConsumer(updatedConsumer ?? consumerForMeter);
+    }
   };
 
   return (
@@ -160,11 +173,18 @@ export default function UserDashboard() {
         open={Boolean(selectedConsumer)}
         consumer={selectedConsumer}
         onClose={() => setSelectedConsumer(null)}
+        onAddMeter={(consumer) => setConsumerForMeter(consumer)}
       />
       <CreateConsumerModal
         open={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onCreated={handleConsumerCreated}
+      />
+      <CreateSmartMeterModal
+        open={Boolean(consumerForMeter)}
+        consumer={consumerForMeter}
+        onClose={() => setConsumerForMeter(null)}
+        onCreated={handleSmartMeterCreated}
       />
       <DeleteConsumerModal
         open={Boolean(consumerForDelete)}
@@ -228,10 +248,10 @@ export default function UserDashboard() {
               <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="text-[11px] font-medium uppercase tracking-widest text-gray-400 montserrat_medium">
-                    Moji potrošači
+                    Moji objekti
                   </p>
                   <h2 className="mt-1 text-2xl text-[#363636] montserrat_bold">
-                    Pregled svih potrošača
+                    Pregled svih objekata i potrošača
                   </h2>
                 </div>
                 <button
@@ -263,7 +283,7 @@ export default function UserDashboard() {
                   <table className="w-full min-w-[680px] border-collapse text-left">
                     <thead className="bg-[#FAFAFA]">
                       <tr className="border-b border-gray-200 text-[11px] uppercase tracking-widest text-gray-400 montserrat_medium">
-                        <th className="px-4 py-3">Potrošač</th>
+                        <th className="px-4 py-3">Objekat</th>
                         <th className="px-4 py-3">Adresa</th>
                         <th className="px-4 py-3">Brojilo</th>
                         <th className="px-4 py-3 text-center">Aktivan</th>

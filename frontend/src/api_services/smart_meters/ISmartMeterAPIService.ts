@@ -1,11 +1,12 @@
+import type {
+  ActivateSmartMeterDto,
+  RegisterSmartMeterDto,
+} from "../../models/smart_meter/SmartMeterTypes";
+
 export type ApiResponse<T> = { success: boolean; message: string; data?: T };
 
-export interface ActivateSmartMeterDto {
-  serialNumber: string;
-  deviceGuid: string;
-}
-
 export interface ISmartMeterAPIService {
+  register(dto: RegisterSmartMeterDto): Promise<ApiResponse<void>>;
   activate(dto: ActivateSmartMeterDto): Promise<ApiResponse<void>>;
   delete(id: string): Promise<ApiResponse<void>>;
 }
