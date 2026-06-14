@@ -2,8 +2,10 @@ export type SmartMeterConnectionType = "1" | "2";
 
 export type SmartMeterDto = {
   id: string;
-  serialNumber: string;
-  connectionType: SmartMeterConnectionType;
+  serialNumber?: string | null;
+  connectionType?: SmartMeterConnectionType | string | number | null;
+  status?: string | number | null;
+  isActive?: boolean;
   maxPower?: number;
   note?: string | null;
   residentalObjectId?: string | null;
@@ -19,4 +21,11 @@ export type RegisterSmartMeterDto = {
 export type ActivateSmartMeterDto = {
   serialNumber: string;
   deviceGuid: string;
+};
+
+export type UpdateSmartMeterDto = {
+  connectionType: SmartMeterConnectionType;
+  note?: string;
+  limitValue?: number;
+  limitType?: string | number;
 };

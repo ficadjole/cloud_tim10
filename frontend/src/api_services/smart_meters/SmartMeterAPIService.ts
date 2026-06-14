@@ -7,6 +7,7 @@ import type {
 import type {
   ActivateSmartMeterDto,
   RegisterSmartMeterDto,
+  UpdateSmartMeterDto,
 } from "../../models/smart_meter/SmartMeterTypes";
 
 const err = <T>(e: unknown, fallback: string): ApiResponse<T> => ({
@@ -37,6 +38,28 @@ export const smartMeterApi: ISmartMeterAPIService = {
       .post("/SmartMeter/register", formData)
       .then(() => ok<void>("Smart meter registered successfully."))
       .catch((e) => err(e, "Failed to register smart meter"));
+  },
+
+  async update(id: string, dto: UpdateSmartMeterDto) {
+    const formData = new FormData();
+    formData.append("ConnectionType", dto.connectionType);
+
+    if (dto.note?.trim()) {
+      formData.append("Note", dto.note.trim());
+    }
+
+    if (dto.limitValue !== undefined) {
+      formData.append("LimitValue", String(dto.limitValue));
+    }
+
+    if (dto.limitType !== undefined) {
+      formData.append("LimitType", String(dto.limitType));
+    }
+
+    return client
+      .put(`/SmartMeter/${id}`, formData)
+      .then(() => ok<void>("Smart meter updated successfully."))
+      .catch((e) => err(e, "Failed to update smart meter"));
   },
 
   async activate(dto: ActivateSmartMeterDto) {

@@ -1,3 +1,5 @@
+import type { SmartMeterDto } from "../smart_meter/SmartMeterTypes";
+
 export type ResidentalObjectDto = {
   id: string;
   name: string;
@@ -5,6 +7,7 @@ export type ResidentalObjectDto = {
   fullAddress: string;
   description?: string | null;
   connectedMeterId?: string | null;
+  smartMeters?: SmartMeterDto[];
 };
 
 export type ConsumerRow = ResidentalObjectDto & {
@@ -21,3 +24,5 @@ export type CreateResidentalObjectDto = {
   city: string;
   description?: string;
 };
+
+export type UpdateResidentalObjectDto = CreateResidentalObjectDto;

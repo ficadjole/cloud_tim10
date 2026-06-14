@@ -16,6 +16,12 @@ import ConsumerDetailsModal from "../../components/user/ConsumerDetailsModal";
 import CreateConsumerModal from "../../components/user/CreateConsumerModal";
 import CreateSmartMeterModal from "../../components/user/CreateSmartMeterModal";
 import DeleteConsumerModal from "../../components/user/DeleteConsumerModal";
+import DeleteSmartMeterModal from "../../components/user/DeleteSmartMeterModal";
+import EditSmartMeterModal from "../../components/user/EditSmartMeterModal";
+import type { SmartMeterDto } from "../../models/smart_meter/SmartMeterTypes";
+import { IoIosRefresh } from "react-icons/io";
+import { AiOutlineLoading } from "react-icons/ai";
+import { MdOutlineAddHomeWork } from "react-icons/md";
 
 const panelClass =
   "rounded-2xl bg-linear-to-b from-[#FAFAFA] to-white/1 backdrop-blur-2xl border border-white/40 p-4 shadow-lg";
@@ -37,6 +43,20 @@ const getObjectTypeLabel = (type: string | number) => {
 
 const buildDeviceGuid = (objectId: string) => `frontend-${objectId}`;
 
+const getMeterSummary = (consumer: ConsumerRow) => {
+  const meterCount = consumer.smartMeters?.length ?? 0;
+
+  if (meterCount > 1) return `${meterCount} brojila`;
+  if (meterCount === 1) return consumer.smartMeters?.[0]?.serialNumber || consumer.smartMeters?.[0]?.id || "1 brojilo";
+
+  return consumer.connectedMeterId ?? "Nije povezano";
+};
+
+type MeterDeleteTarget = {
+  consumer: ConsumerRow;
+  meter: SmartMeterDto;
+};
+
 export default function UserDashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -49,6 +69,8 @@ export default function UserDashboard() {
   const [selectedConsumer, setSelectedConsumer] = useState<ConsumerRow | null>(null);
   const [consumerForMeter, setConsumerForMeter] = useState<ConsumerRow | null>(null);
   const [consumerForDelete, setConsumerForDelete] = useState<ConsumerRow | null>(null);
+  const [meterDeleteTarget, setMeterDeleteTarget] = useState<MeterDeleteTarget | null>(null);
+  const [meterForEdit, setMeterForEdit] = useState<SmartMeterDto | null>(null);
 
   const loadConsumers = async () => {
     setLoading(true);
@@ -64,7 +86,7 @@ export default function UserDashboard() {
 
     const loadedConsumers = (response.data ?? []).map((consumer) => ({
       ...consumer,
-      isActive: Boolean(consumer.connectedMeterId),
+      isActive: Boolean(consumer.smartMeters?.length || consumer.connectedMeterId),
     }));
 
     setConsumers(loadedConsumers);
@@ -129,6 +151,8 @@ export default function UserDashboard() {
     setSuccess("Potrošač je aktiviran.");
   };
 
+  void handleToggle;
+
   const handleDelete = async (consumer: ConsumerRow) => {
     setError("");
     setSuccess("");
@@ -167,6 +191,49 @@ export default function UserDashboard() {
     }
   };
 
+  const handleConsumerUpdated = async (consumerId: string) => {
+    setSuccess("Objekat je uspesno izmenjen.");
+    const loadedConsumers = await loadConsumers();
+    const updatedConsumer = loadedConsumers.find((consumer) => consumer.id === consumerId);
+    setSelectedConsumer(updatedConsumer ?? null);
+  };
+
+  const handleSmartMeterUpdated = async () => {
+    setSuccess("Brojilo je uspesno izmenjeno.");
+    const loadedConsumers = await loadConsumers();
+
+    if (selectedConsumer) {
+      const updatedConsumer = loadedConsumers.find((consumer) => consumer.id === selectedConsumer.id);
+      setSelectedConsumer(updatedConsumer ?? null);
+    }
+  };
+
+  const handleConfirmRemoveMeter = async () => {
+    const meterId = meterDeleteTarget?.meter.id;
+    if (!meterId) return;
+
+    setError("");
+    setSuccess("");
+    setBusyId(meterId);
+
+    const response = await smartMeterApi.delete(meterId);
+    setBusyId(null);
+
+    if (!response.success) {
+      setError(response.message);
+      return;
+    }
+
+    setMeterDeleteTarget(null);
+    setSuccess("Brojilo je uspesno uklonjeno.");
+    const loadedConsumers = await loadConsumers();
+
+    if (selectedConsumer) {
+      const updatedConsumer = loadedConsumers.find((consumer) => consumer.id === selectedConsumer.id);
+      setSelectedConsumer(updatedConsumer ?? null);
+    }
+  };
+
   return (
     <div className="relative min-h-screen bg-linear-to-b from-white via-[#FAFAFA] to-[#87BFFC] px-4 py-6 backdrop-blur-md">
       <ConsumerDetailsModal
@@ -174,6 +241,9 @@ export default function UserDashboard() {
         consumer={selectedConsumer}
         onClose={() => setSelectedConsumer(null)}
         onAddMeter={(consumer) => setConsumerForMeter(consumer)}
+        onEditMeter={(meter) => setMeterForEdit(meter)}
+        onRemoveMeter={(consumer, meter) => setMeterDeleteTarget({ consumer, meter })}
+        onUpdated={handleConsumerUpdated}
       />
       <CreateConsumerModal
         open={isCreateModalOpen}
@@ -192,6 +262,20 @@ export default function UserDashboard() {
         loading={Boolean(consumerForDelete && busyId === consumerForDelete.id)}
         onClose={() => setConsumerForDelete(null)}
         onConfirm={handleConfirmDelete}
+      />
+      <DeleteSmartMeterModal
+        open={Boolean(meterDeleteTarget)}
+        consumer={meterDeleteTarget?.consumer ?? null}
+        meter={meterDeleteTarget?.meter ?? null}
+        loading={Boolean(meterDeleteTarget?.meter.id && busyId === meterDeleteTarget.meter.id)}
+        onClose={() => setMeterDeleteTarget(null)}
+        onConfirm={handleConfirmRemoveMeter}
+      />
+      <EditSmartMeterModal
+        open={Boolean(meterForEdit)}
+        meter={meterForEdit}
+        onClose={() => setMeterForEdit(null)}
+        onUpdated={handleSmartMeterUpdated}
       />
 
       <div className="absolute right-4 top-4">
@@ -248,20 +332,33 @@ export default function UserDashboard() {
               <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="text-[11px] font-medium uppercase tracking-widest text-gray-400 montserrat_medium">
-                    Moji objekti
+                    Kontrolni panel
                   </p>
                   <h2 className="mt-1 text-2xl text-[#363636] montserrat_bold">
-                    Pregled svih objekata i potrošača
+                    Objekti i potrošači
                   </h2>
                 </div>
-                <button
-                  type="button"
-                  onClick={loadConsumers}
-                  disabled={loading}
-                  className={`${actionButtonClass} px-5 py-2.5 text-md`}
-                >
-                  {loading ? "Učitavanje..." : "Osveži"}
-                </button>
+                <div className="flex items-center gap-2">
+
+                  <button
+                    type="button"
+                    onClick={loadConsumers}
+                    disabled={loading}
+                    className={`${actionButtonClass} px-3 py-2.5 text-lg`}
+                    title="Osveži listu potrošača"
+                  >
+                    {loading ? <AiOutlineLoading /> : <IoIosRefresh />}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsCreateModalOpen(true)}
+                    disabled={loading}
+                    className={`${actionButtonClass} px-10 py-2.5 text-lg`}
+                    title="Dodaj novi objekat"
+                  >
+                    {loading ? <AiOutlineLoading /> : <MdOutlineAddHomeWork />}
+                  </button>
+                </div>
               </div>
 
               {error && (
@@ -285,8 +382,7 @@ export default function UserDashboard() {
                       <tr className="border-b border-gray-200 text-[11px] uppercase tracking-widest text-gray-400 montserrat_medium">
                         <th className="px-4 py-3">Objekat</th>
                         <th className="px-4 py-3">Adresa</th>
-                        <th className="px-4 py-3">Brojilo</th>
-                        <th className="px-4 py-3 text-center">Aktivan</th>
+                        <th className="px-4 py-3">Brojila</th>
                         <th className="px-4 py-3 text-right">Obriši</th>
                       </tr>
                     </thead>
@@ -333,28 +429,8 @@ export default function UserDashboard() {
                             <td className="px-4 py-4">
                               <span className="inline-flex items-center gap-2 rounded-lg border border-blue-100 bg-[#87BFFC]/25 px-3 py-1.5 text-xs text-blue-500 montserrat_medium">
                                 <FaBolt />
-                                {consumer.connectedMeterId ?? "Nije povezano"}
+                                {getMeterSummary(consumer)}
                               </span>
-                            </td>
-                            <td className="px-4 py-4">
-                              <div className="flex justify-center">
-                                <button
-                                  type="button"
-                                  onClick={(event) => {
-                                    event.stopPropagation();
-                                    handleToggle(consumer);
-                                  }}
-                                  disabled={busyId === consumer.id}
-                                  className={`relative h-7 w-12 rounded-full transition-all duration-300 ease-out active:scale-95 disabled:opacity-50 ${consumer.isActive ? "bg-[#469FFE]" : "bg-gray-300"
-                                    }`}
-                                  aria-label={consumer.isActive ? "Deaktiviraj potrošača" : "Aktiviraj potrošača"}
-                                >
-                                  <span
-                                    className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow-md transition-all duration-300 ease-out ${consumer.isActive ? "left-6" : "left-1"
-                                      }`}
-                                  />
-                                </button>
-                              </div>
                             </td>
                             <td className="px-4 py-4 text-right">
                               <button
@@ -376,14 +452,6 @@ export default function UserDashboard() {
                   </table>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => setIsCreateModalOpen(true)}
-                disabled={loading}
-                className={`${actionButtonClass} px-5 py-2.5 text-md min-w-full mt-5`}
-              >
-                Dodaj potrošača
-              </button>
             </div>
           </section>
         </div>

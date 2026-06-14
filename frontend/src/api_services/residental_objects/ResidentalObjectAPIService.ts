@@ -4,16 +4,54 @@ import type { IResidentalObjectAPIService, ApiResponse } from "./IResidentalObje
 import type {
   CreateResidentalObjectDto,
   ResidentalObjectDto,
+  UpdateResidentalObjectDto,
 } from "../../models/residental_object/ResidentalObjectTypes";
+import type { SmartMeterDto } from "../../models/smart_meter/SmartMeterTypes";
 
-const normalizeObject = (raw: Record<string, unknown>): ResidentalObjectDto => ({
+const normalizeMeter = (raw: Record<string, unknown>): SmartMeterDto => ({
   id: String(raw.id ?? raw.Id ?? ""),
-  name: String(raw.name ?? raw.Name ?? ""),
-  type: (raw.type ?? raw.Type ?? "") as string | number,
-  fullAddress: String(raw.fullAddress ?? raw.FullAddress ?? ""),
-  description: (raw.description ?? raw.Description ?? null) as string | null,
-  connectedMeterId: (raw.connectedMeterId ?? raw.ConnectedMeterId ?? null) as string | null,
+  serialNumber: (raw.serialNumber ?? raw.SerialNumber ?? null) as string | null,
+  connectionType: (raw.connectionType ?? raw.ConnectionType ?? null) as string | number | null,
+  status: (raw.status ?? raw.Status ?? null) as string | number | null,
+  isActive: (raw.isActive ?? raw.IsActive ?? undefined) as boolean | undefined,
+  maxPower: (raw.maxPower ?? raw.MaxPower ?? undefined) as number | undefined,
+  note: (raw.note ?? raw.Note ?? null) as string | null,
+  residentalObjectId: (raw.residentalObjectId ?? raw.ResidentalObjectId ?? null) as string | null,
 });
+
+const normalizeMeters = (raw: Record<string, unknown>): SmartMeterDto[] => {
+  const meters = raw.smartMeters ?? raw.SmartMeters ?? raw.connectedMeters ?? raw.ConnectedMeters;
+
+  if (Array.isArray(meters)) {
+    return meters.map((meter) => normalizeMeter(meter as Record<string, unknown>));
+  }
+
+  const singleMeter = raw.connectedMeter ?? raw.ConnectedMeter;
+  if (singleMeter && typeof singleMeter === "object") {
+    return [normalizeMeter(singleMeter as Record<string, unknown>)];
+  }
+
+  const connectedMeterId = raw.connectedMeterId ?? raw.ConnectedMeterId;
+  if (connectedMeterId) {
+    return [{ id: String(connectedMeterId) }];
+  }
+
+  return [];
+};
+
+const normalizeObject = (raw: Record<string, unknown>): ResidentalObjectDto => {
+  const smartMeters = normalizeMeters(raw);
+
+  return {
+    id: String(raw.id ?? raw.Id ?? ""),
+    name: String(raw.name ?? raw.Name ?? ""),
+    type: (raw.type ?? raw.Type ?? "") as string | number,
+    fullAddress: String(raw.fullAddress ?? raw.FullAddress ?? ""),
+    description: (raw.description ?? raw.Description ?? null) as string | null,
+    connectedMeterId: (raw.connectedMeterId ?? raw.ConnectedMeterId ?? smartMeters[0]?.id ?? null) as string | null,
+    smartMeters,
+  };
+};
 
 const unwrap = <T>(payload: T | { data?: T }): T => {
   if (payload && typeof payload === "object" && "data" in payload) {
@@ -46,6 +84,8 @@ const toCreateFormData = (dto: CreateResidentalObjectDto) => {
   return formData;
 };
 
+const toUpdateFormData = (dto: UpdateResidentalObjectDto) => toCreateFormData(dto);
+
 export const residentalObjectApi: IResidentalObjectAPIService = {
   async getMyObjects() {
     return client
@@ -72,6 +112,16 @@ export const residentalObjectApi: IResidentalObjectAPIService = {
         data: unwrap(response.data),
       }))
       .catch((e) => err(e, "Failed to create consumer object"));
+  },
+
+  async update(id, dto) {
+    return client
+      .put(`/ResidentalObject/${id}`, toUpdateFormData(dto))
+      .then(() => ({
+        success: true,
+        message: "Consumer object updated successfully.",
+      }))
+      .catch((e) => err(e, "Failed to update consumer object"));
   },
 
   async delete(id) {

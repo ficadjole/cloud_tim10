@@ -93,10 +93,10 @@ export default function CreateConsumerModal({
               </div>
               <div>
                 <p className="text-[11px] font-medium uppercase tracking-widest text-gray-400 montserrat_medium">
-                  Novi potrošač
+                  Novi objekat
                 </p>
                 <h3 className="mt-1 text-2xl text-[#363636] montserrat_bold">
-                  Dodaj potrošača
+                  Dodaj objekat
                 </h3>
               </div>
             </div>
@@ -114,8 +114,8 @@ export default function CreateConsumerModal({
           <div className="mb-5 flex items-start gap-2.5 rounded-lg border border-blue-100 bg-[#87BFFC]/25 px-3 py-2.5">
             <FaInfoCircle className="mt-0.5 shrink-0 text-base text-blue-400" />
             <p className="text-xs leading-relaxed text-blue-500 montserrat_medium">
-              Unesite osnovne informacije o potrošaču.
-              Nakon kreiranja, možete dodati i uređivati njegove objekte.
+              Unesite osnovne informacije o objektu.
+              Nakon kreiranja, možete dodati i uređivati njegova brojila.
             </p>
           </div>
 
