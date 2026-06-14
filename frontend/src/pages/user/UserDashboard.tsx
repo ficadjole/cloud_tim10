@@ -376,9 +376,9 @@ export default function UserDashboard() {
               )}
 
               <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-                <div className="overflow-x-auto">
+                <div className="max-h-[252px] overflow-auto">
                   <table className="w-full min-w-[680px] border-collapse text-left">
-                    <thead className="bg-[#FAFAFA]">
+                    <thead className="sticky top-0 z-10 bg-[#FAFAFA]">
                       <tr className="border-b border-gray-200 text-[11px] uppercase tracking-widest text-gray-400 montserrat_medium">
                         <th className="px-4 py-3">Objekat</th>
                         <th className="px-4 py-3">Adresa</th>

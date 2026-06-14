@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FaBolt, FaInfoCircle, FaSave, FaTimes, FaTimesCircle } from "react-icons/fa";
+import { FaBolt, FaSave, FaTimes, FaTimesCircle } from "react-icons/fa";
 import { smartMeterApi } from "../../api_services/smart_meters/SmartMeterAPIService";
 import type {
   SmartMeterConnectionType,

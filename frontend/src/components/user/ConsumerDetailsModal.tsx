@@ -374,11 +374,11 @@ export default function ConsumerDetailsModal({
                   <table className="w-full min-w-[640px] border-collapse text-left">
                     <thead className="bg-[#FAFAFA]">
                       <tr className="border-b border-gray-200 text-[11px] uppercase tracking-widest text-gray-400 montserrat_medium">
-                        <th className="px-3 py-2.5">SerialNumber</th>
+                        <th className="px-3 py-2.5">Serijski broj</th>
                         <th className="px-3 py-2.5">ID</th>
-                        <th className="px-3 py-2.5">ConnectionType</th>
-                        <th className="px-3 py-2.5 text-center">Aktivno</th>
-                        <th className="px-3 py-2.5 text-right">Akcije</th>
+                        <th className="px-3 py-2.5 text-center">Priključak</th>
+                        <th className="px-3 py-2.5 text-center">Status</th>
+                        <th className="px-3 py-2.5 text-center">Akcije</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -391,45 +391,45 @@ export default function ConsumerDetailsModal({
                       )}
 
                       {meters.map((meter) => (
-                          <tr key={meter.id} className="border-b border-gray-100 last:border-b-0">
-                            <td className="px-3 py-3 text-sm text-[#363636] montserrat_semibold">
-                              {meter.serialNumber || "-"}
-                            </td>
-                            <td className="px-3 py-3 text-xs text-[#AFAFAF] montserrat_medium">
-                              <span className="break-all">{meter.id}</span>
-                            </td>
-                            <td className="px-3 py-3 text-sm text-[#363636] montserrat_medium">
-                              {getConnectionTypeLabel(meter.connectionType)}
-                            </td>
-                            <td className="px-3 py-3">
-                              <div className="flex justify-center">
-                                <span
-                                  className={`h-3 w-3 rounded-full ${isMeterActive(meter, consumer) ? "bg-green-500" : "bg-gray-300"}`}
-                                  aria-label={isMeterActive(meter, consumer) ? "Aktivno" : "Neaktivno"}
-                                />
-                              </div>
-                            </td>
-                            <td className="px-3 py-3 text-right">
-                              <div className="flex justify-end gap-2">
-                                <button
-                                  type="button"
-                                  onClick={() => onEditMeter(meter)}
-                                  className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-[#469FFE] transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-blue-100 active:scale-[0.98]"
-                                  aria-label="Izmeni brojilo"
-                                >
-                                  <FaEdit />
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => onRemoveMeter(consumer, meter)}
-                                  className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-red-100 bg-red-50 text-red-400 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-red-200 hover:bg-red-100 active:scale-[0.98]"
-                                  aria-label="Ukloni brojilo"
-                                >
-                                  <FaTrash />
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
+                        <tr key={meter.id} className="border-b border-gray-100 last:border-b-0">
+                          <td className="px-3 py-3 text-sm text-[#363636] montserrat_semibold whitespace-nowrap">
+                            {meter.serialNumber || "-"}
+                          </td>
+                          <td className="px-3 py-3 text-xs text-[#AFAFAF] montserrat_medium">
+                            <span className="break-all">{meter.id}</span>
+                          </td>
+                          <td className="px-3 py-3 text-sm text-[#363636] montserrat_medium">
+                            {getConnectionTypeLabel(meter.connectionType)}
+                          </td>
+                          <td className="px-3 py-3">
+                            <div className="flex justify-center">
+                              <span
+                                className={`h-3 w-3 rounded-full ${isMeterActive(meter, consumer) ? "bg-green-500" : "bg-gray-300"}`}
+                                aria-label={isMeterActive(meter, consumer) ? "Aktivno" : "Neaktivno"}
+                              />
+                            </div>
+                          </td>
+                          <td className="px-3 py-3 text-right">
+                            <div className="flex justify-end gap-2">
+                              <button
+                                type="button"
+                                onClick={() => onEditMeter(meter)}
+                                className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-[#469FFE] transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-blue-100 active:scale-[0.98]"
+                                aria-label="Izmeni brojilo"
+                              >
+                                <FaEdit />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => onRemoveMeter(consumer, meter)}
+                                className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-red-100 bg-red-50 text-red-400 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-red-200 hover:bg-red-100 active:scale-[0.98]"
+                                aria-label="Ukloni brojilo"
+                              >
+                                <FaTrash />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
                       ))}
                     </tbody>
                   </table>
