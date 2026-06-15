@@ -19,7 +19,7 @@ namespace SmartGrid.Application.Features.ResidentalObjects.Mappers
                 source.Type,
                 $"{source.Address.Street} {source.Address.Number}, {source.Address.City}",
                 source.Description,
-                source.ConnectedMeter?.Id.Value
+                source.Meters.Select(m => m.Id.Value).ToList()
                 );
         }
     }

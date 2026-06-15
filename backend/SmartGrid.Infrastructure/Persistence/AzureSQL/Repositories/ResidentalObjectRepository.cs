@@ -18,11 +18,15 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
     {
         private readonly SmartMeteringDbContext _dbContext;
         private readonly ISQLTableMapper<ResidentalObject, ResidentalObjectEntity> _mapper;
+        private readonly ISQLTableMapper<SmartMeter, SmartMeterEntity> _meterMapper;
 
-        public ResidentalObjectRepository(SmartMeteringDbContext dbContext, ISQLTableMapper<ResidentalObject, ResidentalObjectEntity> mapper)
+        public ResidentalObjectRepository(SmartMeteringDbContext dbContext, 
+                                          ISQLTableMapper<ResidentalObject, ResidentalObjectEntity> mapper,
+                                          ISQLTableMapper<SmartMeter, SmartMeterEntity> meterMapper)
         {
             _dbContext = dbContext;
             _mapper = mapper;
+            _meterMapper = meterMapper;
         }
 
         public async Task AddAsync(ResidentalObject residentalObject, CancellationToken ct = default)
@@ -34,14 +38,17 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
 
         public async Task<ResidentalObject?> GetByIdAsync(EntityId id, CancellationToken ct = default)
         {
-            var entity = await _dbContext.ResidentalObjects.Include(x => x.ConnectedMeter).FirstOrDefaultAsync(x => x.Id == Guid.Parse(id.Value), ct);
+            var entity = await _dbContext.ResidentalObjects
+                                         .Include(x => x.Meters)
+                                         .FirstOrDefaultAsync(x => x.Id == Guid.Parse(id.Value), ct);
+
             return entity != null ? _mapper.MapToDomain(entity) : null;
         }
 
         public async Task<IEnumerable<ResidentalObject>> GetByOwnerIdAsync(EntityId ownerId, CancellationToken ct = default)
         {
             var entities = await _dbContext.ResidentalObjects
-                .Include(x => x.ConnectedMeter)
+                .Include(x => x.Meters)
                 .Where(x => x.OwnerId == Guid.Parse(ownerId.Value))
                 .ToListAsync(ct);
 
@@ -51,6 +58,7 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
         public async Task<Result> UpdateAsync(ResidentalObject residentalObject, CancellationToken ct = default)
         {
             var entity = await _dbContext.ResidentalObjects
+                .Include(x => x.Meters)
                 .FirstOrDefaultAsync(x => x.Id == Guid.Parse(residentalObject.Id.Value), ct);
 
             if (entity == null)
@@ -63,6 +71,21 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
             entity.City = residentalObject.Address.City;
             entity.Description = residentalObject.Description;
 
+            var currentMeterIds = residentalObject.Meters.Select(m => Guid.Parse(m.Id.Value)).ToList();
+
+            // Ukloni iz entiteta ono čega nema u domenu
+            entity.Meters = entity.Meters.Where(m => currentMeterIds.Contains(m.Id)).ToList();
+
+            // Dodaj ona koja su nova (koja već nisu u entitetu)
+            foreach (var meter in residentalObject.Meters)
+            {
+                var meterId = Guid.Parse(meter.Id.Value);
+                if (!entity.Meters.Any(m => m.Id == meterId))
+                {
+                    entity.Meters.Add(_meterMapper.MapToEntity(meter));
+                }
+            }
+
             await _dbContext.SaveChangesAsync(ct);
 
             return Result.Success();
@@ -71,9 +94,8 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
         public async Task<ResidentalObject?> GetByMeterIdAsync(EntityId meterId, CancellationToken ct = default)
         {
             var entity = await _dbContext.ResidentalObjects
-                .Include(x => x.ConnectedMeter)
-                .FirstOrDefaultAsync(x => x.ConnectedMeter != null && x.ConnectedMeter.Id == Guid.Parse(meterId.Value), ct);
-
+                .Include(x => x.Meters)
+                .FirstOrDefaultAsync(x => x.Meters.Any(m => m.Id == Guid.Parse(meterId.Value)), ct);
             return entity != null ? _mapper.MapToDomain(entity) : null;
         }
 

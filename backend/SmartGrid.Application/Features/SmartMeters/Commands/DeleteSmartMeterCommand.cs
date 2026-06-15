@@ -46,7 +46,7 @@ namespace SmartGrid.Application.Features.SmartMeters.Commands
                 var residentalObject = await residentalObjectRepository.GetByMeterIdAsync(idResult.Value, cancellationToken);
                 if(residentalObject != null)
                 {
-                    residentalObject.DisconnectMeter();
+                    residentalObject.DisconnectMeter(idResult.Value);
                     await residentalObjectRepository.UpdateAsync(residentalObject, cancellationToken);
                 }
 

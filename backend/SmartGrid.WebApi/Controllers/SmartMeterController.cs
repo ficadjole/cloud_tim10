@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SmartGrid.Application.Features.SmartMeters.Queries;
 using SmartGrid.WebApi.DTOs;
 using SmartGrid.WebApi.Extensions;
 
@@ -59,6 +60,18 @@ namespace SmartGrid.WebApi.Controllers
                 return commandResult.ToActionResult();
 
             var result = await mediator.Send(commandResult.Value);
+            return result.ToActionResult();
+        }
+
+        [HttpGet("{id}")]
+        [Authorize(Roles = "SysAdmin,User")]
+        public async Task<IActionResult> GetById(string id)
+        {
+            var query = new GetSmartMeterQuery(id);
+            var result = await mediator.Send(query);
+            if (result is null)
+                return StatusCode(StatusCodes.Status500InternalServerError, "Unexpected error.");
+
             return result.ToActionResult();
         }
     }

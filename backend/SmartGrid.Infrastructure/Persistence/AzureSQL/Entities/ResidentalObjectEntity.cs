@@ -20,6 +20,6 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Entities
         public string? Description { get; set; }
         public Guid OwnerId { get; set; }
         public UserEntity Owner { get; set; } = null!;
-        public SmartMeterEntity? ConnectedMeter {  get; set; }
+        public ICollection<SmartMeterEntity> Meters { get; set; } = new List<SmartMeterEntity>();
     }
 }

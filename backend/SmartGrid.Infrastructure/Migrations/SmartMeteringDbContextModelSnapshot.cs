@@ -183,9 +183,7 @@ namespace SmartGrid.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ResidentalObjectId")
-                        .IsUnique()
-                        .HasFilter("[ResidentalObjectId] IS NOT NULL");
+                    b.HasIndex("ResidentalObjectId");
 
                     b.ToTable("SmartMeters");
                 });
@@ -293,15 +291,15 @@ namespace SmartGrid.Infrastructure.Migrations
             modelBuilder.Entity("SmartGrid.Infrastructure.Persistence.AzureSQL.Entities.SmartMeterEntity", b =>
                 {
                     b.HasOne("SmartGrid.Infrastructure.Persistence.AzureSQL.Entities.ResidentalObjectEntity", "ResidentalObject")
-                        .WithOne("ConnectedMeter")
-                        .HasForeignKey("SmartGrid.Infrastructure.Persistence.AzureSQL.Entities.SmartMeterEntity", "ResidentalObjectId");
+                        .WithMany("Meters")
+                        .HasForeignKey("ResidentalObjectId");
 
                     b.Navigation("ResidentalObject");
                 });
 
             modelBuilder.Entity("SmartGrid.Infrastructure.Persistence.AzureSQL.Entities.ResidentalObjectEntity", b =>
                 {
-                    b.Navigation("ConnectedMeter");
+                    b.Navigation("Meters");
                 });
 
             modelBuilder.Entity("SmartGrid.Infrastructure.Persistence.AzureSQL.Entities.UserEntity", b =>

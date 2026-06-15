@@ -32,6 +32,12 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Context
 
             modelBuilder.Entity<TariffModelEntity>().HasKey(t => t.Id);
             modelBuilder.Entity<ManualStateLogEntity>().HasKey(m => m.Id);
+
+            modelBuilder.Entity<ResidentalObjectEntity>()
+                         .HasMany(r => r.Meters)
+                         .WithOne(m => m.ResidentalObject)
+                         .HasForeignKey(m => m.ResidentalObjectId)
+                         .IsRequired(false);
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

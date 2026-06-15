@@ -3,6 +3,7 @@ using SmartGrid.Domain.Enums;
 using SmartGrid.Domain.ValueObjects;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,8 +21,9 @@ namespace SmartGrid.Domain.Models
         public Address Address { get; private set; }
         public string? Description { get; private set; }
         public EntityId OwnerId { get; private set; }
-        //brojilo koji je povezan sa ovim objektom, on je opcioni na pocetku zato imam upitnik
-        public SmartMeter? ConnectedMeter { get; private set; }
+        //brojila koja su povezana sa ovim objektom, on je opcioni na pocetku zato imam upitnik
+        private readonly List<SmartMeter> _meters = new();
+        public IReadOnlyCollection<SmartMeter> Meters => _meters.AsReadOnly();
 
 
         //nema u konstruktoru SmartMeter je to child
@@ -85,7 +87,7 @@ namespace SmartGrid.Domain.Models
             string city,
             string? description,
             string ownerId,
-            SmartMeter? connectedMeter = null)
+            List<SmartMeter>? meters = null)
         {
             var idResult = EntityId.Create(id);
             if(idResult.IsFailure)
@@ -99,16 +101,18 @@ namespace SmartGrid.Domain.Models
             if(addressResult.IsFailure)
                 return Result<ResidentalObject>.Failure(addressResult.Error!.Message, ErrorType.Validation);
 
-            return Result<ResidentalObject>.Success(new ResidentalObject(
+            var obj = new ResidentalObject(
                 idResult.Value,
                 name,
                 type,
                 addressResult.Value,
                 description,
-                ownerIdResult.Value)
-            {
-                ConnectedMeter = connectedMeter
-            });
+                ownerIdResult.Value);
+
+            if (meters != null)
+                obj._meters.AddRange(meters);
+
+            return Result<ResidentalObject>.Success(obj);
         }
 
         #endregion
@@ -118,20 +122,21 @@ namespace SmartGrid.Domain.Models
         //metoda za povezivanje brojila sa objektom
         public Result ConnectMeter(SmartMeter meter)
         {
-            if (ConnectedMeter != null)
-                return Result.Failure("This object already has an associated meter.", ErrorType.Conflict);
+            if (_meters.Any(m => m.SerialNumber == meter.SerialNumber))
+                return Result.Failure("This meter is already connected to this object.", ErrorType.Conflict);
 
-            ConnectedMeter = meter;
+            _meters.Add(meter);
             return Result.Success();
         }
 
         //metoda za brisanje brojila
-        public void DisconnectMeter()
+        public void DisconnectMeter(EntityId meterId)
         {
-            if(ConnectedMeter != null)
+            var meter = _meters.FirstOrDefault(m => m.Id == meterId);
+            if (meter != null)
             {
-                ConnectedMeter.UnPair();
-                ConnectedMeter = null;
+                meter.UnPair();
+                _meters.Remove(meter);
             }
         }
 

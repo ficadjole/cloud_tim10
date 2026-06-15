@@ -21,7 +21,7 @@ namespace SmartGrid.Application.Features.ResidentalObjects.Queries
         ObjectType Type,
         string FullAddress,
         string? Description,
-        string? ConnectedMeterId);
+        List<string> ConnectedMeterIds);
 
     public record GetUserResidentalObjectsQuery(string OwnerId) : IRequest<Result<IEnumerable<ResidentalObjectDto>>>;
 

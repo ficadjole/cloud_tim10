@@ -1,4 +1,5 @@
 ﻿using SmartGrid.Domain.Models;
+using SmartGrid.Domain.ValueObjects;
 using SmartGrid.Infrastructure.Persistence.AzureSQL.Common;
 using SmartGrid.Infrastructure.Persistence.AzureSQL.Entities;
 using System;
@@ -20,7 +21,11 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Mappers
 
         public ResidentalObject? MapToDomain(ResidentalObjectEntity entity)
         {
-            SmartMeter? meter = entity.ConnectedMeter != null ? _meterMapper.MapToDomain(entity.ConnectedMeter) : null;
+            var meters = entity.Meters
+                    .Select(m => _meterMapper.MapToDomain(m))
+                    .Where(m => m != null)
+                    .Cast<SmartMeter>()
+                    .ToList();
 
             var result = ResidentalObject.Load(
                 entity.Id.ToString(),
@@ -31,16 +36,15 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Mappers
                 entity.City,
                 entity.Description,
                 entity.OwnerId.ToString(),
-                meter);
+                meters);
 
             return result.IsSuccess ? result.Value : null;
         }
 
         public ResidentalObjectEntity MapToEntity(ResidentalObject domain)
         {
-            return new ResidentalObjectEntity
+            var entity = new ResidentalObjectEntity
             {
-                //Id = string.IsNullOrEmpty(domain.Id.Value) ? Guid.NewGuid() : Guid.Parse(domain.Id.Value),
                 Id = Guid.Parse(domain.Id.Value),
                 Name = domain.Name,
                 Type = domain.Type,
@@ -48,9 +52,15 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Mappers
                 Number = domain.Address.Number,
                 City = domain.Address.City,
                 Description = domain.Description,
-                OwnerId = Guid.Parse(domain.OwnerId.Value), //ovo nez da li treba ovako
-                ConnectedMeter = domain.ConnectedMeter != null ? _meterMapper.MapToEntity(domain.ConnectedMeter) : null
+                OwnerId = Guid.Parse(domain.OwnerId.Value)
             };
+
+            // Mapiramo domensku listu u entitetsku listu
+            entity.Meters = domain.Meters
+                .Select(m => _meterMapper.MapToEntity(m))
+                .ToList();
+
+            return entity;
         }
     }
 }

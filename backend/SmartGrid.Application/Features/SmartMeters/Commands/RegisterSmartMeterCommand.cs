@@ -51,8 +51,8 @@ namespace SmartGrid.Application.Features.SmartMeters.Commands
                 if(residentalObject == null)
                     return Result.Failure("Residental object not found.", ErrorType.NotFound);
 
-                if(residentalObject.ConnectedMeter != null)
-                    return Result.Failure("This object already has a connected meter.", ErrorType.Conflict);
+                if (residentalObject.Meters.Any(m => m.SerialNumber.Value == request.SerialNumber))
+                    return Result.Failure("This meter is already connected to this object.", ErrorType.Conflict);
 
                 var meterResult = SmartMeter.Create(request.SerialNumber, request.ConnectionType, request.Note);
                 if(meterResult.IsFailure) return meterResult;
