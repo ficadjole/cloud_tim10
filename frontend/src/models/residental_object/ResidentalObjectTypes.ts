@@ -7,6 +7,7 @@ export type ResidentalObjectDto = {
   fullAddress: string;
   description?: string | null;
   connectedMeterId?: string | null;
+  connectedMeterIds?: string[];
   smartMeters?: SmartMeterDto[];
 };
 

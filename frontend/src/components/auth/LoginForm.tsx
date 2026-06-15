@@ -5,6 +5,8 @@ import { useAuth } from "../../hooks/auth/useAuthHook";
 import type { IAuthAPIService } from "../../api_services/auth/IAuthAPIService";
 import { isAuthError } from "../../types/auth/AuthResponse";
 
+const ROLE_CLAIM = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role";
+
 export function LoginForm({ authApi }: { authApi: IAuthAPIService }) {
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -23,23 +25,25 @@ export function LoginForm({ authApi }: { authApi: IAuthAPIService }) {
 
     if (isAuthError(res)) {
       setError(res.message ?? "Invalid credentials");
+      setLoading(false);
       return;
 }
 
 
 
 const claims = jwtDecode<{ 
-  "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"?: string 
+  [ROLE_CLAIM]?: string 
 }>(res.token);
+const role = claims?.[ROLE_CLAIM] ?? res.user.role;
+
 login(res.token, {
   id: res.user.id,
   name: res.user.name,
   email: res.user.email,
   username: res.user.email,
-  role: res.user.role,
+  role,
 });
 
-const role = res.user.role ?? claims?.["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
 const target = role === "SysAdmin" ? "/admindashboard" : "/dashboard";
 navigate(target, { replace: true });
   };

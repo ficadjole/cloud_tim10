@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { jwtDecode } from "jwt-decode";
 import { FaBolt, FaInfoCircle, FaTimes, FaTimesCircle } from "react-icons/fa";
 import { smartMeterApi } from "../../api_services/smart_meters/SmartMeterAPIService";
 import type {
@@ -21,6 +22,7 @@ const buttonClass =
   "z-30 montserrat_semibold rounded-md relative after:content-[''] after:-z-20 after:absolute after:h-1 after:w-1 after:left-5 overflow-hidden after:bottom-0 after:translate-y-full after:rounded-md hover:after:scale-[300] hover:after:transition-all hover:after:duration-700 after:transition-all after:duration-700 transition-all duration-700 disabled:opacity-50 cursor-pointer";
 
 const serialNumberPattern = /^SM-\d{4}-\d{5}$/;
+const ROLE_CLAIM = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role";
 
 const emptyForm: Omit<RegisterSmartMeterDto, "objectId"> = {
   serialNumber: "SM-",
@@ -43,6 +45,27 @@ const formatSerialNumber = (value: string) => {
   const number = digits.slice(4, 9);
 
   return `SM-${year}${year.length === 4 ? "-" : ""}${number}`;
+};
+
+const getAuthError = () => {
+  const token = localStorage.getItem("authToken");
+  if (!token) return "Niste prijavljeni. Prijavite se ponovo pa pokušajte dodavanje brojila.";
+
+  try {
+    const claims = jwtDecode<{ exp?: number; [ROLE_CLAIM]?: string }>(token);
+
+    if (!claims.exp || claims.exp < Date.now() / 1000) {
+      return "Sesija je istekla. Prijavite se ponovo pa pokušajte dodavanje brojila.";
+    }
+
+    if (claims[ROLE_CLAIM] !== "User") {
+      return `Nalog nema User rolu u tokenu. Trenutna rola: ${claims[ROLE_CLAIM] ?? "nema role"}.`;
+    }
+
+    return "";
+  } catch {
+    return "Token nije ispravan. Prijavite se ponovo pa pokušajte dodavanje brojila.";
+  }
 };
 
 export default function CreateSmartMeterModal({
@@ -85,6 +108,18 @@ export default function CreateSmartMeterModal({
 
     if (!serialNumberPattern.test(serialNumber)) {
       setError("Serijski broj mora biti u formatu SM-YYYY-XXXXX.");
+      return;
+    }
+
+    const productionYear = Number(serialNumber.slice(3, 7));
+    if (productionYear > new Date().getFullYear()) {
+      setError("Godina proizvodnje u serijskom broju ne sme biti u budućnosti.");
+      return;
+    }
+
+    const authError = getAuthError();
+    if (authError) {
+      setError(authError);
       return;
     }
 

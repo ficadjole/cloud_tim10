@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { FaBolt, FaSave, FaTimes, FaTimesCircle } from "react-icons/fa";
+import { FaBolt, FaCheckCircle, FaKey, FaSave, FaTimes, FaTimesCircle } from "react-icons/fa";
 import { smartMeterApi } from "../../api_services/smart_meters/SmartMeterAPIService";
 import type {
+  ActivateSmartMeterResult,
   SmartMeterConnectionType,
   SmartMeterDto,
   UpdateSmartMeterDto,
@@ -25,10 +26,19 @@ const connectionTypes: { value: SmartMeterConnectionType; label: string }[] = [
   { value: "2", label: "Trofazni prikljucak 11.04kW" },
 ];
 
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 const getInitialForm = (meter: SmartMeterDto): UpdateSmartMeterDto => ({
   connectionType: String(meter.connectionType || "1") as SmartMeterConnectionType,
   note: meter.note ?? "",
 });
+
+const isMeterActive = (meter: SmartMeterDto) => {
+  if (typeof meter.isActive === "boolean") return meter.isActive;
+
+  const status = String(meter.status ?? "").toLowerCase();
+  return status === "1" || status === "paired" || status === "active";
+};
 
 export default function EditSmartMeterModal({
   open,
@@ -38,16 +48,25 @@ export default function EditSmartMeterModal({
 }: EditSmartMeterModalProps) {
   const [form, setForm] = useState<UpdateSmartMeterDto | null>(null);
   const [loading, setLoading] = useState(false);
+  const [activating, setActivating] = useState(false);
+  const [deviceGuid, setDeviceGuid] = useState("");
+  const [activationResult, setActivationResult] = useState<ActivateSmartMeterResult | null>(null);
   const [error, setError] = useState("");
+  const [activationError, setActivationError] = useState("");
 
   useEffect(() => {
     if (!open || !meter) return;
 
     setForm(getInitialForm(meter));
+    setDeviceGuid("");
+    setActivationResult(null);
     setError("");
+    setActivationError("");
   }, [open, meter]);
 
   if (!open || !meter || !form) return null;
+
+  const active = isMeterActive(meter);
 
   const setField =
     (field: keyof UpdateSmartMeterDto) =>
@@ -74,6 +93,38 @@ export default function EditSmartMeterModal({
 
     onUpdated();
     onClose();
+  };
+
+  const handleActivate = async () => {
+    const serialNumber = meter.serialNumber?.trim();
+
+    setActivationError("");
+    setActivationResult(null);
+
+    if (!serialNumber) {
+      setActivationError("Brojilo nema serijski broj i ne moze da se aktivira.");
+      return;
+    }
+
+    if (!uuidPattern.test(deviceGuid.trim())) {
+      setActivationError("Device GUID mora biti validan UUID, npr. 550e8400-e29b-41d4-a716-446655440000.");
+      return;
+    }
+
+    setActivating(true);
+    const response = await smartMeterApi.activate({
+      serialNumber,
+      deviceGuid: deviceGuid.trim(),
+    });
+    setActivating(false);
+
+    if (!response.success || !response.data) {
+      setActivationError(response.message);
+      return;
+    }
+
+    setActivationResult(response.data);
+    await onUpdated();
   };
 
   return (
@@ -106,13 +157,6 @@ export default function EditSmartMeterModal({
               <FaTimes />
             </button>
           </div>
-          {/* 
-          <div className="mb-5 flex items-start gap-2.5 rounded-lg border border-blue-100 bg-[#87BFFC]/25 px-3 py-2.5">
-            <FaInfoCircle className="mt-0.5 shrink-0 text-base text-blue-400" />
-            <p className="text-xs leading-relaxed text-blue-500 montserrat_medium">
-              Serijski broj se ne menja. Mozete izmeniti tip prikljucka i napomenu.
-            </p>
-          </div> */}
 
           {error && (
             <div className="mb-5 flex items-start gap-2.5 rounded-lg border border-red-100 bg-red-50 px-3 py-2.5">
@@ -121,10 +165,79 @@ export default function EditSmartMeterModal({
             </div>
           )}
 
+
+          {/*LOKALNO TESTIRANJE AKTIVACIJE ZARAD FRONTA*/}
+          {/* <div className="mb-5 rounded-xl border border-blue-100 bg-white p-4">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <FaKey className="text-[#469FFE]" />
+                <p className="text-[11px] uppercase tracking-widest text-gray-400 montserrat_medium">
+                  Aktivacija brojila
+                </p>
+              </div>
+              <span className={`rounded-full px-3 py-1 text-xs montserrat_medium ${active ? "bg-green-50 text-green-600" : "bg-gray-100 text-gray-500"}`}>
+                {active ? "Upareno" : "Neupareno"}
+              </span>
+            </div>
+
+            {active ? (
+              <p className="text-sm text-[#363636] montserrat_medium">
+                Brojilo je vec aktivirano i povezano sa uredjajem.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs text-[#363636] montserrat_medium">Device GUID</label>
+                  <input
+                    type="text"
+                    value={deviceGuid}
+                    onChange={(event) => setDeviceGuid(event.target.value)}
+                    placeholder="550e8400-e29b-41d4-a716-446655440000"
+                    className={inputClass}
+                  />
+                </div>
+
+                {activationError && (
+                  <div className="flex items-start gap-2.5 rounded-lg border border-red-100 bg-red-50 px-3 py-2.5">
+                    <FaTimesCircle className="mt-0.5 shrink-0 text-base text-red-400" />
+                    <p className="text-xs leading-relaxed text-red-600 montserrat_medium">{activationError}</p>
+                  </div>
+                )}
+
+                {activationResult && (
+                  <div className="rounded-lg border border-green-100 bg-green-50 px-3 py-2.5">
+                    <div className="mb-2 flex items-center gap-2 text-green-600">
+                      <FaCheckCircle />
+                      <p className="text-xs montserrat_semibold">Brojilo je uspesno aktivirano.</p>
+                    </div>
+                    <p className="text-[11px] uppercase tracking-widest text-green-700 montserrat_medium">
+                      Device Access Token
+                    </p>
+                    <p className="mt-1 break-all rounded-md bg-white px-2 py-2 text-xs text-[#363636] montserrat_medium">
+                      {activationResult.accessToken}
+                    </p>
+                  </div>
+                )}
+
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={handleActivate}
+                    disabled={activating || loading}
+                    className={`${buttonClass} inline-flex items-center gap-2 bg-green-500 px-5 py-2.5 text-white after:bg-green-600 hover:bg-green-600 [text-shadow:3px_5px_2px_#1f7a3a] hover:[text-shadow:2px_2px_2px_#bdf7cf]`}
+                  >
+                    <FaBolt />
+                    {activating ? "Aktivacija..." : "Aktiviraj brojilo"}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div> */}
+
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs text-[#363636] montserrat_medium">Tip prikljucka</label>
+                <label className="text-xs text-[#363636] montserrat_medium">Tip priključka</label>
                 <select
                   value={form.connectionType}
                   onChange={setField("connectionType")}

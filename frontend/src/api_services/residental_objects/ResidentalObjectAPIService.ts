@@ -39,8 +39,22 @@ const normalizeMeters = (raw: Record<string, unknown>): SmartMeterDto[] => {
   return [];
 };
 
+const normalizeMeterIds = (raw: Record<string, unknown>, smartMeters: SmartMeterDto[]) => {
+  const meterIds = raw.connectedMeterIds ?? raw.ConnectedMeterIds;
+
+  if (Array.isArray(meterIds)) {
+    return meterIds.map((meterId) => String(meterId)).filter(Boolean);
+  }
+
+  const connectedMeterId = raw.connectedMeterId ?? raw.ConnectedMeterId;
+  if (connectedMeterId) return [String(connectedMeterId)];
+
+  return smartMeters.map((meter) => meter.id).filter(Boolean);
+};
+
 const normalizeObject = (raw: Record<string, unknown>): ResidentalObjectDto => {
   const smartMeters = normalizeMeters(raw);
+  const connectedMeterIds = normalizeMeterIds(raw, smartMeters);
 
   return {
     id: String(raw.id ?? raw.Id ?? ""),
@@ -48,8 +62,11 @@ const normalizeObject = (raw: Record<string, unknown>): ResidentalObjectDto => {
     type: (raw.type ?? raw.Type ?? "") as string | number,
     fullAddress: String(raw.fullAddress ?? raw.FullAddress ?? ""),
     description: (raw.description ?? raw.Description ?? null) as string | null,
-    connectedMeterId: (raw.connectedMeterId ?? raw.ConnectedMeterId ?? smartMeters[0]?.id ?? null) as string | null,
-    smartMeters,
+    connectedMeterId: connectedMeterIds[0] ?? null,
+    connectedMeterIds,
+    smartMeters: smartMeters.length
+      ? smartMeters
+      : connectedMeterIds.map((meterId) => ({ id: meterId })),
   };
 };
 

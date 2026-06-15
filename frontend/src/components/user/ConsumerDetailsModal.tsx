@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import {
   FaBolt,
   FaChevronDown,
@@ -51,10 +51,10 @@ const getObjectTypeLabel = (type: string | number) => {
 };
 
 const getConnectionTypeLabel = (type: SmartMeterDto["connectionType"]) => {
-  const normalized = String(type ?? "");
+  const normalized = String(type ?? "").toLowerCase();
 
-  if (normalized === "1") return "Monofazni";
-  if (normalized === "2") return "Trofazni";
+  if (normalized === "1" || normalized === "singlephase") return "Monofazni";
+  if (normalized === "2" || normalized === "multiphase") return "Trofazni";
 
   return type ? String(type) : "-";
 };
@@ -113,6 +113,7 @@ export default function ConsumerDetailsModal({
   const [form, setForm] = useState<UpdateResidentalObjectDto | null>(null);
   const [saving, setSaving] = useState(false);
   const [editError, setEditError] = useState("");
+  const [expandedMeterId, setExpandedMeterId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open || !consumer) return;
@@ -120,6 +121,7 @@ export default function ConsumerDetailsModal({
     setForm(getInitialForm(consumer));
     setIsEditing(false);
     setEditError("");
+    setExpandedMeterId(null);
   }, [open, consumer]);
 
   if (!open || !consumer) return null;
@@ -187,7 +189,7 @@ export default function ConsumerDetailsModal({
                   className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-blue-100 bg-blue-50 px-3 text-xs text-[#469FFE] transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-blue-100 active:scale-[0.98] montserrat_semibold"
                 >
                   <FaEdit />
-                  Izmeni
+
                 </button>
               )}
               <button
@@ -365,7 +367,6 @@ export default function ConsumerDetailsModal({
                   className="inline-flex items-center justify-center gap-2 rounded-md bg-[#469FFE] px-3 py-2 text-xs text-white montserrat_semibold transition-colors hover:bg-[#2b7bdc]"
                 >
                   <FaPlus />
-                  Dodaj brojilo
                 </button>
               </div>
 
@@ -390,47 +391,75 @@ export default function ConsumerDetailsModal({
                         </tr>
                       )}
 
-                      {meters.map((meter) => (
-                        <tr key={meter.id} className="border-b border-gray-100 last:border-b-0">
-                          <td className="px-3 py-3 text-sm text-[#363636] montserrat_semibold whitespace-nowrap">
-                            {meter.serialNumber || "-"}
-                          </td>
-                          <td className="px-3 py-3 text-xs text-[#AFAFAF] montserrat_medium">
-                            <span className="break-all">{meter.id}</span>
-                          </td>
-                          <td className="px-3 py-3 text-sm text-[#363636] montserrat_medium">
-                            {getConnectionTypeLabel(meter.connectionType)}
-                          </td>
-                          <td className="px-3 py-3">
-                            <div className="flex justify-center">
-                              <span
-                                className={`h-3 w-3 rounded-full ${isMeterActive(meter, consumer) ? "bg-green-500" : "bg-gray-300"}`}
-                                aria-label={isMeterActive(meter, consumer) ? "Aktivno" : "Neaktivno"}
-                              />
-                            </div>
-                          </td>
-                          <td className="px-3 py-3 text-right">
-                            <div className="flex justify-end gap-2">
-                              <button
-                                type="button"
-                                onClick={() => onEditMeter(meter)}
-                                className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-[#469FFE] transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-blue-100 active:scale-[0.98]"
-                                aria-label="Izmeni brojilo"
-                              >
-                                <FaEdit />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => onRemoveMeter(consumer, meter)}
-                                className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-red-100 bg-red-50 text-red-400 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-red-200 hover:bg-red-100 active:scale-[0.98]"
-                                aria-label="Ukloni brojilo"
-                              >
-                                <FaTrash />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
+                      {meters.map((meter) => {
+                        const isExpanded = expandedMeterId === meter.id;
+                        const note = meter.note?.trim();
+
+                        return (
+                          <Fragment key={meter.id}>
+                            <tr
+                              onClick={() => setExpandedMeterId((prev) => (prev === meter.id ? null : meter.id))}
+                              className="cursor-pointer border-b border-gray-100 transition-colors hover:bg-[#87BFFC]/10"
+                            >
+                              <td className="px-3 py-3 text-sm text-[#363636] montserrat_semibold whitespace-nowrap">
+                                {meter.serialNumber || "-"}
+                              </td>
+                              <td className="px-3 py-3 text-xs text-[#AFAFAF] montserrat_medium">
+                                <span className="break-all">{meter.id}</span>
+                              </td>
+                              <td className="px-3 py-3 text-sm text-[#363636] montserrat_medium">
+                                {getConnectionTypeLabel(meter.connectionType)}
+                              </td>
+                              <td className="px-3 py-3">
+                                <div className="flex justify-center">
+                                  <span
+                                    className={`h-3 w-3 rounded-full ${isMeterActive(meter, consumer) ? "bg-green-500" : "bg-gray-300"}`}
+                                    aria-label={isMeterActive(meter, consumer) ? "Aktivno" : "Neaktivno"}
+                                  />
+                                </div>
+                              </td>
+                              <td className="px-3 py-3 text-right">
+                                <div className="flex justify-end gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={(event) => {
+                                      event.stopPropagation();
+                                      onEditMeter(meter);
+                                    }}
+                                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-[#469FFE] transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-blue-100 active:scale-[0.98]"
+                                    aria-label="Izmeni brojilo"
+                                  >
+                                    <FaEdit />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={(event) => {
+                                      event.stopPropagation();
+                                      onRemoveMeter(consumer, meter);
+                                    }}
+                                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-red-100 bg-red-50 text-red-400 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-red-200 hover:bg-red-100 active:scale-[0.98]"
+                                    aria-label="Ukloni brojilo"
+                                  >
+                                    <FaTrash />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                            {isExpanded && (
+                              <tr className="border-b border-gray-100 bg-[#FAFAFA]">
+                                <td colSpan={5} className="px-3 py-3">
+                                  <p className="text-[11px] uppercase tracking-widest text-gray-400 montserrat_medium">
+                                    Opis brojila
+                                  </p>
+                                  <p className={`mt-2 whitespace-pre-wrap text-sm leading-relaxed montserrat_medium ${note ? "text-[#363636]" : "italic text-[#AFAFAF]"}`}>
+                                    {note || "Nema opisa ovog brojila."}
+                                  </p>
+                                </td>
+                              </tr>
+                            )}
+                          </Fragment>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>

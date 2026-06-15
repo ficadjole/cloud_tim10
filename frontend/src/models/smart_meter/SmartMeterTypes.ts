@@ -23,6 +23,11 @@ export type ActivateSmartMeterDto = {
   deviceGuid: string;
 };
 
+export type ActivateSmartMeterResult = {
+  accessToken: string;
+  smartMeterId: string;
+};
+
 export type UpdateSmartMeterDto = {
   connectionType: SmartMeterConnectionType;
   note?: string;

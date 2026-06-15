@@ -7,6 +7,7 @@ import type { JwtTokenClaims } from "../../types/auth/JwtTokenClaims";
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const KEY = "authToken";
 const USER_KEY = "authUser";
+const ROLE_CLAIM = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role";
 
 const decode = (token: string): JwtTokenClaims | null => {
   try {
@@ -35,7 +36,7 @@ const getInitialAuth = () => {
     if (claims) {
       const id = claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"];
       const email = claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"];
-      const role = claims["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+      const role = claims[ROLE_CLAIM];
       const parsedUser = savedUser ? (JSON.parse(savedUser) as Partial<AuthUser>) : null;
 
       return {
@@ -45,7 +46,7 @@ const getInitialAuth = () => {
           name: parsedUser?.name ?? email,
           email: parsedUser?.email ?? email,
           username: parsedUser?.username ?? parsedUser?.email ?? email,
-          role: parsedUser?.role ?? role,
+          role,
         } as AuthUser,
       };
     }
@@ -68,13 +69,13 @@ const login = (t: string, authUser?: Partial<AuthUser>) => {
 
   const id = claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"];
   const email = claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"];
-  const role = claims["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+  const role = claims[ROLE_CLAIM];
   const nextUser: AuthUser = {
     id: authUser?.id ?? id,
     name: authUser?.name ?? authUser?.email ?? email,
     email: authUser?.email ?? email,
     username: authUser?.username ?? authUser?.email ?? email,
-    role: authUser?.role ?? role,
+    role,
   };
 
   setToken(t);

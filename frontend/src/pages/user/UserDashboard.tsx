@@ -19,7 +19,7 @@ import DeleteConsumerModal from "../../components/user/DeleteConsumerModal";
 import DeleteSmartMeterModal from "../../components/user/DeleteSmartMeterModal";
 import EditSmartMeterModal from "../../components/user/EditSmartMeterModal";
 import type { SmartMeterDto } from "../../models/smart_meter/SmartMeterTypes";
-import { IoIosRefresh } from "react-icons/io";
+import { IoIosLogOut, IoIosRefresh } from "react-icons/io";
 import { AiOutlineLoading } from "react-icons/ai";
 import { MdOutlineAddHomeWork } from "react-icons/md";
 
@@ -44,7 +44,7 @@ const getObjectTypeLabel = (type: string | number) => {
 const buildDeviceGuid = (objectId: string) => `frontend-${objectId}`;
 
 const getMeterSummary = (consumer: ConsumerRow) => {
-  const meterCount = consumer.smartMeters?.length ?? 0;
+  const meterCount = consumer.smartMeters?.length ?? consumer.connectedMeterIds?.length ?? 0;
 
   if (meterCount > 1) return `${meterCount} brojila`;
   if (meterCount === 1) return consumer.smartMeters?.[0]?.serialNumber || consumer.smartMeters?.[0]?.id || "1 brojilo";
@@ -52,9 +52,55 @@ const getMeterSummary = (consumer: ConsumerRow) => {
   return consumer.connectedMeterId ?? "Nije povezano";
 };
 
+const isMeterActive = (meter: SmartMeterDto) => {
+  if (typeof meter.isActive === "boolean") return meter.isActive;
+
+  const status = String(meter.status ?? "").toLowerCase();
+  return status === "1" || status === "paired" || status === "active";
+};
+
 type MeterDeleteTarget = {
   consumer: ConsumerRow;
   meter: SmartMeterDto;
+};
+
+const getConsumerMeterIds = (consumer: ConsumerRow) => {
+  const meterIds = consumer.connectedMeterIds?.length
+    ? consumer.connectedMeterIds
+    : consumer.smartMeters?.map((meter) => meter.id) ?? [];
+
+  return Array.from(new Set(meterIds.filter(Boolean)));
+};
+
+const hydrateConsumerMeters = async (consumer: ConsumerRow): Promise<ConsumerRow> => {
+  const meterIds = getConsumerMeterIds(consumer);
+
+  if (meterIds.length === 0) {
+    return {
+      ...consumer,
+      connectedMeterId: null,
+      connectedMeterIds: [],
+      smartMeters: [],
+      isActive: false,
+    };
+  }
+
+  const smartMeters = await Promise.all(
+    meterIds.map(async (meterId) => {
+      const fallbackMeter = consumer.smartMeters?.find((meter) => meter.id === meterId) ?? { id: meterId };
+      const response = await smartMeterApi.getById(meterId);
+
+      return response.success && response.data ? response.data : fallbackMeter;
+    })
+  );
+
+  return {
+    ...consumer,
+    connectedMeterId: meterIds[0] ?? null,
+    connectedMeterIds: meterIds,
+    smartMeters,
+    isActive: smartMeters.length > 0,
+  };
 };
 
 export default function UserDashboard() {
@@ -84,10 +130,11 @@ export default function UserDashboard() {
       return [];
     }
 
-    const loadedConsumers = (response.data ?? []).map((consumer) => ({
+    const consumersWithMeterIds = (response.data ?? []).map((consumer) => ({
       ...consumer,
-      isActive: Boolean(consumer.smartMeters?.length || consumer.connectedMeterId),
+      isActive: Boolean(consumer.smartMeters?.length || consumer.connectedMeterIds?.length || consumer.connectedMeterId),
     }));
+    const loadedConsumers = await Promise.all(consumersWithMeterIds.map(hydrateConsumerMeters));
 
     setConsumers(loadedConsumers);
     return loadedConsumers;
@@ -98,12 +145,13 @@ export default function UserDashboard() {
   }, []);
 
   const stats = useMemo(() => {
-    const active = consumers.filter((consumer) => consumer.isActive).length;
+    const meters = consumers.flatMap((consumer) => consumer.smartMeters ?? []);
+    const active = meters.filter(isMeterActive).length;
 
     return {
-      total: consumers.length,
+      total: meters.length,
       active,
-      inactive: consumers.length - active,
+      inactive: meters.length - active,
     };
   }, [consumers]);
 
@@ -284,7 +332,7 @@ export default function UserDashboard() {
           onClick={handleLogout}
           className="px-4 py-2 rounded-md bg-[#469FFE] text-white text-sm font-semibold hover:bg-[#2b7bdc] transition-colors"
         >
-          Odjava
+          <IoIosLogOut className="inline-block mr-1 text-xl font-bold" />
         </button>
       </div>
 
@@ -308,20 +356,16 @@ export default function UserDashboard() {
               </div>
 
               <p className="text-[11px] mb-2 font-medium uppercase tracking-widest text-gray-400 montserrat_medium">
-                Potrošači
+                Brojila
               </p>
-              <div className="grid grid-cols-3 gap-2.5">
+              <div className="grid grid-cols-2 gap-2.5 ">
                 <div className="rounded-lg border border-blue-100 bg-[#87BFFC]/25 px-3 py-3">
                   <p className="text-[11px] text-blue-500 montserrat_medium">Ukupno</p>
                   <p className="mt-1 text-2xl text-[#363636] montserrat_bold">{stats.total}</p>
                 </div>
                 <div className="rounded-lg border border-green-100 bg-green-50 px-3 py-3">
-                  <p className="text-[11px] text-green-600 montserrat_medium">Aktivni</p>
+                  <p className="text-[11px] text-green-600 montserrat_medium">Uparena</p>
                   <p className="mt-1 text-2xl text-[#363636] montserrat_bold">{stats.active}</p>
-                </div>
-                <div className="rounded-lg border border-gray-200 bg-white px-3 py-3">
-                  <p className="text-[11px] text-gray-400 montserrat_medium">Pauza</p>
-                  <p className="mt-1 text-2xl text-[#363636] montserrat_bold">{stats.inactive}</p>
                 </div>
               </div>
             </div>
