@@ -7,11 +7,6 @@ using SmartGrid.Domain.ValueObjects;
 using SmartGrid.Infrastructure.Persistence.AzureSQL.Common;
 using SmartGrid.Infrastructure.Persistence.AzureSQL.Context;
 using SmartGrid.Infrastructure.Persistence.AzureSQL.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
 {
@@ -28,7 +23,7 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
             _mapper = mapper;
         }
 
-        public async Task AddAsync(SmartMeter meter , CancellationToken ct = default)
+        public async Task AddAsync(SmartMeter meter, CancellationToken ct = default)
         {
             var entity = _mapper.MapToEntity(meter);
             await _dbContext.SmartMeters.AddAsync(entity, ct);
@@ -63,7 +58,7 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
         public async Task DeleteAsync(EntityId id, CancellationToken ct = default)
         {
             var entity = await _dbContext.SmartMeters.FindAsync(Guid.Parse(id.Value));
-            if(entity != null)
+            if (entity != null)
             {
                 _dbContext.SmartMeters.Remove(entity);
                 await _dbContext.SaveChangesAsync(ct);

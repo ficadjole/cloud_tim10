@@ -5,7 +5,6 @@ using SmartGrid.Domain.ValueObjects;
 using SmartGrid.Infrastructure.Persistence.AzureSQL.Common;
 using SmartGrid.Infrastructure.Persistence.AzureSQL.Context;
 using SmartGrid.Infrastructure.Persistence.AzureSQL.Entities;
-using SmartGrid.Infrastructure.Persistence.AzureSQL.Mappers;
 
 namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
 {
@@ -20,31 +19,30 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
             _mapper = mapper;
         }
 
-        public Task AddAsync(User user, CancellationToken ct = default)
+        public async Task AddAsync(User user, CancellationToken ct = default)
         {
             var userEntity = _mapper.MapToEntity(user);
 
-            _dbContext.Users.AddAsync(userEntity,ct);
+            await _dbContext.Users.AddAsync(userEntity, ct);
 
-            return _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync();
         }
 
-        public Task DeleteAsync(EntityId id, CancellationToken ct = default)
+        public async Task DeleteAsync(EntityId id, CancellationToken ct = default)
         {
 
-            var userEntity = _dbContext.Users.Find(Guid.Parse(id.Value)); 
+            var userEntity = _dbContext.Users.Find(Guid.Parse(id.Value));
             if (userEntity != null)
             {
                 _dbContext.Users.Remove(userEntity);
-                return _dbContext.SaveChangesAsync(ct);
+                await _dbContext.SaveChangesAsync(ct);
             }
-            return Task.CompletedTask;
 
         }
 
-        public Task<IEnumerable<User?>> GetAllAsync()
+        public async Task<IEnumerable<User?>> GetAllAsync()
         {
-            return _dbContext.Users.Select(userEntity => _mapper.MapToDomain(userEntity)).ToListAsync().ContinueWith(task => task.Result.AsEnumerable());
+            return await _dbContext.Users.Select(userEntity => _mapper.MapToDomain(userEntity)).ToListAsync().ContinueWith(task => task.Result.AsEnumerable());
         }
 
         public async Task<User> GetByIdAsync(EntityId id, CancellationToken ct = default)
@@ -58,7 +56,7 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
 
             var user = _mapper.MapToDomain(userEntity);
 
-            if(user == null)
+            if (user == null)
             {
                 return null;
             }
@@ -69,7 +67,7 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
 
         public async Task<User> GetByEmailAsync(string email, CancellationToken ct = default)
         {
-            var userEntity = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == email,ct);
+            var userEntity = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == email, ct);
             if (userEntity == null)
             {
                 return null;
@@ -82,14 +80,14 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
             return user;
         }
 
-        public Task UpdateAsync(User user,CancellationToken ct = default)
+        public async Task UpdateAsync(User user, CancellationToken ct = default)
         {
-         
+
             var userEntity = _mapper.MapToEntity(user);
 
             _dbContext.Users.Update(userEntity);
 
-            return _dbContext.SaveChangesAsync(ct);
+            await _dbContext.SaveChangesAsync(ct);
 
         }
     }

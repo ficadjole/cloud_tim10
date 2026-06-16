@@ -46,9 +46,9 @@ namespace SmartGrid.Application.Features.Users.Commands
             try
             {
 
-                var user = await userRepository.GetByEmailAsync(request.Email,ct);
+                var user = await userRepository.GetByEmailAsync(request.Email, ct);
 
-                if(user == null)
+                if (user == null)
                     return Result<AuthResponseDto>.Failure("Invalid email or password.", ErrorType.Authentication);
 
                 var passwordValid = passwordHasher.VerifyPassword(request.Password, user.PasswordHash);

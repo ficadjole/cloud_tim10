@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace SmartGrid.Application.Interfaces
+﻿namespace SmartGrid.Application.Interfaces
 {
     public interface IPdfExportService
     {

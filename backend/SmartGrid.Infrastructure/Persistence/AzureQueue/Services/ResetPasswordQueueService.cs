@@ -5,11 +5,6 @@ using SmartGrid.Application.Interfaces;
 using SmartGrid.Application.Interfaces.Messaging;
 using SmartGrid.Infrastructure.Common.Options;
 using SmartGrid.Infrastructure.Persistence.AzureQueue.Messages;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SmartGrid.Infrastructure.Persistence.AzureQueue.Services
 {
@@ -26,14 +21,14 @@ namespace SmartGrid.Infrastructure.Persistence.AzureQueue.Services
     {
         public async Task SendResetPasswordMessageAsync(string email, string setPasswordJWTToken, CancellationToken ct = default)
         {
-            
+
             var message = new ResetPasswordMessage
             {
                 Email = email,
                 ResetPasswordJWTToken = setPasswordJWTToken
             };
-           
-            if(message != null)
+
+            if (message != null)
             {
                 await base.SendMessageAsync(message, ct);
             }

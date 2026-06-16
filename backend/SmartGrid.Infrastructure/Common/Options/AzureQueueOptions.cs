@@ -4,7 +4,7 @@
     {
         public string ConnectionString { get; init; } = string.Empty;
         public string AlertQueue { get; init; } = string.Empty;
-        public string DeviceStatusQueue {  get; init; } = string.Empty;
+        public string DeviceStatusQueue { get; init; } = string.Empty;
         public string UserCreatedQueue { get; init; } = string.Empty;
         public string ResetPasswordQueue { get; init; } = string.Empty;
     }

@@ -6,11 +6,6 @@ using SmartGrid.Domain.Common;
 using SmartGrid.Domain.Enums;
 using SmartGrid.Domain.Models;
 using SmartGrid.Domain.ValueObjects;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SmartGrid.Application.Features.ResidentalObjects.Queries
 {
@@ -37,7 +32,7 @@ namespace SmartGrid.Application.Features.ResidentalObjects.Queries
             {
                 var ownerIdResult = EntityId.Create(request.OwnerId);
 
-                if(ownerIdResult.IsFailure)
+                if (ownerIdResult.IsFailure)
                 {
                     return Result<IEnumerable<ResidentalObjectDto>>.Failure("Invalid Owner ID format.", ErrorType.Validation);
                 }

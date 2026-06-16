@@ -7,7 +7,7 @@ namespace SmartGrid.Domain.Models
     public class Telemetry
     {
         public EntityId Id { get; private set; }
-        public EntityId SmartMeterId { get; private set; } 
+        public EntityId SmartMeterId { get; private set; }
         public DeviceType DeviceType { get; private set; } = DeviceType.Unknown;
         public DateTime Timestamp { get; private set; }
         public double TotalConsumptionKWh { get; private set; }

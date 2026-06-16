@@ -1,11 +1,6 @@
 ﻿using SmartGrid.Domain.Models;
 using SmartGrid.Infrastructure.Persistence.AzureSQL.Common;
 using SmartGrid.Infrastructure.Persistence.AzureSQL.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Mappers
 {
@@ -18,7 +13,7 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Mappers
         public TariffModel? MapToDomain(TariffModelEntity entity)
         {
             var result = TariffModel.Load(
-                entity.GHT, 
+                entity.GHT,
                 entity.GLT,
                 entity.BHT,
                 entity.BLT,

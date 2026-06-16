@@ -5,11 +5,6 @@ using SmartGrid.Application.Interfaces.Repositories;
 using SmartGrid.Domain.Common;
 using SmartGrid.Domain.Enums;
 using SmartGrid.Domain.ValueObjects;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SmartGrid.Application.Features.ResidentalObjects.Commands
 {
@@ -20,9 +15,9 @@ namespace SmartGrid.Application.Features.ResidentalObjects.Commands
         public string Name { get; init; } = string.Empty;
         public ObjectType Type { get; init; }
         public string Street { get; init; } = string.Empty;
-        public string Number {  get; init; } = string.Empty;
-        public string City {  get; init; } = string.Empty;
-        public string? Description {  get; init; }
+        public string Number { get; init; } = string.Empty;
+        public string City { get; init; } = string.Empty;
+        public string? Description { get; init; }
     }
 
     //VALIDATOR
@@ -67,7 +62,8 @@ namespace SmartGrid.Application.Features.ResidentalObjects.Commands
                 logger.LogInformation("Residental object {Id} updated successfully.", request.Id);
 
                 return Result.Success();
-             } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 logger.LogError(ex, "Error occured while updating residental object {Id}", request.Id);
                 return Result.Failure("An unexpected error occured during the update.", ErrorType.Failure);

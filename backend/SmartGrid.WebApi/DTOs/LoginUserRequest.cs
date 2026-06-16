@@ -17,7 +17,7 @@ namespace SmartGrid.WebApi.DTOs
         {
             if (string.IsNullOrWhiteSpace(Email))
                 return Result<LoginUserCommand>.Failure("Email is required.", ErrorType.Validation);
-        
+
             if (string.IsNullOrWhiteSpace(Password))
                 return Result<LoginUserCommand>.Failure("Password is required.", ErrorType.Validation);
 

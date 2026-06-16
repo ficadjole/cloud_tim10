@@ -2,20 +2,16 @@
 using SmartGrid.Domain.ValueObjects;
 using SmartGrid.Infrastructure.Persistence.AzureSQL.Common;
 using SmartGrid.Infrastructure.Persistence.AzureSQL.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Mappers
 {
-    public class SmartMeterMapper : ISQLTableMapper<SmartMeter, SmartMeterEntity>{
-        
+    public class SmartMeterMapper : ISQLTableMapper<SmartMeter, SmartMeterEntity>
+    {
+
         public SmartMeter? MapToDomain(SmartMeterEntity entity)
         {
             UserLimit? limit = null;
-            if(entity.UserLimitValue.HasValue && entity.UserLimitType.HasValue)
+            if (entity.UserLimitValue.HasValue && entity.UserLimitType.HasValue)
             {
                 var limitResult = UserLimit.Create(entity.UserLimitValue.Value, entity.UserLimitType.Value);
                 limit = limitResult.IsSuccess ? limitResult.Value : null;

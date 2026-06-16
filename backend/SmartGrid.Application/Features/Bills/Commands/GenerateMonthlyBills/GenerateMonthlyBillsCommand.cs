@@ -1,15 +1,12 @@
 ﻿using MediatR;
+using SmartGrid.Application.Features.Bills.Services;
 using SmartGrid.Application.Interfaces;
 using SmartGrid.Application.Interfaces.Repositories;
 using SmartGrid.Application.Interfaces.Storage;
-using SmartGrid.Application.Features.Bills.Services;
 using SmartGrid.Domain.Common;
 using SmartGrid.Domain.Enums;
 using SmartGrid.Domain.Models;
 using SmartGrid.Domain.Services;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace SmartGrid.Application.Features.Bills.Commands.GenerateMonthlyBills
 {

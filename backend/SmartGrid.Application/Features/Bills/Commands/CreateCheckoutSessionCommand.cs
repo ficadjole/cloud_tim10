@@ -4,8 +4,6 @@ using SmartGrid.Application.Interfaces.Repositories;
 using SmartGrid.Domain.Common;
 using SmartGrid.Domain.Enums;
 using SmartGrid.Domain.ValueObjects;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace SmartGrid.Application.Features.Bills.Commands
 {

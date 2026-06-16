@@ -3,7 +3,7 @@
 namespace SmartGrid.WebApi.Hubs
 {
     public class DeviceHub : Hub
-    { 
+    {
         public async Task JoinAdminGroup()
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, "Admins");

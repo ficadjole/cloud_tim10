@@ -1,11 +1,6 @@
 ﻿using SmartGrid.Domain.Common;
 using SmartGrid.Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace SmartGrid.Domain.ValueObjects
 {
@@ -38,7 +33,7 @@ namespace SmartGrid.Domain.ValueObjects
                 return Result<SerialNumber>.Failure("Could not parse production year.", ErrorType.Validation);
 
             //provera da godina nije u buducnosti
-            if(year > DateTime.UtcNow.Year)
+            if (year > DateTime.UtcNow.Year)
                 return Result<SerialNumber>.Failure("Production year cannot be in the future.", ErrorType.Validation);
 
             return Result<SerialNumber>.Success(new SerialNumber(value, year));
@@ -49,6 +44,6 @@ namespace SmartGrid.Domain.ValueObjects
             return Value;
         }
 
-        public static implicit operator string(SerialNumber serialNumber) =>  serialNumber.Value; 
+        public static implicit operator string(SerialNumber serialNumber) => serialNumber.Value;
     }
 }

@@ -6,13 +6,7 @@ using SmartGrid.Application.Common.Extensions;
 using SmartGrid.Application.Interfaces.Repositories;
 using SmartGrid.Application.Interfaces.Storage;
 using SmartGrid.Domain.Common;
-using SmartGrid.Domain.Enums;
 using SmartGrid.Domain.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SmartGrid.Application.Features.ManualLogs.Commands
 {
@@ -21,7 +15,7 @@ namespace SmartGrid.Application.Features.ManualLogs.Commands
         public string SmartMeterId { get; init; } = string.Empty;
         public double HighTariffValue { get; init; }
         public double LowTariffValue { get; init; }
-        public byte[] ImageContent { get; init; } = []; 
+        public byte[] ImageContent { get; init; } = [];
         public string ImageExtension { get; init; } = ".jpg";
     }
 
@@ -40,14 +34,14 @@ namespace SmartGrid.Application.Features.ManualLogs.Commands
 
     internal class AddNewManualLogHandler(
      IManualStateLogRepository repository,
-     IManualLogBlob blobStorage, 
+     IManualLogBlob blobStorage,
      ILogger<AddNewManualLogHandler> logger) : IRequestHandler<AddNewManualLog, Result>
     {
         public async Task<Result> Handle(AddNewManualLog request, CancellationToken cancellationToken)
         {
             try
             {
-                var metadata = new ImageMetadata {SmartMeterId = request.SmartMeterId ,ContentType = "image/jpeg" };
+                var metadata = new ImageMetadata { SmartMeterId = request.SmartMeterId, ContentType = "image/jpeg" };
                 var blobPath = ManualReadingPathExtensions.GetManualReadingBlobPath(metadata, request.SmartMeterId);
                 metadata.FileName = blobPath;
 

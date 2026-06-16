@@ -5,11 +5,6 @@ using SmartGrid.Application.Interfaces.Repositories;
 using SmartGrid.Domain.Common;
 using SmartGrid.Domain.Enums;
 using SmartGrid.Domain.ValueObjects;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SmartGrid.Application.Features.ManualLogs.Commands
 {
@@ -53,7 +48,8 @@ namespace SmartGrid.Application.Features.ManualLogs.Commands
                 logger.LogInformation("[ApproveManualLog] Manual log with id {LogId} approved successfully", request.LogId);
 
                 return Result.Success();
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 logger.LogError(ex, "[ApproveManualLog] An error occurred while approving manual log with id {LogId}", request.LogId);
                 return Result.Failure("An unexpected error occurred while approving the manual log", ErrorType.Unexpected);

@@ -46,26 +46,26 @@ namespace SmartGrid.Domain.Models
                 UserRoles role = UserRoles.User,
                 UserAccountStatus accountStatus = UserAccountStatus.WaitingForConfirmation)
         {
-                if (string.IsNullOrWhiteSpace(firstName))
-                    return Result<User>.Failure("First name is required.", ErrorType.Validation);
-    
-                if (string.IsNullOrWhiteSpace(lastName))
-                    return Result<User>.Failure("Last name is required.", ErrorType.Validation);
-    
-                if (string.IsNullOrWhiteSpace(email))
-                    return Result<User>.Failure("Email is required.", ErrorType.Validation);
-    
-                if (string.IsNullOrWhiteSpace(phoneNumber))
-                    return Result<User>.Failure("Phone number is required.", ErrorType.Validation);
-                
-                if(!Enum.IsDefined(typeof(UserRoles), role))
-                    return Result<User>.Failure("Invalid user role.", ErrorType.Validation);
+            if (string.IsNullOrWhiteSpace(firstName))
+                return Result<User>.Failure("First name is required.", ErrorType.Validation);
 
-                if(!Enum.IsDefined(typeof(UserAccountStatus), accountStatus))
-                    return Result<User>.Failure("Invalid account status.", ErrorType.Validation);
+            if (string.IsNullOrWhiteSpace(lastName))
+                return Result<User>.Failure("Last name is required.", ErrorType.Validation);
 
-                var user = new User(EntityId.New(), firstName, lastName, email, phoneNumber, role, accountStatus);
-                    return Result<User>.Success(user);
+            if (string.IsNullOrWhiteSpace(email))
+                return Result<User>.Failure("Email is required.", ErrorType.Validation);
+
+            if (string.IsNullOrWhiteSpace(phoneNumber))
+                return Result<User>.Failure("Phone number is required.", ErrorType.Validation);
+
+            if (!Enum.IsDefined(typeof(UserRoles), role))
+                return Result<User>.Failure("Invalid user role.", ErrorType.Validation);
+
+            if (!Enum.IsDefined(typeof(UserAccountStatus), accountStatus))
+                return Result<User>.Failure("Invalid account status.", ErrorType.Validation);
+
+            var user = new User(EntityId.New(), firstName, lastName, email, phoneNumber, role, accountStatus);
+            return Result<User>.Success(user);
         }
 
         public static Result<User> Load(
@@ -81,7 +81,7 @@ namespace SmartGrid.Domain.Models
             var idResult = EntityId.Create(id);
             if (idResult.IsFailure)
                 return Result<User>.Failure(idResult.Error!.Message, ErrorType.Validation);
-        
+
             var user = new User(idResult.Value, firstName, lastName, email, phoneNumber, role, accountStatus);
 
             user.PasswordHash = passwordHash;
@@ -102,6 +102,33 @@ namespace SmartGrid.Domain.Models
             if (!Enum.IsDefined(typeof(UserAccountStatus), newStatus))
                 throw new ArgumentException("Invalid account status.", nameof(newStatus));
             AccountStatus = newStatus;
+        }
+        public Result Update(
+            string firstName,
+            string lastName,
+            string email,
+            string phoneNumber,
+            UserRoles role)
+        {
+            if (string.IsNullOrWhiteSpace(firstName))
+                return Result.Failure("First name is required.", ErrorType.Validation);
+
+            if (string.IsNullOrWhiteSpace(lastName))
+                return Result.Failure("Last name is required.", ErrorType.Validation);
+
+            if (string.IsNullOrWhiteSpace(email))
+                return Result.Failure("Email is required.", ErrorType.Validation);
+
+            if (string.IsNullOrWhiteSpace(phoneNumber))
+                return Result.Failure("Phone number is required.", ErrorType.Validation);
+
+            FirstName = firstName.Trim();
+            LastName = lastName.Trim();
+            Email = email.Trim();
+            PhoneNumber = phoneNumber.Trim();
+            Role = role;
+
+            return Result.Success();
         }
 
         public string GetFullName()

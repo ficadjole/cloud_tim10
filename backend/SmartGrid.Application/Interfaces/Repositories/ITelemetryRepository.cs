@@ -1,9 +1,5 @@
 ﻿using SmartGrid.Domain.Models;
 using SmartGrid.Domain.ValueObjects;
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace SmartGrid.Application.Interfaces.Repositories
 {

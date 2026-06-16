@@ -1,6 +1,4 @@
 ﻿using SmartGrid.Domain.Models;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace SmartGrid.Application.Interfaces.Repositories
 {

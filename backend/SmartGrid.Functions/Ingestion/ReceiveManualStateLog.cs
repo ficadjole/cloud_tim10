@@ -2,13 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.Identity.Client;
 using SmartGrid.Functions.Extensions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SmartGrid.Functions.Ingestion
 {
@@ -20,7 +14,7 @@ namespace SmartGrid.Functions.Ingestion
         {
             var commandResult = await req.ToAddNewManualLogCommandAsync();
 
-            if(commandResult.IsFailure)
+            if (commandResult.IsFailure)
             {
                 return new BadRequestObjectResult(commandResult.Error);
             }
@@ -30,6 +24,6 @@ namespace SmartGrid.Functions.Ingestion
             return finalResult.ToActionResult();
         }
 
-            
+
     }
 }

@@ -84,7 +84,7 @@ namespace SmartGrid.Infrastructure.Services
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(key),
                     ValidateLifetime = false, //promenjeno radi testa
-                    RequireExpirationTime = false, 
+                    RequireExpirationTime = false,
                     ClockSkew = TimeSpan.Zero
                 }, out SecurityToken validatedToken);
 
@@ -100,7 +100,7 @@ namespace SmartGrid.Infrastructure.Services
             catch (Exception ex)
             {
                 Console.WriteLine($"Token validation error: {ex.Message}");
-                return Result<ClaimsPrincipal?>.Failure("Error while validating token",ErrorType.Authentication);
+                return Result<ClaimsPrincipal?>.Failure("Error while validating token", ErrorType.Authentication);
             }
         }
 

@@ -24,19 +24,19 @@ namespace SmartGrid.WebApi.DTOs
 
         public Result<CreateUserCommand> ToCommand()
         {
-            if(string.IsNullOrWhiteSpace(FirstName))
+            if (string.IsNullOrWhiteSpace(FirstName))
                 return Result<CreateUserCommand>.Failure("First name is required.", ErrorType.Validation);
 
-            if(string.IsNullOrWhiteSpace(LastName))
+            if (string.IsNullOrWhiteSpace(LastName))
                 return Result<CreateUserCommand>.Failure("Last name is required.", ErrorType.Validation);
 
-            if(string.IsNullOrWhiteSpace(PhoneNumber))
+            if (string.IsNullOrWhiteSpace(PhoneNumber))
                 return Result<CreateUserCommand>.Failure("Phone number is required.", ErrorType.Validation);
 
-            if(string.IsNullOrWhiteSpace(Email))
+            if (string.IsNullOrWhiteSpace(Email))
                 return Result<CreateUserCommand>.Failure("Email is required.", ErrorType.Validation);
 
-            if(UserRoles.User != Role && UserRoles.PaymentAdmin != Role)
+            if (UserRoles.User != Role && UserRoles.PaymentAdmin != Role)
                 return Result<CreateUserCommand>.Failure("Invalid user role.", ErrorType.Validation);
 
             return Result<CreateUserCommand>.Success(new CreateUserCommand

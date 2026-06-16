@@ -1,5 +1,4 @@
 ﻿using MediatR;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SmartGrid.WebApi.DTOs;
 using SmartGrid.WebApi.Extensions;
@@ -17,7 +16,7 @@ namespace SmartGrid.WebApi.Controllers
         {
             var commandResult = request.ToCommand();
 
-            if(commandResult.IsFailure)
+            if (commandResult.IsFailure)
                 return commandResult.ToActionResult();
 
             var result = await mediator.Send(commandResult.Value);

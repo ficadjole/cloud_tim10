@@ -5,11 +5,6 @@ using SmartGrid.Application.Interfaces.Repositories;
 using SmartGrid.Domain.Common;
 using SmartGrid.Domain.Enums;
 using SmartGrid.Domain.ValueObjects;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SmartGrid.Application.Features.SmartMeters.Commands
 {
@@ -44,7 +39,7 @@ namespace SmartGrid.Application.Features.SmartMeters.Commands
                     return Result.Failure("Smart meter not found.", ErrorType.NotFound);
 
                 var residentalObject = await residentalObjectRepository.GetByMeterIdAsync(idResult.Value, cancellationToken);
-                if(residentalObject != null)
+                if (residentalObject != null)
                 {
                     residentalObject.DisconnectMeter(idResult.Value);
                     await residentalObjectRepository.UpdateAsync(residentalObject, cancellationToken);
@@ -54,7 +49,7 @@ namespace SmartGrid.Application.Features.SmartMeters.Commands
 
                 logger.LogInformation("Smart meter {Id} deleted and disconnected from its object.", request.Id);
                 return Result.Success();
-            } 
+            }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error occurred while deleting smart meter {Id}", request.Id);

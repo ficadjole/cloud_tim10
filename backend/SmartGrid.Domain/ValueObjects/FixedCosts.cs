@@ -1,10 +1,5 @@
 ﻿using SmartGrid.Domain.Common;
 using SmartGrid.Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SmartGrid.Domain.ValueObjects
 {
@@ -19,12 +14,12 @@ namespace SmartGrid.Domain.ValueObjects
             SupplierCost = supplierCost;
         }
 
-        public static Result<FixedCosts> Create(float  billingPowerPrice, float supplierCost)
+        public static Result<FixedCosts> Create(float billingPowerPrice, float supplierCost)
         {
             if (billingPowerPrice < 0)
                 return Result<FixedCosts>.Failure("Billing power price cannot be negative.", ErrorType.Validation);
 
-            if(supplierCost < 0)
+            if (supplierCost < 0)
                 return Result<FixedCosts>.Failure("Supplier cost cannot be negative.", ErrorType.Validation);
 
             return Result<FixedCosts>.Success(new FixedCosts(billingPowerPrice, supplierCost));

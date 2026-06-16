@@ -1,12 +1,6 @@
 ﻿using SmartGrid.Domain.Common;
 using SmartGrid.Domain.Enums;
 using SmartGrid.Domain.ValueObjects;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.Metrics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SmartGrid.Domain.Models
 {
@@ -14,7 +8,7 @@ namespace SmartGrid.Domain.Models
     {
         //on je koren, koji pod sobom drzi druge stvari, poput brojila. Preko njega ce se menjati brojilo (celina-deo)
         //objekti imaju svoj jedinstveni EntityId i oni su ti koji definišu sistem. Brojilo je tu samo kao prateći deo (uređaj) koji opslužuje taj objekat
-    
+
         public EntityId Id { get; private set; }
         public string Name { get; private set; } = string.Empty;
         public ObjectType Type { get; private set; }
@@ -41,7 +35,7 @@ namespace SmartGrid.Domain.Models
 
         public static Result<ResidentalObject> Create(
            string name,
-           ObjectType type, 
+           ObjectType type,
            string street,
            string number,
            string city,
@@ -55,7 +49,7 @@ namespace SmartGrid.Domain.Models
                 return Result<ResidentalObject>.Failure("Invalid Object Type.", ErrorType.Validation);
 
             var addressResult = Address.Create(street, number, city);
-            if(addressResult.IsFailure)
+            if (addressResult.IsFailure)
                 return Result<ResidentalObject>.Failure(addressResult.Error!.Message, ErrorType.Validation);
 
             var ownerIdResult = EntityId.Create(ownerId);
@@ -90,15 +84,15 @@ namespace SmartGrid.Domain.Models
             List<SmartMeter>? meters = null)
         {
             var idResult = EntityId.Create(id);
-            if(idResult.IsFailure)
+            if (idResult.IsFailure)
                 return Result<ResidentalObject>.Failure(idResult.Error!.Message, ErrorType.Validation);
 
             var ownerIdResult = EntityId.Create(ownerId);
-            if(ownerIdResult.IsFailure)
+            if (ownerIdResult.IsFailure)
                 return Result<ResidentalObject>.Failure(ownerIdResult.Error!.Message, ErrorType.Validation);
 
             var addressResult = Address.Create(street, number, city);
-            if(addressResult.IsFailure)
+            if (addressResult.IsFailure)
                 return Result<ResidentalObject>.Failure(addressResult.Error!.Message, ErrorType.Validation);
 
             var obj = new ResidentalObject(
@@ -160,7 +154,7 @@ namespace SmartGrid.Domain.Models
         public Result UpdateAddress(string street, string number, string city)
         {
             var addressResult = Address.Create(street, number, city);
-            if(addressResult.IsFailure)
+            if (addressResult.IsFailure)
                 return Result.Failure(addressResult.Error!.Message, ErrorType.Validation);
 
             Address = addressResult.Value;

@@ -1,11 +1,6 @@
 ﻿using SmartGrid.Domain.Common;
 using SmartGrid.Domain.Enums;
 using SmartGrid.Domain.ValueObjects;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SmartGrid.Domain.Models
 {
@@ -72,11 +67,11 @@ namespace SmartGrid.Domain.Models
 
         public void MarkAsProcessed()
         {
-            if(Status != ProcessingStatus.WaitingForProcessing)
+            if (Status != ProcessingStatus.WaitingForProcessing)
                 throw new InvalidOperationException("Only logs that are waiting for processing can be marked as processed.");
 
             Status = ProcessingStatus.Processed;
-        }   
+        }
         #endregion
 
     }

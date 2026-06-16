@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SmartGrid.Application.Features.Bills.Queries.GetBillsByMeter
+﻿namespace SmartGrid.Application.Features.Bills.Queries.GetBillsByMeter
 {
     public record BillDto(
         string Id,

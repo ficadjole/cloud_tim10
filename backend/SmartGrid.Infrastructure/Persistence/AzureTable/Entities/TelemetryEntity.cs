@@ -1,6 +1,4 @@
-﻿using SmartGrid.Infrastructure.Persistence.AzureTable.Common;
-
-namespace SmartGrid.Infrastructure.Persistence.AzureTable.Entities
+﻿namespace SmartGrid.Infrastructure.Persistence.AzureTable.Entities
 {
     internal class TelemetryEntity : BaseTableEntity
     {

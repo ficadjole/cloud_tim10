@@ -7,11 +7,6 @@ using SmartGrid.Domain.Events;
 using SmartGrid.Domain.Models;
 using SmartGrid.Infrastructure.Common.Options;
 using SmartGrid.Infrastructure.Persistence.AzureQueue.Mappers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SmartGrid.Infrastructure.Persistence.AzureQueue.Services
 {
@@ -26,11 +21,11 @@ namespace SmartGrid.Infrastructure.Persistence.AzureQueue.Services
                logger),
           IUserCreatedQueueService
     {
-        public async Task SendUserCreatedMessageAsync(User user,string setPasswordJWTToken, CancellationToken ct = default)
+        public async Task SendUserCreatedMessageAsync(User user, string setPasswordJWTToken, CancellationToken ct = default)
         {
             var message = user.ToQueueMessage(setPasswordJWTToken);
 
-            if(message != null)
+            if (message != null)
             {
                 await base.SendMessageAsync(message, ct);
             }

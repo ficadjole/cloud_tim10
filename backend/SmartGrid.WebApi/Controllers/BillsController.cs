@@ -4,7 +4,6 @@ using SmartGrid.Application.Features.Bills.Queries.GetBillPdf;
 using SmartGrid.Application.Features.Bills.Queries.GetBillsByMeter;
 using SmartGrid.WebApi.DTOs;
 using SmartGrid.WebApi.Extensions;
-using System.Threading.Tasks;
 
 namespace SmartGrid.WebApi.Controllers
 {

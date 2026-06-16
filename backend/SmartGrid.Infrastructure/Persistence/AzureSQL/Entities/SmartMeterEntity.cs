@@ -1,10 +1,5 @@
 ﻿using SmartGrid.Domain.Enums;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Entities
 {
@@ -15,7 +10,7 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Entities
         public string SerialNumber { get; set; } = null!;
         public ConnectionType ConnectionType { get; set; }
         public double MaxPower { get; set; }
-        public string? Note {  get; set; }
+        public string? Note { get; set; }
         public SmartMeterStatus Status { get; set; }
         public DateTime RegisteredAt { get; set; }
         public double? UserLimitValue { get; set; }

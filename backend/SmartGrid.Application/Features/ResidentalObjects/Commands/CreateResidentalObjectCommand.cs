@@ -5,11 +5,6 @@ using SmartGrid.Application.Interfaces.Repositories;
 using SmartGrid.Domain.Common;
 using SmartGrid.Domain.Enums;
 using SmartGrid.Domain.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SmartGrid.Application.Features.ResidentalObjects.Commands
 {
@@ -17,12 +12,12 @@ namespace SmartGrid.Application.Features.ResidentalObjects.Commands
     public record CreateResidentalObjectCommand : IRequest<Result<string>>
     {
         public string Name { get; init; } = string.Empty;
-        public ObjectType Type {  get; init; }
-        public string Street {  get; init; } = string.Empty;
-        public string Number {  get; init; } = string.Empty;
+        public ObjectType Type { get; init; }
+        public string Street { get; init; } = string.Empty;
+        public string Number { get; init; } = string.Empty;
         public string City { get; init; } = string.Empty;
         public string? Description { get; init; }
-        public string OwnerId {  get; init; } = string.Empty;
+        public string OwnerId { get; init; } = string.Empty;
     }
 
     //VALIDATOR 
@@ -31,7 +26,7 @@ namespace SmartGrid.Application.Features.ResidentalObjects.Commands
         public CreateResidentalObjectValidator()
         {
             RuleFor(x => x.Name).NotEmpty().WithMessage("Name is required");
-            RuleFor(x => x.Type).IsInEnum().WithMessage("Please select a valid object type."); 
+            RuleFor(x => x.Type).IsInEnum().WithMessage("Please select a valid object type.");
             RuleFor(x => x.City).NotEmpty().WithMessage("City is required.");
             RuleFor(x => x.Street).NotEmpty().WithMessage("Street is required.");
             RuleFor(x => x.Number).NotEmpty().WithMessage("Number is required.");

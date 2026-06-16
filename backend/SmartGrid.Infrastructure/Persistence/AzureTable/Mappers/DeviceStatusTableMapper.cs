@@ -17,7 +17,7 @@ namespace SmartGrid.Infrastructure.Persistence.AzureTable.Mappers
                 LastVoltageL2 = domain.LastVoltageL2,
                 LastVoltageL3 = domain.LastVoltageL3,
             };
-            
+
         }
         public DeviceStatus? ToDomain(DeviceStatusEntity entity)
         {

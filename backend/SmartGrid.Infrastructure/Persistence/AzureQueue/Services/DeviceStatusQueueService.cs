@@ -32,7 +32,7 @@ namespace SmartGrid.Infrastructure.Persistence.AzureQueue.Services
 
             if (domainModel == null)
             {
-    
+
                 _logger.LogError("Failed to map message {MessageId} to domain model.", "...");
 
                 await queueMessageWrapper.CompleteAsync();

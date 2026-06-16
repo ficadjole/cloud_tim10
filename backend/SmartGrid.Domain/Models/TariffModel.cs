@@ -1,11 +1,6 @@
 ﻿using SmartGrid.Domain.Common;
 using SmartGrid.Domain.Enums;
 using SmartGrid.Domain.ValueObjects;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SmartGrid.Domain.Models
 {
@@ -32,7 +27,7 @@ namespace SmartGrid.Domain.Models
                 return Result<TariffModel>.Failure(zonesResult.Error!.Message, ErrorType.Validation);
 
             var costsResult = FixedCosts.Create(billingPowerPrice, supplierCost);
-            if(costsResult.IsFailure)
+            if (costsResult.IsFailure)
                 return Result<TariffModel>.Failure(costsResult.Error!.Message, ErrorType.Validation);
 
             return Result<TariffModel>.Success(new TariffModel(zonesResult.Value, costsResult.Value));
@@ -60,11 +55,11 @@ namespace SmartGrid.Domain.Models
                     float billingPowerPrice, float supplierCost)
         {
             var zonesResult = PriceListZones.Create(ght, glt, bht, blt, rht, rlt);
-            if (zonesResult.IsFailure) 
+            if (zonesResult.IsFailure)
                 return Result.Failure(zonesResult.Error!.Message, ErrorType.Validation);
 
             var costsResult = FixedCosts.Create(billingPowerPrice, supplierCost);
-            if (costsResult.IsFailure) 
+            if (costsResult.IsFailure)
                 return Result.Failure(costsResult.Error!.Message, ErrorType.Validation);
 
             PriceZones = zonesResult.Value;

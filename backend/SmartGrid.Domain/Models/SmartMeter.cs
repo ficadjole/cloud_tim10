@@ -1,11 +1,6 @@
 ﻿using SmartGrid.Domain.Common;
 using SmartGrid.Domain.Enums;
 using SmartGrid.Domain.ValueObjects;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SmartGrid.Domain.Models
 {
@@ -18,8 +13,8 @@ namespace SmartGrid.Domain.Models
         public EntityId Id { get; private set; }
         public SerialNumber SerialNumber { get; private set; }
         public ConnectionType ConnectionType { get; private set; }
-        public PowerLimit MaxPower {  get; private set; }
-        public string? Note {  get; private set; } //nije obavezna
+        public PowerLimit MaxPower { get; private set; }
+        public string? Note { get; private set; } //nije obavezna
         public SmartMeterStatus Status { get; private set; }
         public UserLimit? UserLimit { get; private set; }
         public DateTime? LastLimitAlertSent { get; private set; } //cuva godinu i mesec
@@ -53,7 +48,7 @@ namespace SmartGrid.Domain.Models
                 return Result<SmartMeter>.Failure(serialResult.Error!.Message, ErrorType.Validation);
 
             var powerResult = PowerLimit.CreateFromType(type);
-            if(powerResult.IsFailure)
+            if (powerResult.IsFailure)
                 return Result<SmartMeter>.Failure(powerResult.Error!.Message, ErrorType.Validation);
 
             return Result<SmartMeter>.Success(new SmartMeter(
@@ -115,7 +110,7 @@ namespace SmartGrid.Domain.Models
         public Result SetUserLimit(double value, LimitType type)
         {
             var limitResult = UserLimit.Create(value, type);
-            if(limitResult.IsFailure)
+            if (limitResult.IsFailure)
                 return Result.Failure(limitResult.Error!.Message, ErrorType.Validation);
 
             UserLimit = limitResult.Value;
@@ -135,7 +130,7 @@ namespace SmartGrid.Domain.Models
             if (newType == ConnectionType.Unknown)
                 return Result.Failure("Invalid connnection type.", ErrorType.Validation);
 
-            if(ConnectionType != newType)
+            if (ConnectionType != newType)
             {
                 var powerResult = PowerLimit.CreateFromType(newType);
                 if (powerResult.IsFailure) return powerResult;
@@ -157,8 +152,8 @@ namespace SmartGrid.Domain.Models
 
         public bool ShouldSendAlert()
         {
-            if(UserLimit == null) return false;
-            if(LastLimitAlertSent == null) return true;
+            if (UserLimit == null) return false;
+            if (LastLimitAlertSent == null) return true;
 
             return LastLimitAlertSent.Value.Month != DateTime.UtcNow.Month || LastLimitAlertSent.Value.Year != DateTime.UtcNow.Year;
         }
@@ -174,7 +169,7 @@ namespace SmartGrid.Domain.Models
 
             return Result.Success();
         }
-        
+
         public void AssignToResidentalObject(EntityId id) => ResidentalObjectId = id;
 
         #endregion

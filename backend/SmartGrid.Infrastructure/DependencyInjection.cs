@@ -5,14 +5,10 @@ using SmartGrid.Application.Common.Options;
 using SmartGrid.Application.Interfaces;
 using SmartGrid.Application.Interfaces.Repositories;
 using SmartGrid.Application.Interfaces.Storage;
-using SmartGrid.Domain.Models;
 using SmartGrid.Infrastructure.Common.Options;
 using SmartGrid.Infrastructure.Extensions;
 using SmartGrid.Infrastructure.Persistence.AzureBlob.Storages;
-using SmartGrid.Infrastructure.Persistence.AzureSQL.Common;
 using SmartGrid.Infrastructure.Persistence.AzureSQL.Context;
-using SmartGrid.Infrastructure.Persistence.AzureSQL.Entities;
-using SmartGrid.Infrastructure.Persistence.AzureSQL.Mappers;
 using SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories;
 using SmartGrid.Infrastructure.Services;
 

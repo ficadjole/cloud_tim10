@@ -6,11 +6,6 @@ using SmartGrid.Domain.ValueObjects;
 using SmartGrid.Infrastructure.Persistence.AzureSQL.Common;
 using SmartGrid.Infrastructure.Persistence.AzureSQL.Context;
 using SmartGrid.Infrastructure.Persistence.AzureSQL.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
 {
@@ -20,7 +15,7 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
         private readonly ISQLTableMapper<ResidentalObject, ResidentalObjectEntity> _mapper;
         private readonly ISQLTableMapper<SmartMeter, SmartMeterEntity> _meterMapper;
 
-        public ResidentalObjectRepository(SmartMeteringDbContext dbContext, 
+        public ResidentalObjectRepository(SmartMeteringDbContext dbContext,
                                           ISQLTableMapper<ResidentalObject, ResidentalObjectEntity> mapper,
                                           ISQLTableMapper<SmartMeter, SmartMeterEntity> meterMapper)
         {

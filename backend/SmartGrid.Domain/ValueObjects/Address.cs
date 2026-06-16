@@ -1,10 +1,5 @@
 ﻿using SmartGrid.Domain.Common;
 using SmartGrid.Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SmartGrid.Domain.ValueObjects
 {
@@ -26,7 +21,7 @@ namespace SmartGrid.Domain.ValueObjects
             if (string.IsNullOrWhiteSpace(street))
                 return Result<Address>.Failure("Street is required.", ErrorType.Validation);
 
-            if(string.IsNullOrWhiteSpace(number))
+            if (string.IsNullOrWhiteSpace(number))
                 return Result<Address>.Failure("Number is required.", ErrorType.Validation);
 
             if (string.IsNullOrWhiteSpace(city))

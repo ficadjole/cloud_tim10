@@ -4,17 +4,12 @@ using SmartGrid.Application.Interfaces;
 using SmartGrid.Application.Interfaces.Repositories;
 using SmartGrid.Domain.Common;
 using SmartGrid.Domain.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SmartGrid.Application.Features.TariffModels.Queries
 {
     //Dto koje ce se korisiti na frontu
     public record TariffDto(
-        float Green_HT, 
+        float Green_HT,
         float Green_LT,
         float Blue_HT,
         float Blue_LT,
@@ -34,7 +29,7 @@ namespace SmartGrid.Application.Features.TariffModels.Queries
             try
             {
                 var tariff = await tariffModelRepository.GetActiveTariffAsync();
-                if(tariff == null)
+                if (tariff == null)
                 {
                     logger.LogWarning("Active tariff model not found in the database.");
                     return Result<TariffDto>.Failure("Active tariff model not found");

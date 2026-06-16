@@ -1,12 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
-using SmartGrid.ITSimulator.Enums;
+using SmartGrid.ITSimulator.Models;
 using SmartGrid.ITSimulator.Services;
 using SmartGrid.ITSimulator.UI;
-using SmartGrid.ITSimulator.Models;
-using System;
-using System.IO;
-using System.Net.Http;
-using System.Threading.Tasks;
 
 Console.WriteLine("[DEBUG] Pokretanje programa...");
 try

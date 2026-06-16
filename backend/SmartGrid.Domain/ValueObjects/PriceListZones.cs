@@ -1,10 +1,5 @@
 ﻿using SmartGrid.Domain.Common;
 using SmartGrid.Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SmartGrid.Domain.ValueObjects
 {
@@ -17,7 +12,7 @@ namespace SmartGrid.Domain.ValueObjects
         public float Red_HT { get; }
         public float Red_LT { get; }
 
-        private PriceListZones(float ght, float glt, float bht, float blt, float rht, float rlt) 
+        private PriceListZones(float ght, float glt, float bht, float blt, float rht, float rlt)
         {
             Green_HT = ght;
             Green_LT = glt;

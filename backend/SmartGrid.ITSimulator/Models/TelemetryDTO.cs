@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SmartGrid.ITSimulator.Models
+﻿namespace SmartGrid.ITSimulator.Models
 {
     public class TelemetryDTO
     {

@@ -2,9 +2,6 @@
 using PdfSharpCore.Drawing;
 using PdfSharpCore.Pdf;
 using SmartGrid.Application.Interfaces;
-using System;
-using System.IO;
-using System.Threading.Tasks;
 
 namespace SmartGrid.Infrastructure.Services
 {

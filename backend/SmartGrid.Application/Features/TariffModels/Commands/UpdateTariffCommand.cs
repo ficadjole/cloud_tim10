@@ -5,11 +5,6 @@ using SmartGrid.Application.Interfaces.Repositories;
 using SmartGrid.Domain.Common;
 using SmartGrid.Domain.Enums;
 using SmartGrid.Domain.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SmartGrid.Application.Features.TariffModels.Commands
 {
@@ -65,7 +60,7 @@ namespace SmartGrid.Application.Features.TariffModels.Commands
                 await tariffModelRepository.SaveAsync(tariffResult.Value);
 
                 return Result.Success();
-            } 
+            }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error occured while updating the tariff model.");

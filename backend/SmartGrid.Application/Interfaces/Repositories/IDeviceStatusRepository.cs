@@ -10,6 +10,6 @@ namespace SmartGrid.Application.Interfaces.Repositories
         Task<DeviceStatus?> GetByIdAsync(DeviceType type, EntityId deviceId, CancellationToken ct = default);
         Task SaveAsync(DeviceStatus status, CancellationToken ct = default);
         Task<IReadOnlyCollection<DeviceStatus>> GetOfflineSinceAsync(DateTime threshold, CancellationToken ct = default);
-        Task<IReadOnlyCollection<DeviceStatus>> GetAllAsync(CancellationToken ct = default); 
+        Task<IReadOnlyCollection<DeviceStatus>> GetAllAsync(CancellationToken ct = default);
     }
 }

@@ -6,11 +6,6 @@ using SmartGrid.Application.Interfaces.Repositories;
 using SmartGrid.Domain.Common;
 using SmartGrid.Domain.Enums;
 using SmartGrid.Domain.ValueObjects;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SmartGrid.Application.Features.Users.Commands
 {
@@ -46,7 +41,7 @@ namespace SmartGrid.Application.Features.Users.Commands
 
             var entityId = EntityId.Create(request.UserId);
 
-            if(entityId.IsFailure)
+            if (entityId.IsFailure)
                 return Result<string>.Failure("Invalid User ID.", ErrorType.Validation);
 
             try
@@ -71,7 +66,7 @@ namespace SmartGrid.Application.Features.Users.Commands
                 return Result<string>.Success("Initial password set successfully.");
 
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return Result<string>.Failure($"An error occurred while setting the initial password: {ex.Message}", ErrorType.Unexpected);
             }

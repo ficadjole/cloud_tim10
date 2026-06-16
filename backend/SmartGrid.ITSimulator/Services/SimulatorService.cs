@@ -1,5 +1,4 @@
-﻿using System;
-using SmartGrid.ITSimulator.Enums;
+﻿using SmartGrid.ITSimulator.Enums;
 using SmartGrid.ITSimulator.Models;
 
 namespace SmartGrid.ITSimulator.Services
@@ -19,7 +18,7 @@ namespace SmartGrid.ITSimulator.Services
             string deviceId,
             string deviceName,
             double nominalPower,
-            DeviceType deviceType) 
+            DeviceType deviceType)
         {
             if (string.IsNullOrWhiteSpace(deviceId))
                 throw new ArgumentException("Device Id cannot be empty", nameof(deviceId));
@@ -31,10 +30,10 @@ namespace SmartGrid.ITSimulator.Services
                 throw new ArgumentException("Nominal power must be greater than zero", nameof(nominalPower));
 
             double currentLoadKW = _random.NextDouble() * (nominalPower + _maxPowerVariation);
-            double totalConsumptionKWh = 1250.50 + (_random.NextDouble() * 10); 
+            double totalConsumptionKWh = 1250.50 + (_random.NextDouble() * 10);
 
             bool triggerVoltageDrop = _random.Next(1, 101) <= 5;
-            double baseVoltage = triggerVoltageDrop ? 180.0 : 230.0; 
+            double baseVoltage = triggerVoltageDrop ? 180.0 : 230.0;
 
             double v1 = baseVoltage + (_random.NextDouble() * 6 - 3);
             double? v2 = null;

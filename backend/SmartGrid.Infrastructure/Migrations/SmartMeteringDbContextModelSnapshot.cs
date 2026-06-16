@@ -70,7 +70,7 @@ namespace SmartGrid.Infrastructure.Migrations
 
                     b.HasIndex("OwnerId");
 
-                    b.ToTable("Bills");
+                    b.ToTable("Bills", (string)null);
                 });
 
             modelBuilder.Entity("SmartGrid.Infrastructure.Persistence.AzureSQL.Entities.ManualStateLogEntity", b =>
@@ -97,7 +97,7 @@ namespace SmartGrid.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ManualStateLogs");
+                    b.ToTable("ManualStateLogs", (string)null);
                 });
 
             modelBuilder.Entity("SmartGrid.Infrastructure.Persistence.AzureSQL.Entities.ResidentalObjectEntity", b =>
@@ -135,7 +135,7 @@ namespace SmartGrid.Infrastructure.Migrations
 
                     b.HasIndex("OwnerId");
 
-                    b.ToTable("ResidentalObjects");
+                    b.ToTable("ResidentalObjects", (string)null);
                 });
 
             modelBuilder.Entity("SmartGrid.Infrastructure.Persistence.AzureSQL.Entities.SmartMeterEntity", b =>
@@ -185,7 +185,7 @@ namespace SmartGrid.Infrastructure.Migrations
 
                     b.HasIndex("ResidentalObjectId");
 
-                    b.ToTable("SmartMeters");
+                    b.ToTable("SmartMeters", (string)null);
                 });
 
             modelBuilder.Entity("SmartGrid.Infrastructure.Persistence.AzureSQL.Entities.TariffModelEntity", b =>
@@ -220,7 +220,7 @@ namespace SmartGrid.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TariffModels");
+                    b.ToTable("TariffModels", (string)null);
                 });
 
             modelBuilder.Entity("SmartGrid.Infrastructure.Persistence.AzureSQL.Entities.UserEntity", b =>
@@ -263,7 +263,7 @@ namespace SmartGrid.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("SmartGrid.Infrastructure.Persistence.AzureSQL.Entities.BillEntity", b =>

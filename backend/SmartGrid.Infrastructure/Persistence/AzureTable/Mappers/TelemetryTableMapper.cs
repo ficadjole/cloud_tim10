@@ -36,8 +36,8 @@ namespace SmartGrid.Infrastructure.Persistence.AzureTable.Mappers
             }
 
             var telemetryResult = Telemetry.Load(
-                entity.RowKey,           
-                entity.PartitionKey,    
+                entity.RowKey,
+                entity.PartitionKey,
                 parsedType,
                 entity.ObservationTime,
                 entity.TotalConsumptionKWh,

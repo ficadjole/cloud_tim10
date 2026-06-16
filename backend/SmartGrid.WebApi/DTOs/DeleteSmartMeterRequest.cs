@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using SmartGrid.Application.Features.ResidentalObjects.Commands;
 using SmartGrid.Application.Features.SmartMeters.Commands;
 using SmartGrid.Domain.Common;
 using SmartGrid.Domain.Enums;

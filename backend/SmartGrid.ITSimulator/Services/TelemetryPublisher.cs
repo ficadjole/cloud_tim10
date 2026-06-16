@@ -1,8 +1,6 @@
-﻿using System;
+﻿using SmartGrid.ITSimulator.Models;
 using System.Net.Http.Json;
 using System.Text.Json;
-using System.Threading.Tasks;
-using SmartGrid.ITSimulator.Models;
 
 namespace SmartGrid.ITSimulator.Services
 {

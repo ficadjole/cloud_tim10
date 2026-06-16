@@ -1,8 +1,7 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using SmartGrid.Domain.Enums;
 using SmartGrid.Infrastructure.Persistence.AzureSQL.EntityTypeConfigurations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Entities
 {

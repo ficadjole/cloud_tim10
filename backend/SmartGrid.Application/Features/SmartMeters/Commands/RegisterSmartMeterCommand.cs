@@ -6,11 +6,6 @@ using SmartGrid.Domain.Common;
 using SmartGrid.Domain.Enums;
 using SmartGrid.Domain.Models;
 using SmartGrid.Domain.ValueObjects;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SmartGrid.Application.Features.SmartMeters.Commands
 {
@@ -18,7 +13,7 @@ namespace SmartGrid.Application.Features.SmartMeters.Commands
     public record RegisterSmartMeterCommand : IRequest<Result>
     {
         public string ResidentalObjectId { get; init; } = string.Empty;
-        public string SerialNumber {  get; init; } = string.Empty;
+        public string SerialNumber { get; init; } = string.Empty;
         public ConnectionType ConnectionType { get; init; }
         public string? Note { get; init; }
     }
@@ -48,28 +43,28 @@ namespace SmartGrid.Application.Features.SmartMeters.Commands
                 if (idResult.IsFailure) return Result.Failure("Invalid object ID format.", ErrorType.Validation);
 
                 var residentalObject = await residentalObjectRepository.GetByIdAsync(idResult.Value, cancellationToken);
-                if(residentalObject == null)
+                if (residentalObject == null)
                     return Result.Failure("Residental object not found.", ErrorType.NotFound);
 
                 if (residentalObject.Meters.Any(m => m.SerialNumber.Value == request.SerialNumber))
                     return Result.Failure("This meter is already connected to this object.", ErrorType.Conflict);
 
                 var meterResult = SmartMeter.Create(request.SerialNumber, request.ConnectionType, request.Note);
-                if(meterResult.IsFailure) return meterResult;
+                if (meterResult.IsFailure) return meterResult;
 
                 var meter = meterResult.Value;
 
                 meter.AssignToResidentalObject(idResult.Value);
 
                 var connectResult = residentalObject.ConnectMeter(meter);
-                if(connectResult.IsFailure) return connectResult;
+                if (connectResult.IsFailure) return connectResult;
 
                 await smartMeterRepository.AddAsync(meter, cancellationToken);
                 await residentalObjectRepository.UpdateAsync(residentalObject, cancellationToken);
 
                 logger.LogInformation("Smart meter {Serial} registered and connected to object {ObjectId}", request.SerialNumber, request.ResidentalObjectId);
                 return Result.Success();
-            } 
+            }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error occurred during smart meter registration for object {ObjectId}", request.ResidentalObjectId);

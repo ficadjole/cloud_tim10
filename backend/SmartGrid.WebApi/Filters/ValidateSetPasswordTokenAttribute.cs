@@ -15,9 +15,9 @@ namespace SmartGrid.WebApi.Filters
 
             var principal = tokenService.ValidateSetPasswordToken(token);
 
-            if(principal.IsFailure)
+            if (principal.IsFailure)
             {
-                context.Result = new BadRequestObjectResult(new {message = "Link is not valid or experied",error=principal.Error});
+                context.Result = new BadRequestObjectResult(new { message = "Link is not valid or experied", error = principal.Error });
                 return;
             }
 

@@ -1,6 +1,3 @@
-using System;
-using System.Threading.Tasks;
-using Azure.Storage.Queues.Models;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
@@ -20,7 +17,7 @@ public class UserCreatedFunction(ILogger<UserCreatedFunction> logger, IMediator 
 
             var result = await mediator.Send(new ProcessCreatedUserCommand(message.Email, message.FullName, message.SetPasswordJWTToken));
 
-            if(!result.IsSuccess)
+            if (!result.IsSuccess)
             {
                 logger.LogWarning("Failed to process UserCreatedMessage for email: {Email}. Error: {ErrorMessage}", message.Email, result.Error?.Message);
                 throw new Exception($"Failed to process UserCreatedMessage for email: {message.Email}. Error: {result.Error?.Message}");

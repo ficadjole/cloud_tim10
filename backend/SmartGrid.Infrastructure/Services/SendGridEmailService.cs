@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using SendGrid;
 using SendGrid.Helpers.Mail;
 using SmartGrid.Application.Interfaces;
@@ -48,7 +47,7 @@ namespace SmartGrid.Infrastructure.Services
                 <p>Link važi 24 sata.</p>"
             };
 
-            message.AddTo(new EmailAddress(email,fullname));
+            message.AddTo(new EmailAddress(email, fullname));
 
             await client.SendEmailAsync(message);
         }

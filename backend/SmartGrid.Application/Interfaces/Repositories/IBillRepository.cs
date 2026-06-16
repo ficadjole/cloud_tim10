@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using SmartGrid.Domain.Models;
+﻿using SmartGrid.Domain.Models;
 using SmartGrid.Domain.ValueObjects;
 
 namespace SmartGrid.Application.Interfaces.Repositories

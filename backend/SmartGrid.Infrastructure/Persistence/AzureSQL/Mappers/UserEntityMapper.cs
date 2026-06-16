@@ -1,13 +1,7 @@
 ﻿using SmartGrid.Domain.Enums;
 using SmartGrid.Domain.Models;
-using SmartGrid.Domain.ValueObjects;
 using SmartGrid.Infrastructure.Persistence.AzureSQL.Common;
 using SmartGrid.Infrastructure.Persistence.AzureSQL.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Mappers
 {
@@ -31,9 +25,9 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Mappers
 
         public User? MapToDomain(UserEntity entity)
         {
-            
+
             var role = Enum.TryParse<UserRoles>(entity.Role.ToString(), out var parsedRole) ? parsedRole : UserRoles.User;
-            
+
             var accountStatus = Enum.TryParse<UserAccountStatus>(entity.AccountStatus.ToString(), out var parsedStatus) ? parsedStatus : UserAccountStatus.WaitingForConfirmation;
 
             var userResult = User.Load(
@@ -47,7 +41,8 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Mappers
                 accountStatus: accountStatus
             );
 
-            if (userResult.IsFailure) {
+            if (userResult.IsFailure)
+            {
                 return null;
             }
 

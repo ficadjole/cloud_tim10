@@ -1,6 +1,4 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using SmartGrid.Domain.Common;
+﻿using SmartGrid.Domain.Common;
 using SmartGrid.Domain.Models;
 
 namespace SmartGrid.Application.Interfaces

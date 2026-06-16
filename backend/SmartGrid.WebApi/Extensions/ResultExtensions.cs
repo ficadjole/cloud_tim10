@@ -49,6 +49,10 @@ namespace SmartGrid.WebApi.Extensions
             {
                 ErrorType.Validation => new BadRequestObjectResult(errorResponse),
                 ErrorType.NotFound => new NotFoundObjectResult(errorResponse),
+                ErrorType.Conflict => new ConflictObjectResult(errorResponse),
+                ErrorType.Unauthorized => new ObjectResult(errorResponse) { StatusCode = 403 },
+                ErrorType.Authentication => new UnauthorizedObjectResult(errorResponse),
+                ErrorType.Failure => new ObjectResult(errorResponse) { StatusCode = 500 },
                 ErrorType.Unexpected => new ObjectResult(errorResponse) { StatusCode = 500 },
                 _ => new BadRequestObjectResult(errorResponse)
             };

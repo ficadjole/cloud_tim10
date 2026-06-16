@@ -1,7 +1,5 @@
-﻿using System;
-using SmartGrid.Domain.Enums;
+﻿using SmartGrid.Domain.Enums;
 using SmartGrid.Domain.Models;
-using SmartGrid.Domain.ValueObjects;
 using SmartGrid.Infrastructure.Persistence.AzureSQL.Common;
 using SmartGrid.Infrastructure.Persistence.AzureSQL.Entities;
 

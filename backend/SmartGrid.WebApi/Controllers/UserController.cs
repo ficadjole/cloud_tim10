@@ -1,6 +1,5 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SmartGrid.Application.Features.Users.Commands;
 using SmartGrid.WebApi.DTOs;
@@ -11,7 +10,7 @@ namespace SmartGrid.WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CreateUserController(IMediator mediator) : ControllerBase
+    public class UserController(IMediator mediator) : ControllerBase
     {
         [HttpPost]
         [Authorize(Roles = "SysAdmin")]
@@ -56,6 +55,48 @@ namespace SmartGrid.WebApi.Controllers
                 return BadRequest("Invalid email.");
 
             var result = await mediator.Send(commandResult);
+
+            return result.ToActionResult();
+        }
+
+        [HttpPut]
+        [Route("{id}")]
+        [Authorize]
+        public async Task<IActionResult> UpdateUser([FromRoute] string id, [FromBody] UpdateUserRequest request)
+        {
+            var commandResult = request.ToCommand(id);
+
+            if (commandResult.IsFailure)
+                return BadRequest(commandResult.Error!.Message);
+
+            var result = await mediator.Send(commandResult.Value);
+
+            return result.ToActionResult();
+        }
+
+        [HttpPatch("{id}/status")]
+        [Authorize(Roles = "SysAdmin")]
+        public async Task<IActionResult> UpdateUserStatus([FromRoute] string id, [FromBody] UpdateUserStatusRequest request)
+        {
+            var commandResult = request.ToCommand(id);
+
+            if (commandResult.IsFailure)
+                return BadRequest(commandResult.Error!.Message);
+
+            var result = await mediator.Send(commandResult.Value);
+
+            return result.ToActionResult();
+        }
+
+
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "SysAdmin")]
+        public async Task<IActionResult> DeleteUser([FromRoute] string id)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+                return BadRequest("User ID is required.");
+
+            var result = await mediator.Send(new DeleteUserCommand { Id = id });
 
             return result.ToActionResult();
         }

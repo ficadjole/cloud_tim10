@@ -6,11 +6,6 @@ using SmartGrid.Application.Interfaces.Messaging;
 using SmartGrid.Application.Interfaces.Repositories;
 using SmartGrid.Domain.Common;
 using SmartGrid.Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SmartGrid.Application.Features.Users.Commands
 {
@@ -30,7 +25,7 @@ namespace SmartGrid.Application.Features.Users.Commands
         }
     }
 
-    internal class ResetPasswordHandler(IUserRepository userRepository,IJwtService jwtService, IResetPasswordQueueService resetPasswordQueueService,ILogger<ResetPasswordHandler> logger) : IRequestHandler<ResetPasswordCommand, Result>
+    internal class ResetPasswordHandler(IUserRepository userRepository, IJwtService jwtService, IResetPasswordQueueService resetPasswordQueueService, ILogger<ResetPasswordHandler> logger) : IRequestHandler<ResetPasswordCommand, Result>
     {
         public async Task<Result> Handle(ResetPasswordCommand request, CancellationToken ct)
         {
@@ -41,7 +36,7 @@ namespace SmartGrid.Application.Features.Users.Commands
 
             var resetToken = jwtService.GenerateSetPasswordToken(user.Id.Value, user.Email);
 
-            if(resetToken.IsFailure)
+            if (resetToken.IsFailure)
                 return Result.Failure("Failed to generate reset token.", ErrorType.Unexpected);
 
             await resetPasswordQueueService.SendResetPasswordMessageAsync(user.Email, resetToken.Value, ct);

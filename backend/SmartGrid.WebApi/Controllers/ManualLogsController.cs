@@ -1,12 +1,8 @@
-﻿using Azure.Core;
-using MediatR;
-using Microsoft.AspNetCore.Http;
+﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SmartGrid.Application.Features.ManualLogs.Commands;
 using SmartGrid.WebApi.DTOs;
 using SmartGrid.WebApi.Extensions;
-using System.Net;
-using System.Runtime.CompilerServices;
 
 namespace SmartGrid.WebApi.Controllers
 {

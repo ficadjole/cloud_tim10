@@ -1,12 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SmartGrid.Domain.Enums;
 using SmartGrid.Infrastructure.Persistence.AzureSQL.EntityTypeConfigurations;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Entities
 {
@@ -28,7 +23,7 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Entities
 
         public UserAccountStatus AccountStatus { get; set; } = UserAccountStatus.WaitingForConfirmation;
 
-        public ICollection<ResidentalObjectEntity> ResidentalObjects { get; set; } = null!; 
+        public ICollection<ResidentalObjectEntity> ResidentalObjects { get; set; } = null!;
 
     }
 }

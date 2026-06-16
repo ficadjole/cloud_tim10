@@ -1,9 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Options;
-using Stripe;
-using Stripe.Checkout;
+﻿using Microsoft.Extensions.Options;
 using SmartGrid.Application.Interfaces;
 using SmartGrid.Application.Interfaces.Repositories;
 using SmartGrid.Domain.Common;
@@ -11,6 +6,8 @@ using SmartGrid.Domain.Enums;
 using SmartGrid.Domain.Models;
 using SmartGrid.Domain.ValueObjects;
 using SmartGrid.Infrastructure.Common.Options;
+using Stripe;
+using Stripe.Checkout;
 
 namespace SmartGrid.Infrastructure.Services
 {

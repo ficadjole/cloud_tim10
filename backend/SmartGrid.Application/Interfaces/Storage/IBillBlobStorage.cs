@@ -1,7 +1,4 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-
-namespace SmartGrid.Application.Interfaces.Storage
+﻿namespace SmartGrid.Application.Interfaces.Storage
 {
     public interface IBillBlobStorage
     {

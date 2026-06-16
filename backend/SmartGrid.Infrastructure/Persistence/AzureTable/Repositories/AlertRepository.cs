@@ -1,16 +1,10 @@
 ﻿using Azure.Data.Tables;
 using Microsoft.Extensions.Options;
 using SmartGrid.Application.Interfaces.Repositories;
-using SmartGrid.Domain.Models;
 using SmartGrid.Domain.ValueObjects;
 using SmartGrid.Infrastructure.Common.Options;
 using SmartGrid.Infrastructure.Persistence.AzureTable.Common;
 using SmartGrid.Infrastructure.Persistence.AzureTable.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SmartGrid.Infrastructure.Persistence.AzureTable.Repositories
 {

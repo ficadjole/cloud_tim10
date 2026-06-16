@@ -21,9 +21,9 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
 
         public async Task<ManualStateLog?> GetById(EntityId id, CancellationToken ct = default)
         {
-            var entity =  await _dbContext.ManualStateLogs.AsNoTracking().FirstOrDefaultAsync(e => e.Id.ToString() == id.ToString(), ct);
-            
-            if(entity == null)
+            var entity = await _dbContext.ManualStateLogs.AsNoTracking().FirstOrDefaultAsync(e => e.Id.ToString() == id.ToString(), ct);
+
+            if (entity == null)
                 return null;
 
             return _mapper.MapToDomain(entity);
@@ -41,7 +41,7 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
         {
             var entity = _mapper.MapToEntity(log);
 
-             _dbContext.ManualStateLogs.Update(entity);
+            _dbContext.ManualStateLogs.Update(entity);
             await _dbContext.SaveChangesAsync(ct);
         }
     }

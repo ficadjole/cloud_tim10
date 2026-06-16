@@ -1,10 +1,8 @@
-using Azure.Storage.Queues.Models;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using SmartGrid.Application.Features.Users.Commands;
 using SmartGrid.Infrastructure.Persistence.AzureQueue.Messages;
-using System;
 
 namespace SmartGrid.Functions.Processing;
 

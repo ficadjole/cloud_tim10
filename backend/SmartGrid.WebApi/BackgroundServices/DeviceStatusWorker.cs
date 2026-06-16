@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
-using SmartGrid.Application.Interfaces;
 using SmartGrid.Application.Interfaces.Messaging;
 using SmartGrid.Application.Interfaces.Repositories;
-using SmartGrid.Domain.ValueObjects;
 using SmartGrid.WebApi.Hubs;
 
 namespace SmartGrid.WebApi.BackgroundServices
@@ -33,7 +31,7 @@ namespace SmartGrid.WebApi.BackgroundServices
                     if (message != null)
                     {
                         foundMessage = true;
-                        var alert = message.Body; 
+                        var alert = message.Body;
 
                         logger.LogInformation("[WORKER] Received alert for device: {DeviceId} - Type: {Type}",
                             alert.DeviceId.Value, alert.AlertType);

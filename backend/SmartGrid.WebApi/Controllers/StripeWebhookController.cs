@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.Threading.Tasks;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using SmartGrid.Application.Features.Bills.Commands;

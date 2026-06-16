@@ -8,7 +8,6 @@ using SmartGrid.Application.Interfaces.Repositories;
 using SmartGrid.Domain.Common;
 using SmartGrid.Domain.Enums;
 using SmartGrid.Domain.Models;
-using System.Data;
 using UserService.DTOs;
 
 namespace SmartGrid.Application.Features.Users.Commands
@@ -30,8 +29,9 @@ namespace SmartGrid.Application.Features.Users.Commands
     //VALIDATOR
     public class CreateUserValidator : AbstractValidator<CreateUserCommand>
     {
-        public CreateUserValidator() { 
-        
+        public CreateUserValidator()
+        {
+
             RuleFor(t => t.FirstName)
                 .NotEmpty().WithMessage("First name is required.");
 
@@ -46,7 +46,7 @@ namespace SmartGrid.Application.Features.Users.Commands
                 .NotEmpty().WithMessage("Phone number is required.")
                 .Matches(@"^\+?[1-9]\d{1,14}$").WithMessage("Invalid phone number format.");
 
-           RuleFor(t => t.Role).IsValidUserRole();
+            RuleFor(t => t.Role).IsValidUserRole();
         }
     }
 
@@ -60,35 +60,36 @@ namespace SmartGrid.Application.Features.Users.Commands
         public async Task<Result<AuthResponseDto>> Handle(CreateUserCommand request, CancellationToken ct)
         {
 
-                var userResult = User.Create(
-                    request.FirstName,
-                    request.LastName,
-                    request.Email,
-                    request.PhoneNumber,
-                    request.Role
-                );
+            var userResult = User.Create(
+                request.FirstName,
+                request.LastName,
+                request.Email,
+                request.PhoneNumber,
+                request.Role
+            );
 
-                if (userResult.IsFailure)
-                {
-                    return Result<AuthResponseDto>.Failure(userResult.Error!.Message,ErrorType.Validation);
-                }
+            if (userResult.IsFailure)
+            {
+                return Result<AuthResponseDto>.Failure(userResult.Error!.Message, ErrorType.Validation);
+            }
 
-                var user = userResult.Value;
+            var user = userResult.Value;
             try
             {
-                await userRepository.AddAsync(user,ct);
+                await userRepository.AddAsync(user, ct);
 
-                logger.LogInformation("New user {FirstName} created with ID: {UserId}",user.FirstName ,user.Id);
+                logger.LogInformation("New user {FirstName} created with ID: {UserId}", user.FirstName, user.Id);
 
-                var token = jwtService.GenerateSetPasswordToken(user.Id,user.Email);
+                var token = jwtService.GenerateSetPasswordToken(user.Id, user.Email);
 
                 logger.LogInformation("Set password token generated for user ID: {UserId}", user.Id);
 
-                if (token.IsFailure) { 
+                if (token.IsFailure)
+                {
                     return Result<AuthResponseDto>.Failure("Failed to generate set password token.", ErrorType.Failure);
                 }
 
-                await userCreatedQueueService.SendUserCreatedMessageAsync(user,token.Value,ct);
+                await userCreatedQueueService.SendUserCreatedMessageAsync(user, token.Value, ct);
 
                 logger.LogInformation("User created message sent to queue for user ID: {UserId}", user.Id);
 

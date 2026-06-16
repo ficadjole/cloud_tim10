@@ -1,10 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SmartGrid.Infrastructure.Persistence.AzureSQL.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Context
 {
@@ -18,7 +13,7 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Context
         {
         }
 
-        public DbSet<UserEntity> Users {get; set; }
+        public DbSet<UserEntity> Users { get; set; }
         public DbSet<ResidentalObjectEntity> ResidentalObjects { get; set; }
         public DbSet<SmartMeterEntity> SmartMeters { get; set; }
         public DbSet<TariffModelEntity> TariffModels { get; set; }
@@ -47,7 +42,7 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Context
             {
                 string connectionString = Environment.GetEnvironmentVariable("SqlConnectionString");
 
-                if(!string.IsNullOrEmpty(connectionString))
+                if (!string.IsNullOrEmpty(connectionString))
                 {
                     optionsBuilder.UseSqlServer(connectionString);
                 }

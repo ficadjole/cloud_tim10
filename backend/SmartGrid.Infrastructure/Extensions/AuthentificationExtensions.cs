@@ -30,11 +30,12 @@ namespace SmartGrid.Infrastructure.Extensions
                         Encoding.UTF8.GetBytes(configuration["JwtOptions:SecretKey"]))
                 };
 
-                options.Events = new JwtBearerEvents { 
-                    
+                options.Events = new JwtBearerEvents
+                {
+
                     OnChallenge = context =>
                     {
-                    
+
                         context.HandleResponse();
 
                         context.Response.StatusCode = StatusCodes.Status401Unauthorized;

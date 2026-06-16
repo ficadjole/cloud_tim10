@@ -21,15 +21,16 @@ namespace SmartGrid.WebApi.DTOs
             if (string.IsNullOrWhiteSpace(SerialNumber))
                 return Result<RegisterSmartMeterCommand>.Failure("Serial number is required.", ErrorType.Validation);
 
-            if(string.IsNullOrWhiteSpace(ResidentalObjectId))
+            if (string.IsNullOrWhiteSpace(ResidentalObjectId))
                 return Result<RegisterSmartMeterCommand>.Failure("Object ID is required.", ErrorType.Validation);
 
-            return Result<RegisterSmartMeterCommand>.Success(new RegisterSmartMeterCommand {
+            return Result<RegisterSmartMeterCommand>.Success(new RegisterSmartMeterCommand
+            {
                 ResidentalObjectId = ResidentalObjectId,
                 SerialNumber = SerialNumber,
                 ConnectionType = ConnectionType,
                 Note = Note?.Trim()
-                });
+            });
         }
 
     }

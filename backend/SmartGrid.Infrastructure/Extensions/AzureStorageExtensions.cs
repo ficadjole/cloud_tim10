@@ -44,13 +44,13 @@ namespace SmartGrid.Infrastructure.Extensions
                 section.GetValue<string>("AlertsTable")
             };
 
-            foreach (var table in tables)
-            {
-                if (!string.IsNullOrEmpty(table))
-                {
-                    tableServiceClient.GetTableClient(table).CreateIfNotExists();
-                }
-            }
+            //foreach (var table in tables)
+            //{
+            //    if (!string.IsNullOrEmpty(table))
+            //    {
+            //        tableServiceClient.GetTableClient(table).CreateIfNotExists();
+            //    }
+            //}
 
             services.AddSingleton<ITableMapper<Telemetry, TelemetryEntity>, TelemetryTableMapper>();
             services.AddSingleton<ITableMapper<Device, DeviceEntity>, DeviceTableMapper>();

@@ -1,7 +1,6 @@
 ﻿using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using SmartGrid.Application.Common.Validators;
 using SmartGrid.Application.Features.Telemetries.Events;
 using SmartGrid.Application.Interfaces.Repositories;
 using SmartGrid.Domain.Common;
@@ -79,7 +78,7 @@ namespace SmartGrid.Application.Features.Telemetries.Commands
 
     internal class ProcessTelemetryHandler(
         ITelemetryRepository telemetryRepository,
-        ISmartMeterRepository smartMeterRepository, 
+        ISmartMeterRepository smartMeterRepository,
         IMediator mediator,
         ILogger<ProcessTelemetryHandler> logger)
         : IRequestHandler<ProcessTelemetryCommand, Result>

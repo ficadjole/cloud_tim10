@@ -1,5 +1,4 @@
 ﻿using SmartGrid.ITSimulator.Enums;
-using System;
 
 namespace SmartGrid.ITSimulator.UI
 {

@@ -1,5 +1,4 @@
-﻿using System;
-using SmartGrid.Domain.Common;
+﻿using SmartGrid.Domain.Common;
 using SmartGrid.Domain.Enums;
 using SmartGrid.Domain.ValueObjects;
 

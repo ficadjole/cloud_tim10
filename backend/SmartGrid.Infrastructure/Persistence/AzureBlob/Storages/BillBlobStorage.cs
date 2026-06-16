@@ -2,10 +2,7 @@
 using Microsoft.Extensions.Options;
 using SmartGrid.Application.Interfaces.Storage;
 using SmartGrid.Infrastructure.Common.Options;
-using System.IO;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace SmartGrid.Infrastructure.Persistence.AzureBlob.Storages
 {

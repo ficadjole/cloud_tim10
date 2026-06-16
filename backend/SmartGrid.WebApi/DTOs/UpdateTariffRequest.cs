@@ -8,7 +8,7 @@ namespace SmartGrid.WebApi.DTOs
     public class UpdateTariffRequest
     {
         [FromForm(Name = "GHT")]
-        public float GHT {  get; set; }
+        public float GHT { get; set; }
         [FromForm(Name = "GLT")]
         public float GLT { get; set; }
         [FromForm(Name = "BHT")]
@@ -32,7 +32,7 @@ namespace SmartGrid.WebApi.DTOs
             if (BLT < 0) return Result<UpdateTariffCommand>.Failure("Blue zone (LT) price cannot be negative.", ErrorType.Validation);
             if (RHT < 0) return Result<UpdateTariffCommand>.Failure("Red zone (HT) price cannot be negative.", ErrorType.Validation);
             if (RLT < 0) return Result<UpdateTariffCommand>.Failure("Red zone (LT) price cannot be negative.", ErrorType.Validation);
-           
+
             if (BillingPowerPrice < 0) return Result<UpdateTariffCommand>.Failure("Billing power price cannot be negative.", ErrorType.Validation);
             if (SupplierCost < 0) return Result<UpdateTariffCommand>.Failure("Supplier cost cannot be negative.", ErrorType.Validation);
 

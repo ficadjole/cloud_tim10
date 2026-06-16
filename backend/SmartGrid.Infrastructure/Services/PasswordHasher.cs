@@ -1,10 +1,4 @@
-﻿using BCrypt.Net;
-using SmartGrid.Application.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using SmartGrid.Application.Interfaces;
 
 namespace SmartGrid.Infrastructure.Services
 {

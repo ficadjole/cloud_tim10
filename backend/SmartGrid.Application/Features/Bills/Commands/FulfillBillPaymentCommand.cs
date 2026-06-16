@@ -1,8 +1,6 @@
 ﻿using MediatR;
 using SmartGrid.Application.Interfaces;
 using SmartGrid.Domain.Common;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace SmartGrid.Application.Features.Bills.Commands
 {

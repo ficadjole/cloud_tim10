@@ -96,12 +96,12 @@ namespace SmartGrid.Domain.Models
             CurrentLoadKW = telemetry.CurrentLoadKW;
 
             LastVoltageL1 = telemetry.VoltageL1;
-            if(telemetry.VoltageL2.HasValue)
+            if (telemetry.VoltageL2.HasValue)
             {
                 LastVoltageL2 = telemetry.VoltageL2.Value;
             }
 
-            if(telemetry.VoltageL3.HasValue)
+            if (telemetry.VoltageL3.HasValue)
             {
                 LastVoltageL3 = telemetry.VoltageL3.Value;
             }

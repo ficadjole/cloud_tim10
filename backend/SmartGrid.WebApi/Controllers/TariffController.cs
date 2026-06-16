@@ -31,7 +31,7 @@ namespace SmartGrid.WebApi.Controllers
         public async Task<IActionResult> Update([FromForm] UpdateTariffRequest request)
         {
             var commandResult = request.ToCommand();
-            if(commandResult.IsFailure)
+            if (commandResult.IsFailure)
                 return commandResult.ToActionResult();
 
             var result = await mediator.Send(commandResult.Value);

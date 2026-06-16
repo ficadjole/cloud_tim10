@@ -17,7 +17,7 @@ namespace SmartGrid.WebApi.Controllers
         public async Task<IActionResult> Register([FromForm] RegisterSmartMeterRequest request)
         {
             var commandResult = request.ToCommand();
-            if(commandResult.IsFailure)
+            if (commandResult.IsFailure)
                 return commandResult.ToActionResult();
 
             var result = await mediator.Send(commandResult.Value);
@@ -30,7 +30,7 @@ namespace SmartGrid.WebApi.Controllers
         public async Task<IActionResult> Activate([FromForm] ActivateSmartMeterRequest request)
         {
             var commandResult = request.ToCommand();
-            if(commandResult.IsFailure)
+            if (commandResult.IsFailure)
                 return commandResult.ToActionResult();
 
             var result = await mediator.Send(commandResult.Value);
@@ -43,7 +43,7 @@ namespace SmartGrid.WebApi.Controllers
         public async Task<IActionResult> Update(string id, [FromForm] UpdateSmartMeterRequest request)
         {
             var commandResult = request.ToCommand(id);
-            if(commandResult.IsFailure)
+            if (commandResult.IsFailure)
                 return commandResult.ToActionResult();
 
             var result = await mediator.Send(commandResult.Value);
@@ -56,7 +56,7 @@ namespace SmartGrid.WebApi.Controllers
         public async Task<IActionResult> Delete([FromForm] DeleteSmartMeterRequest request)
         {
             var commandResult = request.ToCommand();
-            if(commandResult.IsFailure)
+            if (commandResult.IsFailure)
                 return commandResult.ToActionResult();
 
             var result = await mediator.Send(commandResult.Value);

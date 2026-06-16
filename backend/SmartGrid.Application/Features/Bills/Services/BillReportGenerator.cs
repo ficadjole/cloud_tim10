@@ -1,5 +1,5 @@
-﻿using System.Text;
-using SmartGrid.Domain.Models;
+﻿using SmartGrid.Domain.Models;
+using System.Text;
 
 namespace SmartGrid.Application.Features.Bills.Services
 {
