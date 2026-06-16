@@ -15,7 +15,7 @@ export const ProtectedRoute: React.FC<{ children: React.ReactNode; requiredRole:
 
   if (!isAuthenticated) return <Navigate to="/login" state={{ from: location }} replace />;
 
-  console.log("user:", user);
+console.log("user:", user);
 console.log("user.role:", user?.role);
 console.log("requiredRole:", requiredRole);
 

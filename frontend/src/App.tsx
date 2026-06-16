@@ -8,6 +8,9 @@ import NotFoundPage from "./pages/not_found/NotFoundPage";
 
 import UserDashboard from "./pages/user/UserDashboard";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import CreateUserPage from "./pages/admin/CreateUserPage.tsx";
+import AdminTablePage from "./pages/admin/AdminTablePage.tsx";
+import PaymentAdminPage from "./pages/paymentadmin/PaymentAdminPage";
 
 export default function App() {
   return (
@@ -19,7 +22,12 @@ export default function App() {
 
       {/* Admin routes */}
       <Route path="/admindashboard" element={<ProtectedRoute requiredRole="SysAdmin"><AdminDashboard /></ProtectedRoute>} />
+      <Route path="/admindashboard/create-user" element={<ProtectedRoute requiredRole="SysAdmin"><CreateUserPage /></ProtectedRoute>} />
+      <Route path="/admindashboard/users-table" element={<ProtectedRoute requiredRole="SysAdmin"><AdminTablePage /></ProtectedRoute>} />
       {/*<Route path="/admindashboard" element={<AdminDashboard />} />*/}
+
+      {/* Payment Admin routes */}
+      <Route path="/payment-admin" element={<ProtectedRoute requiredRole="PaymentAdmin"><PaymentAdminPage /></ProtectedRoute>} />
 
       <Route path="/set-password" element={<SetPasswordPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />

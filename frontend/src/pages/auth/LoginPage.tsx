@@ -11,7 +11,13 @@ export default function LoginPage() {
 
 useEffect(() => {
   if (!isAuthenticated || !user) return;
-  navigate(user.role === "SysAdmin" ? "/admindashboard" : "/dashboard");
+  if (user.role === "SysAdmin") {
+  navigate("/admindashboard");
+} else if (user.role === "PaymentAdmin") {
+  navigate("/payment-admin");
+} else {
+  navigate("/dashboard");
+}
 }, [isAuthenticated, user, navigate]);
 
   return (
