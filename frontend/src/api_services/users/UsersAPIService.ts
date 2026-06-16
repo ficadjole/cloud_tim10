@@ -27,4 +27,8 @@ export const usersApi: IUsersAPIService = {
   return client.post<ApiResponse<void>>("/CreateUser", dto)
     .then(r => r.data).catch(e => err(e, "Failed to create user"));
 },
+async resetPasswordRequest(email: string) {
+  return client.get<ApiResponse<void>>(`/CreateUser/reset-password`, { params: { email } })
+    .then(r => r.data).catch(e => err(e, "Failed to request password reset"));
+},
 };

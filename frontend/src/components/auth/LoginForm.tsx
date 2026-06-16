@@ -4,6 +4,7 @@ import { jwtDecode } from "jwt-decode";
 import { useAuth } from "../../hooks/auth/useAuthHook";
 import type { IAuthAPIService } from "../../api_services/auth/IAuthAPIService";
 import { isAuthError } from "../../types/auth/AuthResponse";
+import { Link } from "react-router-dom";
 
 const ROLE_CLAIM = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role";
 
@@ -78,6 +79,13 @@ navigate(target, { replace: true });
             className={inputClass}
             placeholder="••••••••" />
         </div>
+
+        <div className="text-center  text-sm text-[#469FFE] montserrat_semibold">
+          <Link to="/forgot-password" className="text-[#469FFE] hover:underline">
+            Zaboravili ste lozinku?
+          </Link>
+        </div>
+
         <button type="submit" disabled={loading}
           className="mt-2 px-8 z-30 montserrat_semibold py-2.5 bg-[#469FFE] hover:bg-[#2b7bdc] rounded-md text-white relative after:content-[''] after:-z-20 after:absolute after:h-1 after:w-1 after:bg-[#2b7bdc] after:left-5 overflow-hidden after:bottom-0 after:translate-y-full after:rounded-md hover:after:scale-[300] hover:after:transition-all hover:after:duration-700 after:transition-all after:duration-700 transition-all duration-700 [text-shadow:3px_5px_2px_#1f5fb0] hover:[text-shadow:2px_2px_2px_#b5e0ff] text-lg disabled:opacity-50 cursor-pointer">
           {loading ? "Signing in…" : "Sign in"}

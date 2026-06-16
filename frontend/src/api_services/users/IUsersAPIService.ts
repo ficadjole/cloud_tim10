@@ -8,6 +8,7 @@ export interface IUsersAPIService {
   getById(id: number): Promise<ApiResponse<UserDto>>;
   deactivate(id: number): Promise<ApiResponse<void>>;
   create(dto: CreateUserDto): Promise<ApiResponse<void>>;
+  resetPasswordRequest(email: string): Promise<ApiResponse<void>>;
 }
 
 
