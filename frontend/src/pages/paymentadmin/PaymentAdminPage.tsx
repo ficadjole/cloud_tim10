@@ -1,7 +1,7 @@
 import React from "react";
 import TariffManagementPanel from "./TariffManagementPanel";
 import { useAuth } from "../../hooks/auth/useAuthHook";
-
+import DeviceStatusPanel from "../device/DeviceStatusPanel";
 const PaymentAdminPage: React.FC = () => {
   const { logout } = useAuth();
 
@@ -29,6 +29,9 @@ const PaymentAdminPage: React.FC = () => {
 
         <div className="bg-white rounded-2xl border border-white/40 backdrop-blur-2xl shadow-lg p-6">
           <TariffManagementPanel />
+        </div>
+        <div className="bg-white rounded-2xl border border-white/40 backdrop-blur-2xl shadow-lg p-6">
+          <DeviceStatusPanel />
         </div>
       </div>
     </div>

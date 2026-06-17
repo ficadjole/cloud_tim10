@@ -17,6 +17,7 @@ export default function TariffManagementPanel() {
   useEffect(() => {
     (async () => {
       const res = await tariffApi.get();
+       console.log("tariff response:", res);
       if (res.success && res.data) setTariff(res.data);
       else setError(res.message ?? "Greška pri učitavanju tarifa");
       setLoading(false);
