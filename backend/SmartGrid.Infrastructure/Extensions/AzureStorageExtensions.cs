@@ -34,24 +34,6 @@ namespace SmartGrid.Infrastructure.Extensions
             var tableServiceClient = new TableServiceClient(connectionString);
             services.AddSingleton(tableServiceClient);
 
-            var section = configuration.GetSection("AzureTableOptions");
-            var tables = new[]
-            {
-                section.GetValue<string>("DevicesTable"),
-                section.GetValue<string>("FirmwaresTable"),
-                section.GetValue<string>("DeviceStatusesTable"),
-                section.GetValue<string>("TelemetriesTable"),
-                section.GetValue<string>("AlertsTable")
-            };
-
-            //foreach (var table in tables)
-            //{
-            //    if (!string.IsNullOrEmpty(table))
-            //    {
-            //        tableServiceClient.GetTableClient(table).CreateIfNotExists();
-            //    }
-            //}
-
             services.AddSingleton<ITableMapper<Telemetry, TelemetryEntity>, TelemetryTableMapper>();
             services.AddSingleton<ITableMapper<Device, DeviceEntity>, DeviceTableMapper>();
             services.AddSingleton<ITableMapper<DeviceStatus, DeviceStatusEntity>, DeviceStatusTableMapper>();
