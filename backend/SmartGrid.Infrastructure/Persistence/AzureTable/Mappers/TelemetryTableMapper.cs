@@ -39,7 +39,7 @@ namespace SmartGrid.Infrastructure.Persistence.AzureTable.Mappers
                 entity.RowKey,
                 entity.PartitionKey,
                 parsedType,
-                entity.ObservationTime,
+                entity.ObservationTime = DateTime.SpecifyKind(entity.ObservationTime, DateTimeKind.Utc),
                 entity.TotalConsumptionKWh,
                 entity.CurrentLoadKW,
                 entity.VoltageL1,
