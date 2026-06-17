@@ -21,13 +21,12 @@ namespace SmartGrid.Application.Features.Users.Queries
             {
                 logger.LogInformation("Fetching all users from the repository.");
 
-                // Pretpostavka je da tvoj IUserRepository ima metodu GetAllAsync ili slično
+                
                 var users = await userRepository.GetAllAsync();
 
-                // Mapiranje domenskih modela u DTOs (isto kao što si radio u Create)
                 var userDtos = users.Select(user => new UserDto
                 {
-                    Id = user.Id.ToString(),
+                    Id = user!.Id.ToString(),
                     Name = user.GetFullName(),
                     Email = user.Email,
                     Role = user.Role.ToString()

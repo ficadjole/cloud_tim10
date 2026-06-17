@@ -74,5 +74,18 @@ namespace SmartGrid.WebApi.Controllers
 
             return result.ToActionResult();
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var query = new GetAllSmartMetersQuery();
+
+            var result = await mediator.Send(query);
+
+            if (result is null)
+                return StatusCode(StatusCodes.Status500InternalServerError, "Unexpected error.");
+
+            return result.ToActionResult();
+        }
     }
 }
