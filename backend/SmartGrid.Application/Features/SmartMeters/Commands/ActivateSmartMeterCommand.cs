@@ -38,17 +38,22 @@ namespace SmartGrid.Application.Features.SmartMeters.Commands
                 if (meter == null)
                     return Result<ActivationResult>.Failure($"Smart meter with serial number {request.SerialNumber} not found.", ErrorType.NotFound);
 
-                var accessToken = accessTokenService.GenerateAccessToken();
-                var activateResult = meter.Activate(request.DeviceGuid, accessToken);
-                if (activateResult.IsFailure)
-                    return Result<ActivationResult>.Failure(activateResult.Error!.Message, activateResult.Error.Type);
+                var accessToken = meter.AccessToken;
 
-                await smartMeterRepository.UpdateAsync(meter, cancellationToken);
+                if (meter.AccessToken == null)
+                {
+                    accessToken = accessTokenService.GenerateAccessToken();
+                    var activateResult = meter.Activate(request.DeviceGuid, accessToken);
+                    if (activateResult.IsFailure)
+                        return Result<ActivationResult>.Failure(activateResult.Error!.Message, activateResult.Error.Type);
+                }
+
+                    await smartMeterRepository.UpdateAsync(meter, cancellationToken);
 
                 logger.LogInformation("Smart meter {SerialNumber} successfully activated with DeviceGuid: {DeviceGuid}",
                     request.SerialNumber, request.DeviceGuid);
 
-                return Result<ActivationResult>.Success(new ActivationResult(accessToken, meter.Id.ToString()));
+                return Result<ActivationResult>.Success(new ActivationResult(accessToken!, meter.Id.ToString()));
             }
             catch (Exception ex)
             {
