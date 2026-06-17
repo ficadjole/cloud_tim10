@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   FaBolt,
   FaChevronDown,
@@ -13,6 +13,7 @@ import {
   FaTrash,
 } from "react-icons/fa";
 import { residentalObjectApi } from "../../api_services/residental_objects/ResidentalObjectAPIService";
+import SmartMeterDetailsModal from "./SmartMeterDetailsModal";
 import type {
   ConsumerRow,
   ResidentalObjectType,
@@ -113,7 +114,7 @@ export default function ConsumerDetailsModal({
   const [form, setForm] = useState<UpdateResidentalObjectDto | null>(null);
   const [saving, setSaving] = useState(false);
   const [editError, setEditError] = useState("");
-  const [expandedMeterId, setExpandedMeterId] = useState<string | null>(null);
+  const [meterForDetails, setMeterForDetails] = useState<SmartMeterDto | null>(null);
 
   useEffect(() => {
     if (!open || !consumer) return;
@@ -121,7 +122,7 @@ export default function ConsumerDetailsModal({
     setForm(getInitialForm(consumer));
     setIsEditing(false);
     setEditError("");
-    setExpandedMeterId(null);
+    setMeterForDetails(null);
   }, [open, consumer]);
 
   if (!open || !consumer) return null;
@@ -391,75 +392,57 @@ export default function ConsumerDetailsModal({
                         </tr>
                       )}
 
-                      {meters.map((meter) => {
-                        const isExpanded = expandedMeterId === meter.id;
-                        const note = meter.note?.trim();
-
-                        return (
-                          <Fragment key={meter.id}>
-                            <tr
-                              onClick={() => setExpandedMeterId((prev) => (prev === meter.id ? null : meter.id))}
-                              className="cursor-pointer border-b border-gray-100 transition-colors hover:bg-[#87BFFC]/10"
-                            >
-                              <td className="px-3 py-3 text-sm text-[#363636] montserrat_semibold whitespace-nowrap">
-                                {meter.serialNumber || "-"}
-                              </td>
-                              <td className="px-3 py-3 text-xs text-[#AFAFAF] montserrat_medium">
-                                <span className="break-all">{meter.id}</span>
-                              </td>
-                              <td className="px-3 py-3 text-sm text-[#363636] montserrat_medium">
-                                {getConnectionTypeLabel(meter.connectionType)}
-                              </td>
-                              <td className="px-3 py-3">
-                                <div className="flex justify-center">
-                                  <span
-                                    className={`h-3 w-3 rounded-full ${isMeterActive(meter, consumer) ? "bg-green-500" : "bg-gray-300"}`}
-                                    aria-label={isMeterActive(meter, consumer) ? "Aktivno" : "Neaktivno"}
-                                  />
-                                </div>
-                              </td>
-                              <td className="px-3 py-3 text-right">
-                                <div className="flex justify-end gap-2">
-                                  <button
-                                    type="button"
-                                    onClick={(event) => {
-                                      event.stopPropagation();
-                                      onEditMeter(meter);
-                                    }}
-                                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-[#469FFE] transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-blue-100 active:scale-[0.98]"
-                                    aria-label="Izmeni brojilo"
-                                  >
-                                    <FaEdit />
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={(event) => {
-                                      event.stopPropagation();
-                                      onRemoveMeter(consumer, meter);
-                                    }}
-                                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-red-100 bg-red-50 text-red-400 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-red-200 hover:bg-red-100 active:scale-[0.98]"
-                                    aria-label="Ukloni brojilo"
-                                  >
-                                    <FaTrash />
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                            {isExpanded && (
-                              <tr className="border-b border-gray-100 bg-[#FAFAFA]">
-                                <td colSpan={5} className="px-3 py-3">
-                                  <p className="text-[11px] uppercase tracking-widest text-gray-400 montserrat_medium">
-                                    Opis brojila
-                                  </p>
-                                  <p className={`mt-2 whitespace-pre-wrap text-sm leading-relaxed montserrat_medium ${note ? "text-[#363636]" : "italic text-[#AFAFAF]"}`}>
-                                    {note || "Nema opisa ovog brojila."}
-                                  </p>
-                                </td>
-                              </tr>
-                            )}
-                          </Fragment>
-                        );
-                      })}
+                      {meters.map((meter) => (
+                        <tr
+                          key={meter.id}
+                          onClick={() => setMeterForDetails(meter)}
+                          className="cursor-pointer border-b border-gray-100 transition-colors hover:bg-[#87BFFC]/10"
+                        >
+                          <td className="px-3 py-3 text-sm text-[#363636] montserrat_semibold whitespace-nowrap">
+                            {meter.serialNumber || "-"}
+                          </td>
+                          <td className="px-3 py-3 text-xs text-[#AFAFAF] montserrat_medium">
+                            <span className="break-all">{meter.id}</span>
+                          </td>
+                          <td className="px-3 py-3 text-sm text-[#363636] montserrat_medium">
+                            {getConnectionTypeLabel(meter.connectionType)}
+                          </td>
+                          <td className="px-3 py-3">
+                            <div className="flex justify-center">
+                              <span
+                                className={`h-3 w-3 rounded-full ${isMeterActive(meter, consumer) ? "bg-green-500" : "bg-gray-300"}`}
+                                aria-label={isMeterActive(meter, consumer) ? "Aktivno" : "Neaktivno"}
+                              />
+                            </div>
+                          </td>
+                          <td className="px-3 py-3 text-right">
+                            <div className="flex justify-end gap-2">
+                              <button
+                                type="button"
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  onEditMeter(meter);
+                                }}
+                                className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-[#469FFE] transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-blue-100 active:scale-[0.98]"
+                                aria-label="Izmeni brojilo"
+                              >
+                                <FaEdit />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  onRemoveMeter(consumer, meter);
+                                }}
+                                className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-red-100 bg-red-50 text-red-400 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-red-200 hover:bg-red-100 active:scale-[0.98]"
+                                aria-label="Ukloni brojilo"
+                              >
+                                <FaTrash />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>
@@ -468,6 +451,12 @@ export default function ConsumerDetailsModal({
           </div>
         </div>
       </div>
+
+      <SmartMeterDetailsModal
+        open={!!meterForDetails}
+        meter={meterForDetails}
+        onClose={() => setMeterForDetails(null)}
+      />
     </div>
   );
 }

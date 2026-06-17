@@ -7,6 +7,7 @@ import type {
 import type {
   ActivateSmartMeterDto,
   ActivateSmartMeterResult,
+  DeviceStatusDto,
   RegisterSmartMeterDto,
   SmartMeterDto,
   UpdateSmartMeterDto,
@@ -31,6 +32,16 @@ const normalizeMeter = (raw: Record<string, unknown>): SmartMeterDto => ({
 const normalizeActivationResult = (raw: Record<string, unknown>): ActivateSmartMeterResult => ({
   accessToken: String(raw.accessToken ?? raw.AccessToken ?? ""),
   smartMeterId: String(raw.smartMeterId ?? raw.SmartMeterId ?? ""),
+});
+
+const normalizeDeviceStatus = (raw: Record<string, unknown>): DeviceStatusDto => ({
+  deviceId: String(raw.deviceId ?? raw.DeviceId ?? ""),
+  deviceType: (raw.deviceType ?? raw.DeviceType ?? null) as string | number | null,
+  currentLoadKW: (raw.currentLoadKW ?? raw.CurrentLoadKW ?? null) as number | null,
+  lastHeartbeat: (raw.lastHeartbeat ?? raw.LastHeartbeat ?? null) as string | null,
+  voltageL1: (raw.voltageL1 ?? raw.VoltageL1 ?? null) as number | null,
+  voltageL2: (raw.voltageL2 ?? raw.VoltageL2 ?? null) as number | null,
+  voltageL3: (raw.voltageL3 ?? raw.VoltageL3 ?? null) as number | null,
 });
 
 const getErrorMessage = (e: unknown, fallback: string) => {
@@ -132,5 +143,31 @@ export const smartMeterApi: ISmartMeterAPIService = {
       .delete("/SmartMeter", { data: formData })
       .then(() => ok<void>("Smart meter deleted successfully."))
       .catch((e) => err(e, "Failed to delete smart meter"));
+  },
+
+  async getDeviceStatuses() {
+    return client
+      .get<Record<string, unknown>[]>("/DeviceStatuses")
+      .then((response) =>
+        ok(
+          "Device statuses loaded successfully.",
+          (Array.isArray(response.data) ? response.data : []).map(normalizeDeviceStatus)
+        )
+      )
+      .catch((e) => err(e, "Failed to load device statuses"));
+  },
+
+  async getDeviceStatusByMeterId(meterId: string) {
+    const statuses = await this.getDeviceStatuses();
+
+    if (!statuses.success) {
+      return {
+        success: false,
+        message: statuses.message,
+      };
+    }
+
+    const status = statuses.data?.find((item) => item.deviceId === meterId) ?? null;
+    return ok("Device status loaded successfully.", status);
   },
 };

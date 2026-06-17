@@ -11,6 +11,16 @@ export type SmartMeterDto = {
   residentalObjectId?: string | null;
 };
 
+export type DeviceStatusDto = {
+  deviceId: string;
+  deviceType?: string | number | null;
+  currentLoadKW?: number | null;
+  lastHeartbeat?: string | null;
+  voltageL1?: number | null;
+  voltageL2?: number | null;
+  voltageL3?: number | null;
+};
+
 export type RegisterSmartMeterDto = {
   serialNumber: string;
   connectionType: SmartMeterConnectionType;

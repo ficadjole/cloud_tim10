@@ -1,6 +1,7 @@
 import type {
   ActivateSmartMeterDto,
   ActivateSmartMeterResult,
+  DeviceStatusDto,
   RegisterSmartMeterDto,
   SmartMeterDto,
   UpdateSmartMeterDto,
@@ -14,4 +15,6 @@ export interface ISmartMeterAPIService {
   update(id: string, dto: UpdateSmartMeterDto): Promise<ApiResponse<void>>;
   activate(dto: ActivateSmartMeterDto): Promise<ApiResponse<ActivateSmartMeterResult>>;
   delete(id: string): Promise<ApiResponse<void>>;
+  getDeviceStatuses(): Promise<ApiResponse<DeviceStatusDto[]>>;
+  getDeviceStatusByMeterId(meterId: string): Promise<ApiResponse<DeviceStatusDto | null>>;
 }
