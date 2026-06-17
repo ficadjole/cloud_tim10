@@ -1,8 +1,10 @@
 import client from "../axios/axiosClient";
 import axios from "axios";
-import type { DeviceDto, DeviceStatusDto } from "../../types/device/DeviceTypes";
+import type { DeviceDto, DeviceStatusDto, SmartMeterDto } from "../../types/device/DeviceTypes";
 import type { IDeviceAPIService } from "./IDeviceAPIService";
 import type { ApiResponse } from "../users/IUsersAPIService";
+import type { DeviceAlert } from "../../types/signalR/DeviceAlert";
+
 
 const err = <T>(e: unknown, fallback: string): ApiResponse<T> => ({
   success: false,
@@ -23,5 +25,17 @@ async getDeviceStatuses() {
     .get<DeviceStatusDto[]>("/DeviceStatuses")
     .then((r) => ({ success: true as const, data: r.data, message: "" }))
     .catch((e) => err<DeviceStatusDto[]>(e, "Failed to load device statuses"));
+},
+async getSmartMeters() {
+  return client
+    .get<SmartMeterDto[]>("/SmartMeter")
+    .then((r) => ({ success: true as const, data: r.data, message: "" }))
+    .catch((e) => err<SmartMeterDto[]>(e, "Failed to load smart meters"));
+},
+async getRecentAlerts(count = 20) {
+  return client
+    .get<DeviceAlert[]>(`/Notifications?count=${count}`)
+    .then((r) => ({ success: true as const, data: r.data, message: "" }))
+    .catch((e) => err<DeviceAlert[]>(e, "Failed to load alerts"));
 },
 };

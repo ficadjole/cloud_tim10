@@ -19,6 +19,11 @@ namespace SmartGrid.Infrastructure.Persistence.AzureTable.Repositories
               mapper),
         IAlertRepository
     {
+        public async Task<List<Alert>> GetRecentAsync(int count = 20, CancellationToken ct = default)
+        {
+            var all = await base.QueryAsync(string.Empty, ct);
+            return all.OrderByDescending(a => a.Timestamp).Take(count).ToList();
+        }
         public async Task<List<Alert>> QueryByDeviceIdAsync(string deviceId, CancellationToken ct = default)
         {
             return await base.QueryByPartitionKeyAsync(deviceId, ct);

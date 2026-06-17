@@ -128,10 +128,17 @@ namespace SmartGrid.Domain.Models
         {
             if (!IsOnline(currentTime))
             {
+                var zone = TimeZoneInfo.FindSystemTimeZoneById(
+                    OperatingSystem.IsWindows()
+                        ? "Central European Standard Time"
+                        : "Europe/Belgrade"
+                );
+                var localTime = TimeZoneInfo.ConvertTimeFromUtc(LastTelemetryReceivedAt, zone);
+
                 return Alert.Create(
                     DeviceId,
                     AlertType.Critical,
-                    $"Device offline. Last heartbeat: {LastTelemetryReceivedAt}"
+                    $"Device offline. Last heartbeat: {localTime:dd/MM/yyyy HH:mm:ss}"
                 ).Value;
             }
 

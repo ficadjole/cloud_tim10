@@ -2,6 +2,8 @@ import React from "react";
 import TariffManagementPanel from "./TariffManagementPanel";
 import { useAuth } from "../../hooks/auth/useAuthHook";
 import DeviceStatusPanel from "../device/DeviceStatusPanel";
+import NotificationBell from "../../components/admin/notification/NotificationBell";
+
 const PaymentAdminPage: React.FC = () => {
   const { logout } = useAuth();
 
@@ -19,12 +21,15 @@ const PaymentAdminPage: React.FC = () => {
             </p>
           </div>
 
-          <button
-            onClick={logout}
-            className="text-sm px-4 py-2 rounded-lg border border-red-400/30 text-red-500 hover:bg-red-500/10 transition"
-          >
-            Logout
-          </button>
+          <div className="flex items-center gap-3">
+            <NotificationBell />
+            <button
+              onClick={logout}
+              className="text-sm px-4 py-2 rounded-lg border border-red-400/30 text-red-500 hover:bg-red-500/10 transition"
+            >
+              Logout
+            </button>
+          </div>
         </div>
 
         <div className="bg-white rounded-2xl border border-white/40 backdrop-blur-2xl shadow-lg p-6">

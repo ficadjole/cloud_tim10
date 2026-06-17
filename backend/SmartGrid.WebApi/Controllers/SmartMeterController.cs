@@ -76,6 +76,7 @@ namespace SmartGrid.WebApi.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "PaymentAdmin")]
         public async Task<IActionResult> GetAll()
         {
             var query = new GetAllSmartMetersQuery();

@@ -9,13 +9,12 @@ namespace SmartGrid.Application.Features.DeviceStatuses.Mappers
     {
         public DeviceStatusDto Map(DeviceStatus source)
         {
-            var now = dateTimeProvider.UtcNow;
 
             return new DeviceStatusDto(
                 source.DeviceId.ToString(),
                 source.DeviceType,
                 source.CurrentLoadKW,
-                now,
+                source.LastTelemetryReceivedAt,
                 source.LastVoltageL1,
                 source.LastVoltageL2,
                 source.LastVoltageL3

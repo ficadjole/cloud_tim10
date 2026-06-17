@@ -33,7 +33,7 @@ namespace SmartGrid.Infrastructure.Persistence.AzureTable.Mappers
                  entity.CurrentLoadKW,
                  entity.LastVoltageL1,
                  entity.LastVoltageL2,
-                 entity.LastVoltageL2
+                 entity.LastVoltageL3
              );
 
             if (deviceStatusResult.IsFailure)

@@ -22,3 +22,22 @@ export interface DeviceWithStatus extends DeviceDto {
   isOnline: boolean;
   secondsSinceHeartbeat: number | null;
 }
+
+export type SmartMeterDto = {
+  id: string;
+  serialNumber: string;
+  connectionType: string;
+  status: string;
+  registeredAt: string;
+  deviceGuid?: string;
+};
+
+export type SmartMeterWithStatusDto = {
+  id: string;
+  serialNumber: string;
+  connectionType: string;
+  meterStatus: string;       
+  lastTelemetry?: string;   
+  currentLoadKW?: number;   
+  isOnline?: boolean;        
+};
