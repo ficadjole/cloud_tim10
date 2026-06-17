@@ -18,7 +18,6 @@
 
   <ItemGroup>
     <Folder Include="Features\Users\Mappers\" />
-    <Folder Include="Features\Users\Queries\" />
   </ItemGroup>
 
 </Project>

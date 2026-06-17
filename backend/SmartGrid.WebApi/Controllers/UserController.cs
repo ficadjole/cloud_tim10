@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartGrid.Application.Features.Users.Commands;
+using SmartGrid.Application.Features.Users.Queries;
 using SmartGrid.WebApi.DTOs;
 using SmartGrid.WebApi.Extensions;
 using SmartGrid.WebApi.Filters;
@@ -100,5 +101,17 @@ namespace SmartGrid.WebApi.Controllers
 
             return result.ToActionResult();
         }
+
+        [HttpGet]
+        [Authorize(Roles = "SysAdmin,PaymentAdmin")]
+        public async Task<IActionResult> GetAllUsers()
+        {
+            var query = new GetAllUsersQuery();
+
+            var result = await mediator.Send(query);
+
+            return result.ToActionResult();
+        }
+
     }
 }
