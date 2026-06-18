@@ -29,7 +29,10 @@ namespace SmartGrid.Application.Features.Users.Queries
                     Id = user!.Id.ToString(),
                     Name = user.GetFullName(),
                     Email = user.Email,
-                    Role = user.Role.ToString()
+                    Role = user.Role.ToString(),
+                    //dodato
+                    PhoneNumber = user.PhoneNumber,
+                    AccountStatus = user.AccountStatus.ToString()
                 }).ToList();
 
                 return Result<IEnumerable<UserDto>>.Success(userDtos);

@@ -16,5 +16,12 @@ namespace UserService.DTOs
 
         [DataMember]
         public string Role { get; set; } = string.Empty;
+
+        //dodato
+        [DataMember]
+        public string PhoneNumber { get; set; } = string.Empty;
+
+        [DataMember]
+        public string AccountStatus { get; set; } = string.Empty;
     }
 }

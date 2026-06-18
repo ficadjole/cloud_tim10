@@ -1,7 +1,7 @@
 import client from "../axios/axiosClient";
 import axios from "axios";
 import type { IUsersAPIService, ApiResponse } from "./IUsersAPIService";
-import type { CreateUserDto, UserDto } from "../../models/user/UserTypes";
+import type { CreateUserDto, UserDto, UserListDto } from "../../models/user/UserTypes";
 
 const err = <T>(e: unknown, fallback: string): ApiResponse<T> => ({
   success: false,
@@ -12,23 +12,30 @@ const err = <T>(e: unknown, fallback: string): ApiResponse<T> => ({
 
 export const usersApi: IUsersAPIService = {
   async getAll() {
-    return client.get<ApiResponse<UserDto[]>>("/users")
-      .then(r => r.data).catch(e => err(e, "Failed to load users"));
+    return client
+      .get<UserListDto[]>("/User")
+      .then((r) => ({ success: true as const, data: r.data, message: "" }))
+      .catch((e) => err<UserListDto[]>(e, "Failed to load users"));
   },
-  async getById(id) {
-    return client.get<ApiResponse<UserDto>>(`/users/${id}`)
-      .then(r => r.data).catch(e => err(e, "Failed to load user"));
+  async deleteUser(id: string) {
+    return client
+      .delete(`/User/${id}`)
+      .then(() => ({ success: true as const, data: undefined, message: "" }))
+      .catch((e) => err<undefined>(e, "Failed to delete user"));
   },
-  async deactivate(id) {
-    return client.patch<ApiResponse<void>>(`/users/${id}/deactivate`, {})
-      .then(r => r.data).catch(e => err(e, "Failed to deactivate user"));
-  },
+  async updateStatus(id: string, status: "Active" | "Suspended") {
+  const accountStatusValue = status === "Suspended" ? 1 : 0;
+  return client
+    .patch(`/User/${id}/status`, { AccountStatus: accountStatusValue })
+    .then(() => ({ success: true as const, data: undefined, message: "" }))
+    .catch((e) => err<undefined>(e, "Failed to update user status"));
+},
   async create(dto: CreateUserDto) {
-  return client.post<ApiResponse<void>>("/CreateUser", dto)
-    .then(r => r.data).catch(e => err(e, "Failed to create user"));
-},
-async resetPasswordRequest(email: string) {
-  return client.get<ApiResponse<void>>(`/CreateUser/reset-password`, { params: { email } })
-    .then(r => r.data).catch(e => err(e, "Failed to request password reset"));
-},
+    return client.post<ApiResponse<void>>("/CreateUser", dto)
+      .then(r => r.data).catch(e => err(e, "Failed to create user"));
+  },
+  async resetPasswordRequest(email: string) {
+    return client.get<ApiResponse<void>>(`/CreateUser/reset-password`, { params: { email } })
+      .then(r => r.data).catch(e => err(e, "Failed to request password reset"));
+  },
 };

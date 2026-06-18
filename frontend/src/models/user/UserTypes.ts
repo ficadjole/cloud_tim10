@@ -15,3 +15,12 @@ export interface CreateUserDto {
   phoneNumber: string;
   role: UserRole;
 }
+
+export interface UserListDto {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  phoneNumber: string;
+  accountStatus: string; // "Active" | "Suspended" | "WaitingForConfirmation"
+}
