@@ -131,6 +131,7 @@ namespace SmartGrid.Application.Features.Bills.Commands.GenerateMonthlyBills
         public async Task<Result> Handle(GenerateMonthlyBillsCommand request, CancellationToken ct)
         {
             
+            
             DateTime utcNow = DateTime.UtcNow;
 
             

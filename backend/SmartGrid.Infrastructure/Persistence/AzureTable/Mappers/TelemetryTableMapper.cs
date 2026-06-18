@@ -35,8 +35,22 @@ namespace SmartGrid.Infrastructure.Persistence.AzureTable.Mappers
                 parsedType = DeviceType.Unknown;
             }
 
+            string telemetryId = entity.RowKey;
+            if (entity.RowKey.Contains('_'))
+            {
+                var parts = entity.RowKey.Split('_');
+                if (parts.Length > 1)
+                {
+                    telemetryId = parts[1];
+                }
+            }
+            else
+            {
+                telemetryId = Guid.NewGuid().ToString();
+            }
+
             var telemetryResult = Telemetry.Load(
-                entity.RowKey,
+                telemetryId,
                 entity.PartitionKey,
                 parsedType,
                 entity.ObservationTime = DateTime.SpecifyKind(entity.ObservationTime, DateTimeKind.Utc),

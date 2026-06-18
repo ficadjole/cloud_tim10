@@ -1,4 +1,5 @@
-﻿using SmartGrid.ITSimulator.Enums;
+﻿using System;
+using SmartGrid.ITSimulator.Enums;
 using SmartGrid.ITSimulator.Models;
 
 namespace SmartGrid.ITSimulator.Services
@@ -7,6 +8,8 @@ namespace SmartGrid.ITSimulator.Services
     {
         private readonly Random _random;
         private readonly double _maxPowerVariation;
+
+        private double _currentTotalConsumption = 1250.50;
 
         public SimulatorService(double maxPowerVariation = 50)
         {
@@ -30,7 +33,9 @@ namespace SmartGrid.ITSimulator.Services
                 throw new ArgumentException("Nominal power must be greater than zero", nameof(nominalPower));
 
             double currentLoadKW = _random.NextDouble() * (nominalPower + _maxPowerVariation);
-            double totalConsumptionKWh = 1250.50 + (_random.NextDouble() * 10);
+
+            _currentTotalConsumption += 0.5 + (_random.NextDouble() * 2.0);
+            double totalConsumptionKWh = _currentTotalConsumption;
 
             bool triggerVoltageDrop = _random.Next(1, 101) <= 5;
             double baseVoltage = triggerVoltageDrop ? 180.0 : 230.0;

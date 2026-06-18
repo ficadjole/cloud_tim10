@@ -40,15 +40,13 @@ namespace SmartGrid.Infrastructure.Persistence.AzureTable.Repositories
         }
 
         public async Task<IEnumerable<Telemetry>> GetHistoryAsync(
-            string smartMeterId,
-            DateTime start,
-            DateTime end,
-            CancellationToken ct)
+    string smartMeterId,
+    DateTime start,
+    DateTime end,
+    CancellationToken ct)
         {
             var results = new List<Telemetry>();
-
-            var filter = TableClient.CreateQueryFilter(
-                $"PartitionKey eq {smartMeterId} and ObservationTime ge {start:yyyy-MM-ddTHH:mm:ssZ} and ObservationTime le {end:yyyy-MM-ddTHH:mm:ssZ}");
+            var filter = $"PartitionKey eq '{smartMeterId}' and ObservationTime ge datetime'{start:yyyy-MM-ddTHH:mm:ss.fffZ}' and ObservationTime le datetime'{end:yyyy-MM-ddTHH:mm:ss.fffZ}'";
 
             var entities = _tableClient.QueryAsync<TelemetryEntity>(filter, cancellationToken: ct);
 
