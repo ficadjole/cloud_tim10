@@ -83,5 +83,53 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
 
             return (domainBills, totalCount);
         }
+
+        public async Task<IEnumerable<Bill>> GetByOwnerIdAsync(EntityId ownerId, CancellationToken ct = default)
+        {
+            Guid ownerGuid = Guid.Parse(ownerId.Value);
+
+            var entities = await _dbContext.Bills
+                .AsNoTracking()
+                .Where(b => b.OwnerId == ownerGuid)
+                .ToListAsync(ct);
+
+            var domainBills = new List<Bill>();
+            foreach (var entity in entities)
+            {
+                var domain = _mapper.MapToDomain(entity);
+                if (domain != null)
+                {
+                    domainBills.Add(domain);
+                }
+            }
+
+            return domainBills;
+        }
+
+        public async Task<(IEnumerable<Bill> Items, int TotalCount)> GetPagedByOwnerIdAsync(EntityId ownerId, int page, int pageSize, CancellationToken ct = default)
+        {
+            Guid ownerGuid = Guid.Parse(ownerId.Value);
+
+            var query = _dbContext.Bills.AsNoTracking().Where(b => b.OwnerId == ownerGuid);
+            int totalCount = await query.CountAsync(ct);
+
+            var entities = await query
+                .OrderByDescending(b => b.BillingPeriod)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(ct);
+
+            var domainBills = new List<Bill>();
+            foreach (var entity in entities)
+            {
+                var domain = _mapper.MapToDomain(entity);
+                if (domain != null)
+                {
+                    domainBills.Add(domain);
+                }
+            }
+
+            return (domainBills, totalCount);
+        }
     }
 }

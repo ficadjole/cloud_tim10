@@ -1,7 +1,9 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartGrid.Application.Features.Bills.Queries.GetBillPdf;
 using SmartGrid.Application.Features.Bills.Queries.GetBillsByMeter;
+using SmartGrid.Application.Features.Bills.Queries.GetBillsByOwner;
 using SmartGrid.WebApi.DTOs;
 using SmartGrid.WebApi.Extensions;
 
@@ -47,6 +49,15 @@ namespace SmartGrid.WebApi.Controllers
             }
 
             return File(result.Value, "application/pdf", $"Invoice_{id}.pdf");
+        }
+
+        [HttpGet("owner/{ownerId}")]
+        [Authorize(Roles = "User,PaymentAdmin")]
+        public async Task<IActionResult> GetBillsByOwner([FromRoute] string ownerId,[FromQuery] int pageNumber = 1,[FromQuery] int pageSize = 10)
+        {
+            var query = new GetBillsByOwnerQuery(ownerId, pageNumber, pageSize);
+            var result = await mediator.Send(query);
+            return result.ToActionResult();
         }
     }
 }
