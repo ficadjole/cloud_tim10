@@ -1,7 +1,7 @@
 import client from "../axios/axiosClient";
 import axios from "axios";
 import type { IUsersAPIService, ApiResponse } from "./IUsersAPIService";
-import type { CreateUserDto, UserDto, UserListDto } from "../../models/user/UserTypes";
+import type { CreateUserDto, UserListDto } from "../../models/user/UserTypes";
 
 const err = <T>(e: unknown, fallback: string): ApiResponse<T> => ({
   success: false,

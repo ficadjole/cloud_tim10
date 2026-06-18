@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import {
   FaBolt,
   FaCheckCircle,
+  FaExternalLinkAlt,
+  FaFileInvoiceDollar,
   FaHome,
   FaRegTrashAlt,
   FaTimesCircle,
@@ -11,6 +13,7 @@ import {
 import { useAuth } from "../../hooks/auth/useAuthHook";
 import { residentalObjectApi } from "../../api_services/residental_objects/ResidentalObjectAPIService";
 import { smartMeterApi } from "../../api_services/smart_meters/SmartMeterAPIService";
+import { billApi } from "../../api_services/bills/BillAPIService";
 import type { ConsumerRow } from "../../models/residental_object/ResidentalObjectTypes";
 import ConsumerDetailsModal from "../../components/user/ConsumerDetailsModal";
 import CreateConsumerModal from "../../components/user/CreateConsumerModal";
@@ -19,6 +22,7 @@ import DeleteConsumerModal from "../../components/user/DeleteConsumerModal";
 import DeleteSmartMeterModal from "../../components/user/DeleteSmartMeterModal";
 import EditSmartMeterModal from "../../components/user/EditSmartMeterModal";
 import type { SmartMeterDto } from "../../models/smart_meter/SmartMeterTypes";
+import type { BillDto } from "../../models/bill/BillTypes";
 import { IoIosLogOut, IoIosRefresh } from "react-icons/io";
 import { AiOutlineLoading } from "react-icons/ai";
 import { MdOutlineAddHomeWork } from "react-icons/md";
@@ -57,6 +61,18 @@ const isMeterActive = (meter: SmartMeterDto) => {
 
   const status = String(meter.status ?? "").toLowerCase();
   return status === "1" || status === "paired" || status === "active";
+};
+
+const formatCurrency = (value: number) =>
+  `${Number(value).toLocaleString("sr-RS", { maximumFractionDigits: 2 })} RSD`;
+
+const formatPeriod = (value: string) => {
+  if (!value) return "-";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+
+  return date.toLocaleDateString("sr-RS", { month: "2-digit", year: "numeric" });
 };
 
 type MeterDeleteTarget = {
@@ -108,9 +124,12 @@ export default function UserDashboard() {
   const navigate = useNavigate();
   const [consumers, setConsumers] = useState<ConsumerRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [billsLoading, setBillsLoading] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState("");
+  const [billError, setBillError] = useState("");
   const [success, setSuccess] = useState("");
+  const [bills, setBills] = useState<BillDto[]>([]);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedConsumer, setSelectedConsumer] = useState<ConsumerRow | null>(null);
   const [consumerForMeter, setConsumerForMeter] = useState<ConsumerRow | null>(null);
@@ -140,9 +159,28 @@ export default function UserDashboard() {
     return loadedConsumers;
   };
 
+  const loadBills = async () => {
+    if (!user?.id) return;
+
+    setBillsLoading(true);
+    setBillError("");
+
+    const response = await billApi.getByOwner(user.id, 1, 10);
+    setBillsLoading(false);
+
+    if (!response.success) {
+      setBillError(response.message);
+      setBills([]);
+      return;
+    }
+
+    setBills(response.data?.items ?? []);
+  };
+
   useEffect(() => {
     loadConsumers();
-  }, []);
+    void loadBills();
+  }, [user?.id]);
 
   const stats = useMemo(() => {
     const meters = consumers.flatMap((consumer) => consumer.smartMeters ?? []);
@@ -237,6 +275,23 @@ export default function UserDashboard() {
       const updatedConsumer = loadedConsumers.find((consumer) => consumer.id === consumerForMeter.id);
       setSelectedConsumer(updatedConsumer ?? consumerForMeter);
     }
+  };
+
+  const handleOpenBillPdf = async (bill: BillDto) => {
+    setBillError("");
+    setBusyId(bill.id);
+
+    const response = await billApi.downloadPdf(bill.id);
+    setBusyId(null);
+
+    if (!response.success || !response.data) {
+      setBillError(response.message);
+      return;
+    }
+
+    const pdfUrl = URL.createObjectURL(response.data);
+    window.open(pdfUrl, "_blank", "noopener,noreferrer");
+    window.setTimeout(() => URL.revokeObjectURL(pdfUrl), 60_000);
   };
 
   const handleConsumerUpdated = async (consumerId: string) => {
@@ -488,6 +543,119 @@ export default function UserDashboard() {
                                 aria-label="Obriši potrošača"
                               >
                                 <FaRegTrashAlt />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className={`${panelClass} lg:col-span-11`}>
+            <div className={`${cardClass}`}>
+              <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-[11px] font-medium uppercase tracking-widest text-gray-400 montserrat_medium">
+                    Računi korisnika
+                  </p>
+                  <h2 className="mt-1 text-2xl text-[#363636] montserrat_bold">
+                    Poslednji računi
+                  </h2>
+                </div>
+                <button
+                  type="button"
+                  onClick={loadBills}
+                  disabled={billsLoading}
+                  className={`${actionButtonClass} px-3 py-2.5 text-lg`}
+                  title="Osveži račune"
+                >
+                  {billsLoading ? <AiOutlineLoading /> : <IoIosRefresh />}
+                </button>
+              </div>
+
+              {billError && (
+                <div className="mb-5 flex items-start gap-2.5 rounded-lg border border-red-100 bg-red-50 px-3 py-2.5">
+                  <FaTimesCircle className="mt-0.5 shrink-0 text-base text-red-400" />
+                  <p className="text-xs leading-relaxed text-red-600 montserrat_medium">{billError}</p>
+                </div>
+              )}
+
+              <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+                <div className="max-h-[260px] overflow-auto">
+                  <table className="w-full min-w-[820px] border-collapse text-left">
+                    <thead className="sticky top-0 z-10 bg-[#FAFAFA]">
+                      <tr className="border-b border-gray-200 text-[11px] uppercase tracking-widest text-gray-400 montserrat_medium">
+                        <th className="px-4 py-3">Period</th>
+                        <th className="px-4 py-3">Brojilo</th>
+                        <th className="px-4 py-3 text-right">VT</th>
+                        <th className="px-4 py-3 text-right">NT</th>
+                        <th className="px-4 py-3 text-right">Ukupno</th>
+                        <th className="px-4 py-3 text-center">Status</th>
+                        <th className="px-4 py-3 text-right">PDF</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {billsLoading && (
+                        <tr>
+                          <td className="px-4 py-8 text-center text-sm text-[#AFAFAF] montserrat_medium" colSpan={7}>
+                            Učitavanje računa...
+                          </td>
+                        </tr>
+                      )}
+
+                      {!billsLoading && bills.length === 0 && (
+                        <tr>
+                          <td className="px-4 py-8 text-center text-sm text-[#AFAFAF] montserrat_medium" colSpan={7}>
+                            Nema računa za prikaz.
+                          </td>
+                        </tr>
+                      )}
+
+                      {!billsLoading &&
+                        bills.map((bill) => (
+                          <tr key={bill.id} className="border-b border-gray-100 last:border-b-0">
+                            <td className="px-4 py-4">
+                              <div className="flex items-center gap-3">
+                                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-100">
+                                  <FaFileInvoiceDollar className="text-base text-[#469FFE]" />
+                                </div>
+                                <div>
+                                  <p className="text-sm text-[#363636] montserrat_semibold">
+                                    {formatPeriod(bill.billingPeriod)}
+                                  </p>
+                                  <p className="text-xs text-[#AFAFAF] montserrat_medium break-all">{bill.id}</p>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-4 py-4 text-xs text-[#AFAFAF] montserrat_medium break-all">
+                              {bill.smartMeterId}
+                            </td>
+                            <td className="px-4 py-4 text-right text-sm text-[#363636] montserrat_medium">
+                              {bill.highTariffKWh.toLocaleString("sr-RS", { maximumFractionDigits: 2 })} kWh
+                            </td>
+                            <td className="px-4 py-4 text-right text-sm text-[#363636] montserrat_medium">
+                              {bill.lowTariffKWh.toLocaleString("sr-RS", { maximumFractionDigits: 2 })} kWh
+                            </td>
+                            <td className="px-4 py-4 text-right text-sm text-[#363636] montserrat_semibold">
+                              {formatCurrency(bill.totalAmount)}
+                            </td>
+                            <td className="px-4 py-4 text-center">
+                              <span className="inline-flex rounded-lg border border-blue-100 bg-[#87BFFC]/25 px-3 py-1.5 text-xs text-blue-500 montserrat_medium">
+                                {bill.status || "-"}
+                              </span>
+                            </td>
+                            <td className="px-4 py-4 text-right">
+                              <button
+                                type="button"
+                                onClick={() => handleOpenBillPdf(bill)}
+                                disabled={busyId === bill.id}
+                                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-[#469FFE] transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-blue-100 active:scale-[0.98] disabled:opacity-50"
+                                aria-label="Otvori PDF račun"
+                              >
+                                {busyId === bill.id ? <AiOutlineLoading /> : <FaExternalLinkAlt />}
                               </button>
                             </td>
                           </tr>

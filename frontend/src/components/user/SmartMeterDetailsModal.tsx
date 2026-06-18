@@ -3,6 +3,8 @@ import {
   FaBolt,
   FaCheckCircle,
   FaClock,
+  FaExternalLinkAlt,
+  FaFileInvoiceDollar,
   FaHashtag,
   FaInfoCircle,
   FaPlug,
@@ -11,7 +13,10 @@ import {
   FaTimesCircle,
 } from "react-icons/fa";
 import { smartMeterApi } from "../../api_services/smart_meters/SmartMeterAPIService";
+import { billApi } from "../../api_services/bills/BillAPIService";
+import { useLockBodyScroll } from "../../hooks/ui/useLockBodyScroll";
 import type { DeviceStatusDto, SmartMeterDto } from "../../models/smart_meter/SmartMeterTypes";
+import type { BillDto } from "../../models/bill/BillTypes";
 
 interface SmartMeterDetailsModalProps {
   open: boolean;
@@ -57,6 +62,18 @@ const formatDate = (value: string | null | undefined) => {
   return date.toLocaleString("sr-RS");
 };
 
+const formatPeriod = (value: string) => {
+  if (!value) return "-";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+
+  return date.toLocaleDateString("sr-RS", { month: "2-digit", year: "numeric" });
+};
+
+const formatCurrency = (value: number) =>
+  `${Number(value).toLocaleString("sr-RS", { maximumFractionDigits: 2 })} RSD`;
+
 const getMeasurementRows = (status: DeviceStatusDto | null, showAll: boolean) => {
   const rows = [
     { label: "Trenutno opterećenje", value: formatNumber(status?.currentLoadKW, "kW"), raw: status?.currentLoadKW },
@@ -71,8 +88,16 @@ const getMeasurementRows = (status: DeviceStatusDto | null, showAll: boolean) =>
 
 export default function SmartMeterDetailsModal({ open, meter, onClose }: SmartMeterDetailsModalProps) {
   const [status, setStatus] = useState<DeviceStatusDto | null>(null);
+  const [bills, setBills] = useState<BillDto[]>([]);
+  const [pdfUrl, setPdfUrl] = useState("");
+  const [selectedBillId, setSelectedBillId] = useState("");
   const [loading, setLoading] = useState(false);
+  const [billsLoading, setBillsLoading] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [error, setError] = useState("");
+  const [billError, setBillError] = useState("");
+
+  useLockBodyScroll(open && Boolean(meter));
 
   useEffect(() => {
     if (!open || !meter) return;
@@ -121,10 +146,69 @@ export default function SmartMeterDetailsModal({ open, meter, onClose }: SmartMe
     };
   }, [open, meter]);
 
+  useEffect(() => {
+    if (!open || !meter) return;
+
+    let cancelled = false;
+    setBillsLoading(true);
+    setBillError("");
+    setBills([]);
+    setPdfUrl("");
+    setSelectedBillId("");
+
+    const loadBills = async () => {
+      const response = await billApi.getByMeter(meter.id, 1, 10);
+
+      if (cancelled) return;
+
+      setBillsLoading(false);
+
+      if (!response.success) {
+        setBillError(response.message);
+        return;
+      }
+
+      setBills(response.data?.items ?? []);
+    };
+
+    void loadBills();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [open, meter]);
+
+  useEffect(() => {
+    return () => {
+      if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+    };
+  }, [pdfUrl]);
+
   const measurementRows = useMemo(() => {
     if (!meter) return [];
     return getMeasurementRows(status, isThreePhase(meter));
   }, [meter, status]);
+
+  const handlePreviewBill = async (bill: BillDto) => {
+    setBillError("");
+    setPdfLoading(true);
+    setSelectedBillId(bill.id);
+
+    const response = await billApi.downloadPdf(bill.id);
+    setPdfLoading(false);
+
+    if (!response.success || !response.data) {
+      setBillError(response.message);
+      setSelectedBillId("");
+      return;
+    }
+
+    const nextUrl = URL.createObjectURL(response.data);
+    setPdfUrl((currentUrl) => {
+      if (currentUrl) URL.revokeObjectURL(currentUrl);
+      return nextUrl;
+    });
+  };
 
   if (!open || !meter) return null;
 
@@ -133,9 +217,9 @@ export default function SmartMeterDetailsModal({ open, meter, onClose }: SmartMe
   const lastHeartbeat = status?.lastHeartbeat ? formatDate(status.lastHeartbeat) : "";
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-[#363636]/35 px-4 backdrop-blur-sm">
-      <div className="w-full max-w-2xl rounded-2xl border border-white/40 bg-linear-to-b from-[#FAFAFA] to-white/1 p-4 shadow-2xl">
-        <div className="max-h-[88vh] overflow-y-auto rounded-2xl border border-gray-200 bg-[#FAFAFA] p-6">
+    <div className="fixed inset-0 z-[70] flex items-start justify-center overflow-y-auto bg-[#363636]/35 px-4 py-8 backdrop-blur-sm sm:py-10">
+      <div className="w-full max-w-4xl rounded-2xl border border-white/40 bg-linear-to-b from-[#FAFAFA] to-white/1 p-4 shadow-2xl">
+        <div className="max-h-[calc(100vh-5rem)] overflow-y-auto rounded-2xl border border-gray-200 bg-[#FAFAFA] p-6">
           <div className="mb-5 flex items-start justify-between gap-4">
             <div className="flex items-start gap-3">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-blue-100">

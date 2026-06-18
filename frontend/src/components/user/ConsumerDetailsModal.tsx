@@ -13,6 +13,7 @@ import {
   FaTrash,
 } from "react-icons/fa";
 import { residentalObjectApi } from "../../api_services/residental_objects/ResidentalObjectAPIService";
+import { useLockBodyScroll } from "../../hooks/ui/useLockBodyScroll";
 import SmartMeterDetailsModal from "./SmartMeterDetailsModal";
 import type {
   ConsumerRow,
@@ -116,6 +117,8 @@ export default function ConsumerDetailsModal({
   const [editError, setEditError] = useState("");
   const [meterForDetails, setMeterForDetails] = useState<SmartMeterDto | null>(null);
 
+  useLockBodyScroll(open && Boolean(consumer));
+
   useEffect(() => {
     if (!open || !consumer) return;
 
@@ -164,9 +167,9 @@ export default function ConsumerDetailsModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#363636]/35 px-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-[#363636]/35 px-4 py-8 backdrop-blur-sm sm:py-10">
       <div className="w-full max-w-3xl rounded-2xl border border-white/40 bg-linear-to-b from-[#FAFAFA] to-white/1 p-4 shadow-2xl">
-        <div className="max-h-[90vh] overflow-y-auto rounded-2xl border border-gray-200 bg-[#FAFAFA] p-6">
+        <div className="max-h-[calc(100vh-5rem)] overflow-y-auto rounded-2xl border border-gray-200 bg-[#FAFAFA] p-6">
           <div className="mb-5 flex items-start justify-between gap-4">
             <div className="flex items-start gap-3">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-blue-100">

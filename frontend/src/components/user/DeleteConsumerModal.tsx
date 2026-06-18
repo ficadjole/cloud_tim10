@@ -1,5 +1,6 @@
 import { FaExclamationTriangle, FaRegTrashAlt, FaTimes } from "react-icons/fa";
 import type { ConsumerRow } from "../../models/residental_object/ResidentalObjectTypes";
+import { useLockBodyScroll } from "../../hooks/ui/useLockBodyScroll";
 
 interface DeleteConsumerModalProps {
   open: boolean;
@@ -19,10 +20,12 @@ export default function DeleteConsumerModal({
   onClose,
   onConfirm,
 }: DeleteConsumerModalProps) {
+  useLockBodyScroll(open && Boolean(consumer));
+
   if (!open || !consumer) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#363636]/35 px-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-[#363636]/35 px-4 py-8 backdrop-blur-sm sm:py-10">
       <div className="w-full max-w-md rounded-2xl border border-white/40 bg-linear-to-b from-[#FAFAFA] to-white/1 p-4 shadow-2xl">
         <div className="rounded-2xl border border-gray-200 bg-[#FAFAFA] p-6">
           <div className="mb-5 flex items-start justify-between gap-4">

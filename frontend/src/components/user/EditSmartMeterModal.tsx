@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { FaBolt, FaSave, FaTimes, FaTimesCircle } from "react-icons/fa";
 import { smartMeterApi } from "../../api_services/smart_meters/SmartMeterAPIService";
+import { useLockBodyScroll } from "../../hooks/ui/useLockBodyScroll";
 import type {
   SmartMeterConnectionType,
   SmartMeterDto,
@@ -34,6 +35,8 @@ export default function EditSmartMeterModal({
   const [form, setForm] = useState<UpdateSmartMeterDto | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  useLockBodyScroll(open && Boolean(meter));
 
   useEffect(() => {
     if (!open || !meter) return;
@@ -70,7 +73,7 @@ export default function EditSmartMeterModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#363636]/35 px-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto bg-[#363636]/35 px-4 py-8 backdrop-blur-sm sm:py-10">
       <div className="w-full max-w-2xl rounded-2xl border border-white/40 bg-linear-to-b from-[#FAFAFA] to-white/1 p-4 shadow-2xl">
         <div className="rounded-2xl border border-gray-200 bg-[#FAFAFA] p-6">
           <div className="mb-5 flex items-start justify-between gap-4">
