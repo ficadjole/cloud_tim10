@@ -105,9 +105,6 @@ export default function SmartMeterDetailsModal({ open, meter, onClose }: SmartMe
     let cancelled = false;
     let requestInFlight = false;
     let hasLoadedOnce = false;
-    setLoading(true);
-    setError("");
-    setStatus(null);
 
     const loadStatus = async () => {
       if (requestInFlight) return;
@@ -135,7 +132,15 @@ export default function SmartMeterDetailsModal({ open, meter, onClose }: SmartMe
       setStatus(response.data ?? null);
     };
 
-    void loadStatus();
+    queueMicrotask(() => {
+      if (cancelled) return;
+
+      setLoading(true);
+      setError("");
+      setStatus(null);
+      void loadStatus();
+    });
+
     const intervalId = window.setInterval(() => {
       void loadStatus();
     }, measurementRefreshMs);
@@ -150,13 +155,14 @@ export default function SmartMeterDetailsModal({ open, meter, onClose }: SmartMe
     if (!open || !meter) return;
 
     let cancelled = false;
-    setBillsLoading(true);
-    setBillError("");
-    setBills([]);
-    setPdfUrl("");
-    setSelectedBillId("");
 
     const loadBills = async () => {
+      setBillsLoading(true);
+      setBillError("");
+      setBills([]);
+      setPdfUrl("");
+      setSelectedBillId("");
+
       const response = await billApi.getByMeter(meter.id, 1, 10);
 
       if (cancelled) return;
@@ -171,7 +177,9 @@ export default function SmartMeterDetailsModal({ open, meter, onClose }: SmartMe
       setBills(response.data?.items ?? []);
     };
 
-    void loadBills();
+    queueMicrotask(() => {
+      if (!cancelled) void loadBills();
+    });
 
     return () => {
       cancelled = true;
@@ -194,7 +202,7 @@ export default function SmartMeterDetailsModal({ open, meter, onClose }: SmartMe
     setPdfLoading(true);
     setSelectedBillId(bill.id);
 
-    const response = await billApi.downloadPdf(bill.id);
+    const response = await billApi.downloadPdf(bill);
     setPdfLoading(false);
 
     if (!response.success || !response.data) {
@@ -348,6 +356,62 @@ export default function SmartMeterDetailsModal({ open, meter, onClose }: SmartMe
                     </div>
                   ))}
                 </div>
+              )}
+            </div>
+
+            <div className={`${detailItemClass} sm:col-span-2`}>
+              <div className="mb-3 flex items-center gap-2 text-[11px] uppercase tracking-widest text-gray-400 montserrat_medium">
+                <FaFileInvoiceDollar className="text-[#469FFE]" />
+                Racuni
+              </div>
+
+              {billError && (
+                <div className="mb-3 flex items-start gap-2.5 rounded-lg border border-red-100 bg-red-50 px-3 py-2.5">
+                  <FaTimesCircle className="mt-0.5 shrink-0 text-base text-red-400" />
+                  <p className="text-xs leading-relaxed text-red-600 montserrat_medium">{billError}</p>
+                </div>
+              )}
+
+              {billsLoading && (
+                <p className="text-sm text-[#AFAFAF] montserrat_medium">Ucitavanje racuna...</p>
+              )}
+
+              {!billsLoading && bills.length === 0 && (
+                <p className="text-sm italic text-[#AFAFAF] montserrat_medium">
+                  Nema racuna za ovo brojilo.
+                </p>
+              )}
+
+              {!billsLoading && bills.length > 0 && (
+                <div className="space-y-2">
+                  {bills.map((bill) => (
+                    <button
+                      key={bill.id}
+                      type="button"
+                      onClick={() => handlePreviewBill(bill)}
+                      disabled={pdfLoading && selectedBillId === bill.id}
+                      className="flex w-full items-center justify-between gap-3 rounded-lg border border-gray-200 bg-[#FAFAFA] px-3 py-2.5 text-left transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-blue-100 hover:bg-blue-50 active:scale-[0.99] disabled:opacity-60"
+                    >
+                      <span className="min-w-0">
+                        <span className="block text-sm text-[#363636] montserrat_semibold">
+                          {formatPeriod(bill.billingPeriod)}
+                        </span>
+                        <span className="block truncate text-xs text-[#AFAFAF] montserrat_medium">
+                          {formatCurrency(bill.totalAmount)} · {bill.status || "-"}
+                        </span>
+                      </span>
+                      <FaExternalLinkAlt className="shrink-0 text-sm text-[#469FFE]" />
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {pdfUrl && (
+                <iframe
+                  src={pdfUrl}
+                  title="PDF racun"
+                  className="mt-4 h-[520px] w-full rounded-lg border border-gray-200 bg-white"
+                />
               )}
             </div>
           </div>

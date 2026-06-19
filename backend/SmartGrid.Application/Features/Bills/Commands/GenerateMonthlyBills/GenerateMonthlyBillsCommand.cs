@@ -223,7 +223,7 @@ namespace SmartGrid.Application.Features.Bills.Commands.GenerateMonthlyBills
                 await billRepository.AddAsync(billResult.Value, ct);
 
                 string textInvoice = BillReportGenerator.GenerateTextInvoice(billResult.Value, residentalObject);
-                string blobName = $"{residentalObject.OwnerId.Value}/{billResult.Value.BillingPeriod:yyyy-MM-dd_HH-mm}/{billResult.Value.Id.Value}.txt"; 
+                string blobName = $"{residentalObject.OwnerId.Value}/{billResult.Value.BillingPeriod:yyyy-MM}/{billResult.Value.Id.Value}.txt";
                 await billBlobStorage.SaveBillTextReportAsync(blobName, textInvoice, ct);
 
                 string fullName = $"{user.FirstName} {user.LastName}";

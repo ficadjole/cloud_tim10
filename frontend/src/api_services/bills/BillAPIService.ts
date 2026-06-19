@@ -57,6 +57,42 @@ const getErrorMessage = (e: unknown, fallback: string) => {
   return data?.message ?? fallback;
 };
 
+const readBlobText = async (blob: Blob) => {
+  try {
+    return await blob.text();
+  } catch {
+    return "";
+  }
+};
+
+const getBlobErrorMessage = async (e: unknown, fallback: string) => {
+  if (!axios.isAxiosError(e)) return fallback;
+
+  const data = e.response?.data;
+  if (!(data instanceof Blob)) return getErrorMessage(e, fallback);
+
+  const text = await readBlobText(data);
+  if (!text.trim()) return fallback;
+
+  try {
+    const parsed = JSON.parse(text) as ApiErrorBody | string;
+    if (typeof parsed === "string") return parsed || fallback;
+
+    if (parsed.errors && typeof parsed.errors === "object") {
+      const validationMessages = Object.values(parsed.errors).flat().filter(Boolean);
+      if (validationMessages.length) return validationMessages.join(" ");
+    }
+
+    if (typeof parsed.errors === "string" && parsed.errors.trim()) {
+      return parsed.errors;
+    }
+
+    return parsed.message ?? fallback;
+  } catch {
+    return text;
+  }
+};
+
 const err = <T>(e: unknown, fallback: string): ApiResponse<T> => ({
   success: false,
   message: getErrorMessage(e, fallback),
@@ -67,6 +103,33 @@ const ok = <T>(message: string, data?: T): ApiResponse<T> => ({
   message,
   data,
 });
+
+const getBillId = (bill: BillDto | string) => (typeof bill === "string" ? bill : bill.id);
+
+const downloadPdfFromBackend = async (billId: string): Promise<ApiResponse<Blob>> =>
+  client
+    .get<Blob>(`/Bills/${billId}/download`, { responseType: "blob" })
+    .then(async (response) => {
+      const contentType = response.headers["content-type"] ?? response.data.type;
+
+      if (contentType && !String(contentType).toLowerCase().includes("application/pdf")) {
+        const message = await readBlobText(response.data);
+        return {
+          success: false,
+          message: message || "Downloaded bill file is not a PDF.",
+        };
+      }
+
+      return ok("Bill PDF loaded successfully.", response.data);
+    })
+    .catch(async (e) => {
+      const backendMessage = await getBlobErrorMessage(e, "Failed to load bill PDF");
+
+      return {
+        success: false,
+        message: backendMessage,
+      };
+    });
 
 export const billApi: IBillAPIService = {
   async getByOwner(ownerId: string, pageNumber = 1, pageSize = 10) {
@@ -91,10 +154,7 @@ export const billApi: IBillAPIService = {
       .catch((e) => err(e, "Failed to load meter bills"));
   },
 
-  async downloadPdf(billId: string) {
-    return client
-      .get<Blob>(`/Bills/${billId}/download`, { responseType: "blob" })
-      .then((response) => ok("Bill PDF loaded successfully.", response.data))
-      .catch((e) => err(e, "Failed to load bill PDF"));
+  async downloadPdf(bill: BillDto | string) {
+    return downloadPdfFromBackend(getBillId(bill));
   },
 };

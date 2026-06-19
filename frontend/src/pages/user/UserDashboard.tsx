@@ -281,7 +281,7 @@ export default function UserDashboard() {
     setBillError("");
     setBusyId(bill.id);
 
-    const response = await billApi.downloadPdf(bill.id);
+    const response = await billApi.downloadPdf(bill);
     setBusyId(null);
 
     if (!response.success || !response.data) {
