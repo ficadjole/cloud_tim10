@@ -75,6 +75,12 @@ const formatPeriod = (value: string) => {
   return date.toLocaleDateString("sr-RS", { month: "2-digit", year: "numeric" });
 };
 
+const isBillUnpaid = (bill: BillDto) => String(bill.status ?? "").toLowerCase() === "unpaid";
+const isBillPaid = (bill: BillDto) => String(bill.status ?? "").toLowerCase() === "paid";
+const checkoutSuccessUrl = "http://localhost:5173/payment-success";
+const checkoutCancelUrl = "http://localhost:5173/payment-failed";
+const pendingPaymentBillKey = "pendingPaymentBill";
+
 type MeterDeleteTarget = {
   consumer: ConsumerRow;
   meter: SmartMeterDto;
@@ -126,6 +132,7 @@ export default function UserDashboard() {
   const [loading, setLoading] = useState(true);
   const [billsLoading, setBillsLoading] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [payingBillId, setPayingBillId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [billError, setBillError] = useState("");
   const [success, setSuccess] = useState("");
@@ -292,6 +299,26 @@ export default function UserDashboard() {
     const pdfUrl = URL.createObjectURL(response.data);
     window.open(pdfUrl, "_blank", "noopener,noreferrer");
     window.setTimeout(() => URL.revokeObjectURL(pdfUrl), 60_000);
+  };
+
+  const handlePayBill = async (bill: BillDto) => {
+    setBillError("");
+    setPayingBillId(bill.id);
+
+    const response = await billApi.createCheckoutSession(bill.id, {
+      successUrl: checkoutSuccessUrl,
+      cancelUrl: checkoutCancelUrl,
+    });
+
+    setPayingBillId(null);
+
+    if (!response.success || !response.data?.checkoutUrl) {
+      setBillError(response.message);
+      return;
+    }
+
+    sessionStorage.setItem(pendingPaymentBillKey, JSON.stringify(bill));
+    window.location.assign(response.data.checkoutUrl);
   };
 
   const handleConsumerUpdated = async (consumerId: string) => {
@@ -559,7 +586,7 @@ export default function UserDashboard() {
               <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="text-[11px] font-medium uppercase tracking-widest text-gray-400 montserrat_medium">
-                    Računi korisnika
+                    Računi
                   </p>
                   <h2 className="mt-1 text-2xl text-[#363636] montserrat_bold">
                     Poslednji računi
@@ -590,8 +617,8 @@ export default function UserDashboard() {
                       <tr className="border-b border-gray-200 text-[11px] uppercase tracking-widest text-gray-400 montserrat_medium">
                         <th className="px-4 py-3">Period</th>
                         <th className="px-4 py-3">Brojilo</th>
-                        <th className="px-4 py-3 text-right">VT</th>
-                        <th className="px-4 py-3 text-right">NT</th>
+                        <th className="px-4 py-3 text-right">Viša T</th>
+                        <th className="px-4 py-3 text-right">Niža T</th>
                         <th className="px-4 py-3 text-right">Ukupno</th>
                         <th className="px-4 py-3 text-center">Status</th>
                         <th className="px-4 py-3 text-right">PDF</th>
@@ -643,9 +670,31 @@ export default function UserDashboard() {
                               {formatCurrency(bill.totalAmount)}
                             </td>
                             <td className="px-4 py-4 text-center">
-                              <span className="inline-flex rounded-lg border border-blue-100 bg-[#87BFFC]/25 px-3 py-1.5 text-xs text-blue-500 montserrat_medium">
-                                {bill.status || "-"}
-                              </span>
+                              {isBillUnpaid(bill) ? (
+                                <button
+                                  type="button"
+                                  onClick={() => handlePayBill(bill)}
+                                  disabled={payingBillId === bill.id}
+                                  className="group relative inline-flex h-8 min-w-20 items-center justify-center overflow-hidden rounded-lg border border-red-100 bg-red-50 px-3 text-xs text-red-500 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-[#469FFE] hover:bg-[#469FFE] hover:text-white active:scale-[0.98] disabled:cursor-wait disabled:opacity-70 montserrat_medium"
+                                  aria-label={`Plati račun ${bill.id}`}
+                                >
+                                  <span className="transition-all duration-300 ease-out group-hover:-translate-y-5 group-hover:opacity-0">
+                                    {payingBillId === bill.id ? "Loading" : "Neplaćen"}
+                                  </span>
+                                  <span className="absolute translate-y-5 opacity-0 transition-all duration-300 ease-out group-hover:translate-y-0 group-hover:opacity-100">
+                                    {payingBillId === bill.id ? "..." : "Plati"}
+                                  </span>
+                                </button>
+                              ) : (
+                                <span
+                                  className={`inline-flex rounded-lg border px-3 py-1.5 text-xs montserrat_medium ${isBillPaid(bill)
+                                    ? "border-green-100 bg-green-50 text-green-600"
+                                    : "border-blue-100 bg-[#87BFFC]/25 text-blue-500"
+                                    }`}
+                                >
+                                  {bill.status.toLowerCase() === "paid" ? "Plaćen" : "Neplaćen"}
+                                </span>
+                              )}
                             </td>
                             <td className="px-4 py-4 text-right">
                               <button

@@ -2,7 +2,7 @@ import axios from "axios";
 import client from "../axios/axiosClient";
 import type { BillDto, PagedBillResult } from "../../models/bill/BillTypes";
 import type { ApiResponse } from "../smart_meters/ISmartMeterAPIService";
-import type { IBillAPIService } from "./IBillAPIService";
+import type { CheckoutSessionDto, IBillAPIService } from "./IBillAPIService";
 
 type ApiErrorBody = {
   message?: string;
@@ -38,6 +38,10 @@ const normalizePagedBills = (raw: Record<string, unknown>): PagedBillResult => {
     pageSize: toNumber(raw.pageSize ?? raw.PageSize) || 10,
   };
 };
+
+const normalizeCheckoutSession = (raw: Record<string, unknown>): CheckoutSessionDto => ({
+  checkoutUrl: String(raw.checkoutUrl ?? raw.CheckoutUrl ?? ""),
+});
 
 const getErrorMessage = (e: unknown, fallback: string) => {
   if (!axios.isAxiosError(e)) return fallback;
@@ -156,5 +160,23 @@ export const billApi: IBillAPIService = {
 
   async downloadPdf(bill: BillDto | string) {
     return downloadPdfFromBackend(getBillId(bill));
+  },
+
+  async createCheckoutSession(billId: string, payload: { successUrl: string; cancelUrl: string }) {
+    return client
+      .post<Record<string, unknown>>(`/Bills/${billId}/checkout`, payload)
+      .then((response) => {
+        const session = normalizeCheckoutSession(response.data);
+
+        if (!session.checkoutUrl) {
+          return {
+            success: false,
+            message: "Checkout URL was not returned by the server.",
+          };
+        }
+
+        return ok("Checkout session created successfully.", session);
+      })
+      .catch((e) => err(e, "Failed to create checkout session"));
   },
 };

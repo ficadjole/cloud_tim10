@@ -11,6 +11,8 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import CreateUserPage from "./pages/admin/CreateUserPage.tsx";
 import AdminTablePage from "./pages/admin/AdminTablePage.tsx";
 import PaymentAdminPage from "./pages/paymentadmin/PaymentAdminPage";
+import PaymentSuccessPage from "./pages/payment/PaymentSuccessPage";
+import PaymentFailedPage from "./pages/payment/PaymentFailedPage";
 
 
 export default function App() {
@@ -20,6 +22,8 @@ export default function App() {
 
       {/* User routes */}
       <Route path="/dashboard" element={<ProtectedRoute requiredRole="User"><UserDashboard /></ProtectedRoute>} />
+      <Route path="/payment-success" element={<ProtectedRoute requiredRole="User"><PaymentSuccessPage /></ProtectedRoute>} />
+      <Route path="/payment-failed" element={<ProtectedRoute requiredRole="User"><PaymentFailedPage /></ProtectedRoute>} />
 
       {/* Admin routes */}
       <Route path="/admindashboard" element={<ProtectedRoute requiredRole="SysAdmin"><AdminDashboard /></ProtectedRoute>} />
