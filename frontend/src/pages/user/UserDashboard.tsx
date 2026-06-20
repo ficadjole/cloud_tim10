@@ -627,6 +627,7 @@ export default function UserDashboard() {
             activeCard={activeCard}
             eyebrow="Kontrolni panel"
             title="Objekti i potrošači"
+            children={"Pregled, upravljanje i izmena objekata i potrošača."}
             icon={houseIcon}
             onHover={setActiveCard}
             onOpen={setOpenPanel}
@@ -636,6 +637,7 @@ export default function UserDashboard() {
             activeCard={activeCard}
             eyebrow="Potrošnja i stanje mreže"
             title="Telemetrija i analitika"
+            children={"Prikaz trenutne potrošnje, stanja uređaja i analitika potrošnje."}
             icon={graphIcon}
             onHover={setActiveCard}
             onOpen={setOpenPanel}
@@ -645,6 +647,7 @@ export default function UserDashboard() {
             activeCard={activeCard}
             eyebrow="Istorija računa i plaćanja"
             title="Digitalni karton"
+            children={"Pregled i plaćanje računa, kao i istorija potrošnje."}
             icon={billIcon}
             onHover={setActiveCard}
             onOpen={setOpenPanel}
