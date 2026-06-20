@@ -26,6 +26,7 @@ const normalizeMeter = (raw: Record<string, unknown>): SmartMeterDto => ({
   isActive: (raw.isActive ?? raw.IsActive ?? undefined) as boolean | undefined,
   maxPower: (raw.maxPower ?? raw.MaxPower ?? undefined) as number | undefined,
   note: (raw.note ?? raw.Note ?? null) as string | null,
+  deviceGuid: (raw.deviceGuid ?? raw.DeviceGuid ?? null) as string | null,
   residentalObjectId: (raw.residentalObjectId ?? raw.ResidentalObjectId ?? null) as string | null,
 });
 
