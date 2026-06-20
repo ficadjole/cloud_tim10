@@ -29,14 +29,20 @@ namespace SmartGrid.Application.Features.Bills.Queries.GetBillPdf
                 return Result<byte[]>.Failure("Bill not found.", ErrorType.NotFound);
             }
 
-            string blobName = $"{bill.OwnerId.Value}/{bill.BillingPeriod:yyyy-MM}/{bill.Id.Value}.txt";
+            string blobName = $"{bill.OwnerId.Value}/{bill.BillingPeriod:yyyy-MM-dd_HH-mm}/{bill.Id.Value}.txt";
             string textContent = await billBlobStorage.GetBillTextReportAsync(blobName);
             if (string.IsNullOrEmpty(textContent))
             {
-                return Result<byte[]>.Failure("Bill text report not found.", ErrorType.NotFound);
+                string fallbackBlobName = $"{bill.OwnerId.Value}/{bill.BillingPeriod:yyyy-MM}/{bill.Id.Value}.txt";
+                textContent = await billBlobStorage.GetBillTextReportAsync(fallbackBlobName);
+
+                if (string.IsNullOrEmpty(textContent))
+                {
+                    return Result<byte[]>.Failure("Bill text report not found.", ErrorType.NotFound);
+                }
             }
 
-            byte[] pdfBytes = await pdfExportService.ExportToPdfAsync(textContent);
+            byte[] pdfBytes = await pdfExportService.ExportToPdfAsync(textContent, bill.Status.ToString());
             return Result<byte[]>.Success(pdfBytes);
         }
     }

@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SmartGrid.Application.Features.Bills.Commands;
 using SmartGrid.Application.Features.Bills.Queries.GetBillPdf;
 using SmartGrid.Application.Features.Bills.Queries.GetBillsByMeter;
 using SmartGrid.Application.Features.Bills.Queries.GetBillsByOwner;
@@ -57,6 +58,13 @@ namespace SmartGrid.WebApi.Controllers
         {
             var query = new GetBillsByOwnerQuery(ownerId, pageNumber, pageSize);
             var result = await mediator.Send(query);
+            return result.ToActionResult();
+        }
+
+        [HttpPost("fulfill-payment")]
+        public async Task<IActionResult> FulfillPayment([FromQuery(Name = "sessionId")] string SessionId) // MAPIRAMO DIREKTNO NA VELIKO S I PROMENLJIVU SA VELIKIM S
+        {
+            var result = await mediator.Send(new FulfillBillPaymentCommand(SessionId));
             return result.ToActionResult();
         }
     }

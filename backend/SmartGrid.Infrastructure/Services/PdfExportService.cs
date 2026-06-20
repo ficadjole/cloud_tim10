@@ -2,12 +2,15 @@
 using PdfSharpCore.Drawing;
 using PdfSharpCore.Pdf;
 using SmartGrid.Application.Interfaces;
+using System;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace SmartGrid.Infrastructure.Services
 {
     public class PdfExportService : IPdfExportService
     {
-        public Task<byte[]> ExportToPdfAsync(string textContent)
+        public Task<byte[]> ExportToPdfAsync(string textContent, string currentStatus)
         {
             using (var document = new PdfDocument())
             {
@@ -39,7 +42,8 @@ namespace SmartGrid.Infrastructure.Services
                 string redRsd = "0.00 RSD";
                 string fixedRsd = "0.00 RSD";
                 string totalRsd = "0.00 RSD";
-                string status = "Unpaid";
+
+                string status = currentStatus;
 
                 string[] lines = textContent.Split('\n');
                 foreach (var line in lines)
@@ -63,7 +67,6 @@ namespace SmartGrid.Infrastructure.Services
                     else if (key.Contains("Red Zone")) redRsd = val;
                     else if (key.Contains("Fixed Costs")) fixedRsd = val;
                     else if (key.Contains("TOTAL AMOUNT")) totalRsd = val;
-                    else if (key.Contains("Payment Status")) status = val;
                 }
 
                 gfx.DrawRectangle(darkBgBrush, 40, 40, 515, 65);
@@ -99,6 +102,7 @@ namespace SmartGrid.Infrastructure.Services
                 gfx.DrawString("Charged Amount (RSD)", labelFont, XBrushes.Black, 380, y + 16);
                 y += 24;
 
+                gfx.DrawRectangle(borderPen, 40, y, 515, 24);
                 DrawColoredZoneRow(gfx, valueFont, borderPen, "Green Zone (Baseline Consumption)", greenRsd, XColor.FromArgb(232, 245, 233), XColor.FromArgb(46, 125, 50), ref y);
                 DrawColoredZoneRow(gfx, valueFont, borderPen, "Blue Zone (Moderate Consumption)", blueRsd, XColor.FromArgb(227, 242, 253), XColor.FromArgb(21, 101, 192), ref y);
                 DrawColoredZoneRow(gfx, valueFont, borderPen, "Red Zone (High Scale Consumption)", redRsd, XColor.FromArgb(255, 235, 235), XColor.FromArgb(198, 40, 40), ref y);
