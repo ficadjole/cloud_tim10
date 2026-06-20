@@ -3,8 +3,6 @@ import {
   FaBolt,
   FaCheckCircle,
   FaClock,
-  FaExternalLinkAlt,
-  FaFileInvoiceDollar,
   FaHashtag,
   FaInfoCircle,
   FaPlug,
@@ -13,10 +11,8 @@ import {
   FaTimesCircle,
 } from "react-icons/fa";
 import { smartMeterApi } from "../../api_services/smart_meters/SmartMeterAPIService";
-import { billApi } from "../../api_services/bills/BillAPIService";
 import { useLockBodyScroll } from "../../hooks/ui/useLockBodyScroll";
 import type { DeviceStatusDto, SmartMeterDto } from "../../models/smart_meter/SmartMeterTypes";
-import type { BillDto } from "../../models/bill/BillTypes";
 
 interface SmartMeterDetailsModalProps {
   open: boolean;
@@ -48,6 +44,17 @@ const isMeterActive = (meter: SmartMeterDto) => {
   return status === "1" || status === "paired" || status === "active";
 };
 
+const getMeterStatusKeys = (meter: SmartMeterDto) =>
+  [meter.id, meter.serialNumber, meter.deviceGuid]
+    .map((value) => String(value ?? "").trim().toLowerCase())
+    .filter(Boolean);
+
+const getStatusForMeter = (meter: SmartMeterDto, statuses: DeviceStatusDto[]) => {
+  const meterKeys = getMeterStatusKeys(meter);
+
+  return statuses.find((item) => meterKeys.includes(String(item.deviceId ?? "").trim().toLowerCase())) ?? null;
+};
+
 const formatNumber = (value: number | null | undefined, unit: string) => {
   if (value === null || value === undefined) return "-";
   return `${Number(value).toLocaleString("sr-RS", { maximumFractionDigits: 2 })} ${unit}`;
@@ -61,18 +68,6 @@ const formatDate = (value: string | null | undefined) => {
 
   return date.toLocaleString("sr-RS");
 };
-
-const formatPeriod = (value: string) => {
-  if (!value) return "-";
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-
-  return date.toLocaleDateString("sr-RS", { month: "2-digit", year: "numeric" });
-};
-
-const formatCurrency = (value: number) =>
-  `${Number(value).toLocaleString("sr-RS", { maximumFractionDigits: 2 })} RSD`;
 
 const getMeasurementRows = (status: DeviceStatusDto | null, showAll: boolean) => {
   const rows = [
@@ -88,14 +83,8 @@ const getMeasurementRows = (status: DeviceStatusDto | null, showAll: boolean) =>
 
 export default function SmartMeterDetailsModal({ open, meter, onClose }: SmartMeterDetailsModalProps) {
   const [status, setStatus] = useState<DeviceStatusDto | null>(null);
-  const [bills, setBills] = useState<BillDto[]>([]);
-  const [pdfUrl, setPdfUrl] = useState("");
-  const [selectedBillId, setSelectedBillId] = useState("");
   const [loading, setLoading] = useState(false);
-  const [billsLoading, setBillsLoading] = useState(false);
-  const [pdfLoading, setPdfLoading] = useState(false);
   const [error, setError] = useState("");
-  const [billError, setBillError] = useState("");
 
   useLockBodyScroll(open && Boolean(meter));
 
@@ -115,7 +104,7 @@ export default function SmartMeterDetailsModal({ open, meter, onClose }: SmartMe
         setLoading(true);
       }
 
-      const response = await smartMeterApi.getDeviceStatusByMeterId(meter.id);
+      const response = await smartMeterApi.getDeviceStatuses();
       requestInFlight = false;
 
       if (cancelled) return;
@@ -129,7 +118,7 @@ export default function SmartMeterDetailsModal({ open, meter, onClose }: SmartMe
       }
 
       setError("");
-      setStatus(response.data ?? null);
+      setStatus(getStatusForMeter(meter, response.data ?? []));
     };
 
     queueMicrotask(() => {
@@ -151,77 +140,15 @@ export default function SmartMeterDetailsModal({ open, meter, onClose }: SmartMe
     };
   }, [open, meter]);
 
-  useEffect(() => {
-    if (!open || !meter) return;
-
-    let cancelled = false;
-
-    const loadBills = async () => {
-      setBillsLoading(true);
-      setBillError("");
-      setBills([]);
-      setPdfUrl("");
-      setSelectedBillId("");
-
-      const response = await billApi.getByMeter(meter.id, 1, 10);
-
-      if (cancelled) return;
-
-      setBillsLoading(false);
-
-      if (!response.success) {
-        setBillError(response.message);
-        return;
-      }
-
-      setBills(response.data?.items ?? []);
-    };
-
-    queueMicrotask(() => {
-      if (!cancelled) void loadBills();
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [open, meter]);
-
-  useEffect(() => {
-    return () => {
-      if (pdfUrl) URL.revokeObjectURL(pdfUrl);
-    };
-  }, [pdfUrl]);
-
   const measurementRows = useMemo(() => {
     if (!meter) return [];
     return getMeasurementRows(status, isThreePhase(meter));
   }, [meter, status]);
 
-  const handlePreviewBill = async (bill: BillDto) => {
-    setBillError("");
-    setPdfLoading(true);
-    setSelectedBillId(bill.id);
-
-    const response = await billApi.downloadPdf(bill);
-    setPdfLoading(false);
-
-    if (!response.success || !response.data) {
-      setBillError(response.message);
-      setSelectedBillId("");
-      return;
-    }
-
-    const nextUrl = URL.createObjectURL(response.data);
-    setPdfUrl((currentUrl) => {
-      if (currentUrl) URL.revokeObjectURL(currentUrl);
-      return nextUrl;
-    });
-  };
-
   if (!open || !meter) return null;
 
   const note = meter.note?.trim();
-  const active = isMeterActive(meter);
+  const active = isMeterActive(meter) || Boolean(status);
   const lastHeartbeat = status?.lastHeartbeat ? formatDate(status.lastHeartbeat) : "";
 
   return (
@@ -345,7 +272,7 @@ export default function SmartMeterDetailsModal({ open, meter, onClose }: SmartMe
                 </p>
               )}
 
-              {!loading && !error && status && active && (
+              {!loading && !error && status && (
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                   {measurementRows.map((row) => (
                     <div key={row.label} className="rounded-lg border border-gray-100 bg-[#FAFAFA] px-3 py-2.5">
@@ -359,61 +286,6 @@ export default function SmartMeterDetailsModal({ open, meter, onClose }: SmartMe
               )}
             </div>
 
-            <div className={`${detailItemClass} sm:col-span-2`}>
-              <div className="mb-3 flex items-center gap-2 text-[11px] uppercase tracking-widest text-gray-400 montserrat_medium">
-                <FaFileInvoiceDollar className="text-[#469FFE]" />
-                Racuni
-              </div>
-
-              {billError && (
-                <div className="mb-3 flex items-start gap-2.5 rounded-lg border border-red-100 bg-red-50 px-3 py-2.5">
-                  <FaTimesCircle className="mt-0.5 shrink-0 text-base text-red-400" />
-                  <p className="text-xs leading-relaxed text-red-600 montserrat_medium">{billError}</p>
-                </div>
-              )}
-
-              {billsLoading && (
-                <p className="text-sm text-[#AFAFAF] montserrat_medium">Ucitavanje racuna...</p>
-              )}
-
-              {!billsLoading && bills.length === 0 && (
-                <p className="text-sm italic text-[#AFAFAF] montserrat_medium">
-                  Nema racuna za ovo brojilo.
-                </p>
-              )}
-
-              {!billsLoading && bills.length > 0 && (
-                <div className="space-y-2">
-                  {bills.map((bill) => (
-                    <button
-                      key={bill.id}
-                      type="button"
-                      onClick={() => handlePreviewBill(bill)}
-                      disabled={pdfLoading && selectedBillId === bill.id}
-                      className="flex w-full items-center justify-between gap-3 rounded-lg border border-gray-200 bg-[#FAFAFA] px-3 py-2.5 text-left transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-blue-100 hover:bg-blue-50 active:scale-[0.99] disabled:opacity-60"
-                    >
-                      <span className="min-w-0">
-                        <span className="block text-sm text-[#363636] montserrat_semibold">
-                          {formatPeriod(bill.billingPeriod)}
-                        </span>
-                        <span className="block truncate text-xs text-[#AFAFAF] montserrat_medium">
-                          {formatCurrency(bill.totalAmount)} · {bill.status || "-"}
-                        </span>
-                      </span>
-                      <FaExternalLinkAlt className="shrink-0 text-sm text-[#469FFE]" />
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {pdfUrl && (
-                <iframe
-                  src={pdfUrl}
-                  title="PDF racun"
-                  className="mt-4 h-[520px] w-full rounded-lg border border-gray-200 bg-white"
-                />
-              )}
-            </div>
           </div>
         </div>
       </div>
