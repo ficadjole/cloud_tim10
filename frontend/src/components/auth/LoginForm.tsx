@@ -17,7 +17,7 @@ export function LoginForm({ authApi }: { authApi: IAuthAPIService }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const inputClass =
-    "w-full h-[45px] rounded-xl  border-[#469FFE]  bg-white/4 px-4 py-3 text-sm text-[#469FFE] shadow-[0_0_0_1.5px_#469FFE,0_0_25px_-17px_#000] outline-none transition-all duration-200 ease-[cubic-bezier(0.19,1,0.22,1)] placeholder:text-gray-500 hover:shadow-[0_0_0_2.5px_#67afff,0_0_25px_-15px_#000]  focus:scale-[0.98]  active:scale-[0.95] cursor-text";
+    "w-full h-[38px] rounded-xl border border-[#469FFE]/30 bg-white/60 px-3 text-sm text-[#363636] outline-none transition-all duration-200 placeholder:text-gray-400 hover:border-[#469FFE]/60 focus:border-[#469FFE] focus:ring-2 focus:ring-[#469FFE]/10 montserrat_medium";
 
   const submit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -66,8 +66,8 @@ navigate(target, { replace: true });
       <div className="grid overflow-hidden rounded-2xl bg-[#FAFAFA] md:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
         <div className="p-6 md:p-8">
           <div className="text-center mb-10">
-            <h1 className="text-[#469FFE] montserrat_bold text-3xl">Welcome back</h1>
-            <p className="text-md text-[#363636] mt-1 montserrat_medium">Sign in to your account</p>
+            <h1 className="text-[#469FFE] montserrat_bold text-5xl">Welcome back</h1>
+            <p className="text-lg text-[#363636] mt-1 montserrat_medium">Sign in to your account</p>
           </div>
 
           {error && (
@@ -78,33 +78,29 @@ navigate(target, { replace: true });
 
           <form onSubmit={submit} className="flex flex-col gap-4">
             <div>
-              <label className="block text-xs text-[#469FFE] mb-2 font-medium montserrat_semibold">email</label>
+              <label className="block text-xs text-[#469FFE] mb-2 font-medium montserrat_semibold">Email:</label>
               <input
                 type="text"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 required
                 className={inputClass}
-                placeholder="your_email"
+                placeholder="email@example.com"
               />
             </div>
             <div>
-              <label className="block text-xs text-[#469FFE] mb-2 font-medium montserrat_semibold">Password</label>
+              <label className="block text-xs text-[#469FFE] mb-2 font-medium montserrat_semibold">Password:</label>
               <input
                 type="password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 required
                 className={inputClass}
-                placeholder="••••••••"
+                placeholder="6 digit password"
               />
             </div>
 
-            <div className="text-center text-sm text-[#469FFE] montserrat_semibold">
-              <Link to="/forgot-password" className="text-[#469FFE] hover:underline">
-                Zaboravili ste lozinku?
-              </Link>
-            </div>
+            
 
             <button
               type="submit"
@@ -113,6 +109,12 @@ navigate(target, { replace: true });
             >
               {loading ? "Signing in…" : "Sign in"}
             </button>
+
+            <div className="text-center text-sm text-[#469FFE] montserrat_semibold">
+              <Link to="/forgot-password" className="text-[#469FFE] hover:underline">
+                Zaboravili ste lozinku?
+              </Link>
+            </div>
           </form>
         </div>
 

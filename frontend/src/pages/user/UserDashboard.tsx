@@ -3,14 +3,18 @@ import { useNavigate } from "react-router-dom";
 import {
   FaBolt,
   FaCheckCircle,
+  FaChartLine,
   FaExternalLinkAlt,
   FaFileInvoiceDollar,
   FaHome,
+  FaPlug,
   FaRegTrashAlt,
+  FaSignal,
   FaTimesCircle,
   FaUserCircle,
 } from "react-icons/fa";
 import { useAuth } from "../../hooks/auth/useAuthHook";
+import { useSignalR } from "../../contexts/signalR/SignalRContext";
 import { residentalObjectApi } from "../../api_services/residental_objects/ResidentalObjectAPIService";
 import { smartMeterApi } from "../../api_services/smart_meters/SmartMeterAPIService";
 import { billApi } from "../../api_services/bills/BillAPIService";
@@ -21,7 +25,7 @@ import CreateSmartMeterModal from "../../components/user/CreateSmartMeterModal";
 import DeleteConsumerModal from "../../components/user/DeleteConsumerModal";
 import DeleteSmartMeterModal from "../../components/user/DeleteSmartMeterModal";
 import EditSmartMeterModal from "../../components/user/EditSmartMeterModal";
-import type { SmartMeterDto } from "../../models/smart_meter/SmartMeterTypes";
+import type { DeviceStatusDto, SmartMeterDto } from "../../models/smart_meter/SmartMeterTypes";
 import type { BillDto } from "../../models/bill/BillTypes";
 import { IoIosLogOut, IoIosRefresh } from "react-icons/io";
 import { AiOutlineLoading } from "react-icons/ai";
@@ -56,13 +60,6 @@ const getMeterSummary = (consumer: ConsumerRow) => {
   return consumer.connectedMeterId ?? "Nije povezano";
 };
 
-const isMeterActive = (meter: SmartMeterDto) => {
-  if (typeof meter.isActive === "boolean") return meter.isActive;
-
-  const status = String(meter.status ?? "").toLowerCase();
-  return status === "1" || status === "paired" || status === "active";
-};
-
 const formatCurrency = (value: number) =>
   `${Number(value).toLocaleString("sr-RS", { maximumFractionDigits: 2 })} RSD`;
 
@@ -80,10 +77,191 @@ const isBillPaid = (bill: BillDto) => String(bill.status ?? "").toLowerCase() ==
 const checkoutSuccessUrl = "http://localhost:5173/payment-success";
 const checkoutCancelUrl = "http://localhost:5173/payment-failed";
 const pendingPaymentBillKey = "pendingPaymentBill";
+const telemetryRefreshMs = 5000;
+const onlineThresholdSeconds = 20;
+
+type TelemetryPoint = {
+  time: number;
+  label: string;
+  averageVoltage: number;
+  totalLoad: number;
+};
+
+type BarChartPoint = {
+  label: string;
+  highTariff: number;
+  lowTariff: number;
+};
 
 type MeterDeleteTarget = {
   consumer: ConsumerRow;
   meter: SmartMeterDto;
+};
+
+const toFiniteNumber = (value: number | null | undefined) =>
+  typeof value === "number" && Number.isFinite(value) ? value : null;
+
+const formatNumber = (value: number | null | undefined, unit: string, maximumFractionDigits = 2) => {
+  const numeric = toFiniteNumber(value);
+  if (numeric === null) return "-";
+
+  return `${numeric.toLocaleString("sr-RS", { maximumFractionDigits })} ${unit}`;
+};
+
+const getAverageVoltage = (status: DeviceStatusDto) => {
+  const voltages = [status.voltageL1, status.voltageL2, status.voltageL3]
+    .map(toFiniteNumber)
+    .filter((value): value is number => value !== null);
+
+  if (voltages.length === 0) return null;
+  return voltages.reduce((sum, value) => sum + value, 0) / voltages.length;
+};
+
+const getCurrentTariff = () => {
+  const hour = new Date().getHours();
+  return hour >= 22 || hour < 6 ? "NT" : "VT";
+};
+
+const getConnectionTypeLabel = (type: SmartMeterDto["connectionType"]) => {
+  const normalized = String(type ?? "").toLowerCase();
+
+  if (normalized === "1" || normalized === "singlephase") return "Monofazni";
+  if (normalized === "2" || normalized === "multiphase") return "Trofazni";
+
+  return type ? String(type) : "-";
+};
+
+const isStatusOnline = (status: DeviceStatusDto) => {
+  if (!status.lastHeartbeat) return false;
+
+  const heartbeatTime = new Date(status.lastHeartbeat).getTime();
+  if (Number.isNaN(heartbeatTime)) return false;
+
+  return (Date.now() - heartbeatTime) / 1000 <= onlineThresholdSeconds;
+};
+
+const getMeterStatusKeys = (meter: SmartMeterDto) =>
+  [meter.id, meter.serialNumber, meter.deviceGuid]
+    .map((value) => String(value ?? "").trim().toLowerCase())
+    .filter(Boolean);
+
+const statusBelongsToMeter = (status: DeviceStatusDto, meter: SmartMeterDto) => {
+  const statusDeviceId = String(status.deviceId ?? "").trim().toLowerCase();
+  return getMeterStatusKeys(meter).includes(statusDeviceId);
+};
+
+const getMonthDays = (value: string) => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return 30;
+
+  return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+};
+
+const toChartPath = (values: number[], width: number, height: number, padding: number) => {
+  if (values.length === 0) return "";
+
+  const max = Math.max(...values);
+  const min = Math.min(...values);
+  const span = max - min || 1;
+  const step = values.length > 1 ? (width - padding * 2) / (values.length - 1) : 0;
+
+  return values
+    .map((value, index) => {
+      const x = values.length > 1 ? padding + step * index : width / 2;
+      const y = height - padding - ((value - min) / span) * (height - padding * 2);
+      return `${index === 0 ? "M" : "L"} ${x.toFixed(2)} ${y.toFixed(2)}`;
+    })
+    .join(" ");
+};
+
+const BarChart = ({ data }: { data: BarChartPoint[] }) => {
+  const max = Math.max(...data.flatMap((item) => [item.highTariff, item.lowTariff]), 1);
+
+  if (data.length === 0) {
+    return (
+      <div className="flex h-60 items-center justify-center rounded-xl border border-dashed border-gray-200 bg-white text-sm text-[#AFAFAF] montserrat_medium">
+        Nema dovoljno racuna za prikaz potrosnje.
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-60 rounded-xl border border-gray-200 bg-white px-4 py-4">
+      <div className="flex h-44 items-end gap-3">
+        {data.map((item) => (
+          <div key={item.label} className="flex min-w-0 flex-1 flex-col items-center justify-end gap-2">
+            <div className="flex h-36 w-full max-w-14 items-end justify-center gap-1.5">
+              <div
+                className="w-4 rounded-t-md bg-[#469FFE]"
+                style={{ height: `${Math.max((item.highTariff / max) * 100, 4)}%` }}
+                title={`VT: ${formatNumber(item.highTariff, "kWh")}`}
+              />
+              <div
+                className="w-4 rounded-t-md bg-green-400"
+                style={{ height: `${Math.max((item.lowTariff / max) * 100, 4)}%` }}
+                title={`NT: ${formatNumber(item.lowTariff, "kWh")}`}
+              />
+            </div>
+            <p className="truncate text-[11px] text-[#AFAFAF] montserrat_medium">{item.label}</p>
+          </div>
+        ))}
+      </div>
+      <div className="mt-3 flex items-center justify-center gap-4 text-[11px] text-[#AFAFAF] montserrat_medium">
+        <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-[#469FFE]" />VT</span>
+        <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-green-400" />NT</span>
+      </div>
+    </div>
+  );
+};
+
+const LineChart = ({
+  data,
+  valueKey,
+  color,
+  emptyMessage,
+}: {
+  data: TelemetryPoint[];
+  valueKey: "averageVoltage" | "totalLoad";
+  color: string;
+  emptyMessage: string;
+}) => {
+  const values = data.map((item) => item[valueKey]).filter((value) => Number.isFinite(value));
+  const width = 520;
+  const height = 180;
+  const padding = 22;
+  const path = toChartPath(values, width, height, padding);
+
+  if (values.length < 2) {
+    return (
+      <div className="flex h-52 items-center justify-center rounded-xl border border-dashed border-gray-200 bg-white text-sm text-[#AFAFAF] montserrat_medium">
+        {emptyMessage}
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-xl border border-gray-200 bg-white p-3">
+      <svg viewBox={`0 0 ${width} ${height}`} className="h-44 w-full" role="img" aria-label="Trend grafikon">
+        <line x1={padding} y1={height - padding} x2={width - padding} y2={height - padding} stroke="#E5E7EB" />
+        <line x1={padding} y1={padding} x2={padding} y2={height - padding} stroke="#E5E7EB" />
+        <path d={path} fill="none" stroke={color} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+        {values.map((value, index) => {
+          const max = Math.max(...values);
+          const min = Math.min(...values);
+          const span = max - min || 1;
+          const step = values.length > 1 ? (width - padding * 2) / (values.length - 1) : 0;
+          const x = padding + step * index;
+          const y = height - padding - ((value - min) / span) * (height - padding * 2);
+
+          return <circle key={`${value}-${index}`} cx={x} cy={y} r="4" fill="white" stroke={color} strokeWidth="3" />;
+        })}
+      </svg>
+      <div className="mt-1 flex justify-between text-[10px] text-[#AFAFAF] montserrat_medium">
+        <span>{data[0]?.label}</span>
+        <span>{data[data.length - 1]?.label}</span>
+      </div>
+    </div>
+  );
 };
 
 const getConsumerMeterIds = (consumer: ConsumerRow) => {
@@ -127,6 +305,14 @@ const hydrateConsumerMeters = async (consumer: ConsumerRow): Promise<ConsumerRow
 
 export default function UserDashboard() {
   const { user, logout } = useAuth();
+  const {
+    isConnected: isSignalRConnected,
+    deviceStatuses: realTimeDeviceStatuses,
+    joinObjectGroup,
+    leaveObjectGroup,
+    joinMeterGroup,
+    leaveMeterGroup,
+  } = useSignalR();
   const navigate = useNavigate();
   const [consumers, setConsumers] = useState<ConsumerRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -137,6 +323,10 @@ export default function UserDashboard() {
   const [billError, setBillError] = useState("");
   const [success, setSuccess] = useState("");
   const [bills, setBills] = useState<BillDto[]>([]);
+  const [deviceStatuses, setDeviceStatuses] = useState<DeviceStatusDto[]>([]);
+  const [telemetryHistory, setTelemetryHistory] = useState<TelemetryPoint[]>([]);
+  const [telemetryLoading, setTelemetryLoading] = useState(false);
+  const [telemetryError, setTelemetryError] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedConsumer, setSelectedConsumer] = useState<ConsumerRow | null>(null);
   const [consumerForMeter, setConsumerForMeter] = useState<ConsumerRow | null>(null);
@@ -189,16 +379,163 @@ export default function UserDashboard() {
     void loadBills();
   }, [user?.id]);
 
-  const stats = useMemo(() => {
-    const meters = consumers.flatMap((consumer) => consumer.smartMeters ?? []);
-    const active = meters.filter(isMeterActive).length;
+  const userMeters = useMemo(
+    () => consumers.flatMap((consumer) => consumer.smartMeters ?? []),
+    [consumers]
+  );
+
+  const userMeterIds = useMemo(
+    () => new Set(userMeters.map((meter) => meter.id).filter(Boolean)),
+    [userMeters]
+  );
+
+  const appendTelemetrySnapshot = (statuses: DeviceStatusDto[]) => {
+    const voltages = statuses
+      .map(getAverageVoltage)
+      .filter((value): value is number => value !== null);
+    const totalLoad = statuses.reduce((sum, status) => sum + (toFiniteNumber(status.currentLoadKW) ?? 0), 0);
+
+    if (voltages.length === 0 && totalLoad <= 0) return;
+
+    const now = new Date();
+    const averageVoltage = voltages.length
+      ? voltages.reduce((sum, value) => sum + value, 0) / voltages.length
+      : 0;
+
+    setTelemetryHistory((current) => [
+      ...current.slice(-11),
+      {
+        time: now.getTime(),
+        label: now.toLocaleTimeString("sr-RS", { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
+        averageVoltage,
+        totalLoad,
+      },
+    ]);
+  };
+
+  useEffect(() => {
+    if (userMeterIds.size === 0) {
+      setDeviceStatuses([]);
+      setTelemetryHistory([]);
+      setTelemetryLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    let requestInFlight = false;
+    let loadedOnce = false;
+
+    const loadTelemetry = async () => {
+      if (requestInFlight) return;
+
+      requestInFlight = true;
+
+      if (!loadedOnce) {
+        setTelemetryLoading(true);
+      }
+
+      const response = await smartMeterApi.getDeviceStatuses();
+      requestInFlight = false;
+
+      if (cancelled) return;
+
+      loadedOnce = true;
+      setTelemetryLoading(false);
+
+      if (!response.success) {
+        setTelemetryError(response.message);
+        return;
+      }
+
+      const ownedStatuses = (response.data ?? []).filter((status) =>
+        userMeters.some((meter) => statusBelongsToMeter(status, meter))
+      );
+      const uniqueStatuses = Array.from(new Map(ownedStatuses.map((status) => [status.deviceId, status])).values());
+
+      setTelemetryError("");
+      setDeviceStatuses(uniqueStatuses);
+      appendTelemetrySnapshot(uniqueStatuses);
+    };
+
+    void loadTelemetry();
+    const intervalId = window.setInterval(() => {
+      void loadTelemetry();
+    }, telemetryRefreshMs);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+    };
+  }, [userMeterIds, userMeters]);
+
+  useEffect(() => {
+    const ownedStatuses = realTimeDeviceStatuses.filter((status) =>
+      userMeters.some((meter) => statusBelongsToMeter(status, meter))
+    );
+
+    if (ownedStatuses.length === 0) return;
+
+    setDeviceStatuses((current) => {
+      const next = new Map(current.map((status) => [status.deviceId, status]));
+      ownedStatuses.forEach((status) => next.set(status.deviceId, status));
+      return Array.from(next.values());
+    });
+    appendTelemetrySnapshot(ownedStatuses);
+  }, [realTimeDeviceStatuses, userMeters]);
+
+  useEffect(() => {
+    if (!selectedConsumer || !isSignalRConnected) return;
+
+    const meterIds = getConsumerMeterIds(selectedConsumer);
+
+    void joinObjectGroup(selectedConsumer.id);
+    meterIds.forEach((meterId) => {
+      void joinMeterGroup(meterId);
+    });
+
+    return () => {
+      void leaveObjectGroup(selectedConsumer.id);
+      meterIds.forEach((meterId) => {
+        void leaveMeterGroup(meterId);
+      });
+    };
+  }, [selectedConsumer?.id, isSignalRConnected]);
+
+  const telemetrySummary = useMemo(() => {
+    const latestVoltages = deviceStatuses
+      .map(getAverageVoltage)
+      .filter((value): value is number => value !== null);
+    const averageVoltage = latestVoltages.length
+      ? latestVoltages.reduce((sum, value) => sum + value, 0) / latestVoltages.length
+      : null;
+    const totalLoad = deviceStatuses.reduce((sum, status) => sum + (toFiniteNumber(status.currentLoadKW) ?? 0), 0);
+    const online = deviceStatuses.filter(isStatusOnline).length;
+    const connectionTypes = Array.from(new Set(userMeters.map((meter) => getConnectionTypeLabel(meter.connectionType))));
 
     return {
-      total: meters.length,
-      active,
-      inactive: meters.length - active,
+      currentTariff: getCurrentTariff(),
+      averageVoltage,
+      totalLoad,
+      online,
+      totalTracked: userMeters.length,
+      connectionLabel: connectionTypes.length === 1 ? connectionTypes[0] : `${connectionTypes.length || 0} tipa`,
     };
-  }, [consumers]);
+  }, [deviceStatuses, userMeters]);
+
+  const consumptionChartData = useMemo<BarChartPoint[]>(() => {
+    return [...bills]
+      .sort((a, b) => new Date(a.billingPeriod).getTime() - new Date(b.billingPeriod).getTime())
+      .slice(-6)
+      .map((bill) => {
+        const days = getMonthDays(bill.billingPeriod);
+
+        return {
+          label: formatPeriod(bill.billingPeriod),
+          highTariff: bill.highTariffKWh / days,
+          lowTariff: bill.lowTariffKWh / days,
+        };
+      });
+  }, [bills]);
 
   const handleLogout = () => {
     logout();
@@ -374,6 +711,7 @@ export default function UserDashboard() {
         onEditMeter={(meter) => setMeterForEdit(meter)}
         onRemoveMeter={(consumer, meter) => setMeterDeleteTarget({ consumer, meter })}
         onUpdated={handleConsumerUpdated}
+        deviceStatuses={deviceStatuses}
       />
       <CreateConsumerModal
         open={isCreateModalOpen}
@@ -437,19 +775,6 @@ export default function UserDashboard() {
                 </div>
               </div>
 
-              <p className="text-[11px] mb-2 font-medium uppercase tracking-widest text-gray-400 montserrat_medium">
-                Brojila
-              </p>
-              <div className="grid grid-cols-2 gap-2.5 ">
-                <div className="rounded-lg border border-blue-100 bg-[#87BFFC]/25 px-3 py-3">
-                  <p className="text-[11px] text-blue-500 montserrat_medium">Ukupno</p>
-                  <p className="mt-1 text-2xl text-[#363636] montserrat_bold">{stats.total}</p>
-                </div>
-                <div className="rounded-lg border border-green-100 bg-green-50 px-3 py-3">
-                  <p className="text-[11px] text-green-600 montserrat_medium">Uparena</p>
-                  <p className="mt-1 text-2xl text-[#363636] montserrat_bold">{stats.active}</p>
-                </div>
-              </div>
             </div>
           </section>
 
@@ -576,6 +901,136 @@ export default function UserDashboard() {
                         ))}
                     </tbody>
                   </table>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className={`${panelClass} lg:col-span-11`}>
+            <div className={`${cardClass}`}>
+              <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-[11px] font-medium uppercase tracking-widest text-gray-400 montserrat_medium">
+                    Telemetrija i analitika
+                  </p>
+                  <h2 className="mt-1 text-2xl text-[#363636] montserrat_bold">
+                    Potrošnja i stanje mreže
+                  </h2>
+                </div>
+                <div className="inline-flex items-center gap-2 rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 text-xs text-[#469FFE] montserrat_medium">
+                  {telemetryLoading ? <AiOutlineLoading className="animate-spin" /> : <FaSignal />}
+                  {isSignalRConnected ? "SignalR live" : "Polling fallback"}
+                </div>
+              </div>
+
+              {telemetryError && (
+                <div className="mb-5 flex items-start gap-2.5 rounded-lg border border-red-100 bg-red-50 px-3 py-2.5">
+                  <FaTimesCircle className="mt-0.5 shrink-0 text-base text-red-400" />
+                  <p className="text-xs leading-relaxed text-red-600 montserrat_medium">{telemetryError}</p>
+                </div>
+              )}
+
+              <div className="mb-5 grid grid-cols-1 gap-3 md:grid-cols-4">
+                <div className="rounded-xl border border-blue-100 bg-[#87BFFC]/20 px-4 py-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-[11px] uppercase tracking-widest text-blue-500 montserrat_medium">
+                      Trenutna tarifa
+                    </p>
+                    <FaBolt className="text-[#469FFE]" />
+                  </div>
+                  <p className="mt-2 text-2xl text-[#363636] montserrat_bold">{telemetrySummary.currentTariff}</p>
+                  <p className="mt-1 text-xs text-[#AFAFAF] montserrat_medium">
+                    {telemetrySummary.currentTariff === "NT" ? "Niža tarifa je aktivna" : "Viša tarifa je aktivna"}
+                  </p>
+                </div>
+
+                <div className="rounded-xl border border-green-100 bg-green-50 px-4 py-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-[11px] uppercase tracking-widest text-green-600 montserrat_medium">
+                      Napon
+                    </p>
+                    <FaChartLine className="text-green-500" />
+                  </div>
+                  <p className="mt-2 text-2xl text-[#363636] montserrat_bold">
+                    {formatNumber(telemetrySummary.averageVoltage, "V", 1)}
+                  </p>
+                  <p className="mt-1 text-xs text-[#AFAFAF] montserrat_medium">Prosek aktivnih faza</p>
+                </div>
+
+                <div className="rounded-xl border border-orange-100 bg-orange-50 px-4 py-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-[11px] uppercase tracking-widest text-orange-500 montserrat_medium">
+                      Opterećenje
+                    </p>
+                    <FaBolt className="text-orange-400" />
+                  </div>
+                  <p className="mt-2 text-2xl text-[#363636] montserrat_bold">
+                    {formatNumber(telemetrySummary.totalLoad, "kW", 2)}
+                  </p>
+                  <p className="mt-1 text-xs text-[#AFAFAF] montserrat_medium">Ukupno za brojila</p>
+                </div>
+
+                <div className="rounded-xl border border-gray-200 bg-white px-4 py-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-[11px] uppercase tracking-widest text-gray-400 montserrat_medium">
+                      Konekcija
+                    </p>
+                    <FaPlug className="text-[#469FFE]" />
+                  </div>
+                  <p className="mt-2 text-2xl text-[#363636] montserrat_bold">
+                    {telemetrySummary.online}/{telemetrySummary.totalTracked}
+                  </p>
+                  <p className="mt-1 text-xs text-[#AFAFAF] montserrat_medium">
+                    Online, {telemetrySummary.connectionLabel}
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+                <div className="xl:col-span-1">
+                  <div className="mb-3">
+                    <p className="text-[11px] uppercase tracking-widest text-gray-400 montserrat_medium">
+                      Dnevna potrošnja VT/NT
+                    </p>
+                    <p className="mt-1 text-xs text-[#AFAFAF] montserrat_medium">
+                      Prosek po danu iz poslednjih računa
+                    </p>
+                  </div>
+                  <BarChart data={consumptionChartData} />
+                </div>
+
+                <div className="xl:col-span-1">
+                  <div className="mb-3">
+                    <p className="text-[11px] uppercase tracking-widest text-gray-400 montserrat_medium">
+                      Trend napona
+                    </p>
+                    <p className="mt-1 text-xs text-[#AFAFAF] montserrat_medium">
+                      Prosečan napon kroz poslednje uzorke
+                    </p>
+                  </div>
+                  <LineChart
+                    data={telemetryHistory}
+                    valueKey="averageVoltage"
+                    color="#22C55E"
+                    emptyMessage="Čekam merenja za trend napona."
+                  />
+                </div>
+
+                <div className="xl:col-span-1">
+                  <div className="mb-3">
+                    <p className="text-[11px] uppercase tracking-widest text-gray-400 montserrat_medium">
+                      Trend opterećenja
+                    </p>
+                    <p className="mt-1 text-xs text-[#AFAFAF] montserrat_medium">
+                      Ukupno trenutno opterećenje
+                    </p>
+                  </div>
+                  <LineChart
+                    data={telemetryHistory}
+                    valueKey="totalLoad"
+                    color="#469FFE"
+                    emptyMessage="Čekam merenja za trend opterećenja."
+                  />
                 </div>
               </div>
             </div>

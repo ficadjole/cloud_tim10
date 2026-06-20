@@ -8,6 +8,7 @@ export type SmartMeterDto = {
   isActive?: boolean;
   maxPower?: number;
   note?: string | null;
+  deviceGuid?: string | null;
   residentalObjectId?: string | null;
 };
 

@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { deviceApi } from "../../api_services/device/DeviceAPIService";
 import type { DeviceStatusDto, SmartMeterDto } from "../../types/device/DeviceTypes";
+import BillsModal from "../../components/device/BillsModal";
 
 const ONLINE_THRESHOLD_SECONDS = 20;
 
@@ -20,6 +21,7 @@ export default function DeviceStatusPanel() {
   const [statuses, setStatuses] = useState<DeviceStatusDto[]>([]);
   const [meters, setMeters] = useState<SmartMeterDto[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedMeter, setSelectedMeter] = useState<{ id: string; label: string } | null>(null); 
 
   const loadData = useCallback(async () => {
     const [statusRes, meterRes] = await Promise.all([
@@ -63,10 +65,10 @@ export default function DeviceStatusPanel() {
         <p className="text-xs uppercase tracking-[0.3em] text-[#469FFE] montserrat_medium">
           Mreža
         </p>
-        <h2 className="mt-1 text-2xl text-[#363636] montserrat_bold">
+        <h2 className="mt-1 text-4xl text-[#363636] montserrat_extrabold">
           Status brojila
         </h2>
-        <p className="mt-1 text-sm text-[#636363] montserrat_medium">
+        <p className="mt-1 text-md text-[#636363] montserrat_medium">
           Pregled online/offline statusa i opterećenja svih registrovanih brojila
         </p>
       </div>
@@ -102,7 +104,8 @@ export default function DeviceStatusPanel() {
               return (
                 <tr
                   key={s.deviceId}
-                  className="border-t border-[#469FFE]/5 hover:bg-[#469FFE]/4 transition-all duration-200"
+                  className="border-t cursor-pointer border-[#469FFE]/5 hover:bg-[#469FFE]/4 transition-all duration-200"
+                  onClick={() => setSelectedMeter({ id: s.deviceId, label: meter?.serialNumber ?? s.deviceId })}
                 >
                   <td className="px-4 py-3">
                     <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] montserrat_semibold ${
@@ -129,11 +132,20 @@ export default function DeviceStatusPanel() {
                     {formatHeartbeat(s.lastHeartbeat)}
                   </td>
                 </tr>
+                
               );
             })}
           </tbody>
         </table>
       </div>
+      {selectedMeter && (
+        <BillsModal
+          smartMeterId={selectedMeter.id}
+          meterLabel={selectedMeter.label}
+          onClose={() => setSelectedMeter(null)}
+        />
+      )}
     </div>
+    
   );
 }

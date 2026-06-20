@@ -20,7 +20,7 @@ import type {
   ResidentalObjectType,
   UpdateResidentalObjectDto,
 } from "../../models/residental_object/ResidentalObjectTypes";
-import type { SmartMeterDto } from "../../models/smart_meter/SmartMeterTypes";
+import type { DeviceStatusDto, SmartMeterDto } from "../../models/smart_meter/SmartMeterTypes";
 
 interface ConsumerDetailsModalProps {
   open: boolean;
@@ -30,6 +30,7 @@ interface ConsumerDetailsModalProps {
   onEditMeter: (meter: SmartMeterDto) => void;
   onRemoveMeter: (consumer: ConsumerRow, meter: SmartMeterDto) => void;
   onUpdated: (consumerId: string) => Promise<void> | void;
+  deviceStatuses?: DeviceStatusDto[];
 }
 
 const detailItemClass = "rounded-lg border border-gray-200 bg-white px-3 py-3";
@@ -61,7 +62,29 @@ const getConnectionTypeLabel = (type: SmartMeterDto["connectionType"]) => {
   return type ? String(type) : "-";
 };
 
-const isMeterActive = (meter: SmartMeterDto, consumer: ConsumerRow) => {
+const getMeterStatusKeys = (meter: SmartMeterDto) =>
+  [meter.id, meter.serialNumber, meter.deviceGuid]
+    .map((value) => String(value ?? "").trim().toLowerCase())
+    .filter(Boolean);
+
+const getStatusForMeter = (meter: SmartMeterDto, statuses: DeviceStatusDto[]) => {
+  const meterKeys = getMeterStatusKeys(meter);
+
+  return statuses.find((status) => meterKeys.includes(String(status.deviceId ?? "").trim().toLowerCase())) ?? null;
+};
+
+const isStatusOnline = (status: DeviceStatusDto | null) => {
+  if (!status?.lastHeartbeat) return Boolean(status);
+
+  const heartbeatTime = new Date(status.lastHeartbeat).getTime();
+  if (Number.isNaN(heartbeatTime)) return Boolean(status);
+
+  return (Date.now() - heartbeatTime) / 1000 <= 20;
+};
+
+const isMeterActive = (meter: SmartMeterDto, consumer: ConsumerRow, liveStatus: DeviceStatusDto | null) => {
+  if (isStatusOnline(liveStatus)) return true;
+
   if (typeof meter.isActive === "boolean") return meter.isActive;
 
   const status = String(meter.status ?? "").toLowerCase();
@@ -109,6 +132,7 @@ export default function ConsumerDetailsModal({
   onEditMeter,
   onRemoveMeter,
   onUpdated,
+  deviceStatuses = [],
 }: ConsumerDetailsModalProps) {
   const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -395,7 +419,11 @@ export default function ConsumerDetailsModal({
                         </tr>
                       )}
 
-                      {meters.map((meter) => (
+                      {meters.map((meter) => {
+                        const liveStatus = getStatusForMeter(meter, deviceStatuses);
+                        const active = isMeterActive(meter, consumer, liveStatus);
+
+                        return (
                         <tr
                           key={meter.id}
                           onClick={() => setMeterForDetails(meter)}
@@ -413,8 +441,8 @@ export default function ConsumerDetailsModal({
                           <td className="px-3 py-3">
                             <div className="flex justify-center">
                               <span
-                                className={`h-3 w-3 rounded-full ${isMeterActive(meter, consumer) ? "bg-green-500" : "bg-gray-300"}`}
-                                aria-label={isMeterActive(meter, consumer) ? "Aktivno" : "Neaktivno"}
+                                className={`h-3 w-3 rounded-full ${active ? "bg-green-500" : "bg-gray-300"}`}
+                                aria-label={active ? "Aktivno" : "Neaktivno"}
                               />
                             </div>
                           </td>
@@ -445,7 +473,8 @@ export default function ConsumerDetailsModal({
                             </div>
                           </td>
                         </tr>
-                      ))}
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
