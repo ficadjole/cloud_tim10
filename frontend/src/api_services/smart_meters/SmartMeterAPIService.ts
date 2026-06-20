@@ -18,17 +18,47 @@ type ApiErrorBody = {
   errors?: Record<string, string[]> | string;
 };
 
-const normalizeMeter = (raw: Record<string, unknown>): SmartMeterDto => ({
-  id: String(raw.id ?? raw.Id ?? ""),
-  serialNumber: (raw.serialNumber ?? raw.SerialNumber ?? null) as string | null,
-  connectionType: (raw.connectionType ?? raw.ConnectionType ?? null) as string | number | null,
-  status: (raw.status ?? raw.Status ?? null) as string | number | null,
-  isActive: (raw.isActive ?? raw.IsActive ?? undefined) as boolean | undefined,
-  maxPower: (raw.maxPower ?? raw.MaxPower ?? undefined) as number | undefined,
-  note: (raw.note ?? raw.Note ?? null) as string | null,
-  deviceGuid: (raw.deviceGuid ?? raw.DeviceGuid ?? null) as string | null,
-  residentalObjectId: (raw.residentalObjectId ?? raw.ResidentalObjectId ?? null) as string | null,
-});
+const meterLimitStorageKey = "smartMeterLimits";
+
+const readStoredLimits = (): Record<string, Pick<SmartMeterDto, "limitValue" | "limitType">> => {
+  try {
+    const raw = localStorage.getItem(meterLimitStorageKey);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+};
+
+const writeStoredLimit = (meterId: string, limitValue?: number, limitType?: string | number) => {
+  if (!meterId || limitValue === undefined || limitType === undefined) return;
+
+  const stored = readStoredLimits();
+  stored[meterId] = { limitValue, limitType };
+  localStorage.setItem(meterLimitStorageKey, JSON.stringify(stored));
+};
+
+const normalizeMeter = (raw: Record<string, unknown>): SmartMeterDto => {
+  const id = String(raw.id ?? raw.Id ?? "");
+  const storedLimit = readStoredLimits()[id] ?? {};
+  const userLimitRaw = raw.userLimit ?? raw.UserLimit;
+  const userLimit = userLimitRaw && typeof userLimitRaw === "object"
+    ? (userLimitRaw as Record<string, unknown>)
+    : {};
+
+  return {
+    id,
+    serialNumber: (raw.serialNumber ?? raw.SerialNumber ?? null) as string | null,
+    connectionType: (raw.connectionType ?? raw.ConnectionType ?? null) as string | number | null,
+    status: (raw.status ?? raw.Status ?? null) as string | number | null,
+    isActive: (raw.isActive ?? raw.IsActive ?? undefined) as boolean | undefined,
+    maxPower: (raw.maxPower ?? raw.MaxPower ?? undefined) as number | undefined,
+    note: (raw.note ?? raw.Note ?? null) as string | null,
+    deviceGuid: (raw.deviceGuid ?? raw.DeviceGuid ?? null) as string | null,
+    limitValue: (raw.limitValue ?? raw.LimitValue ?? userLimit.value ?? userLimit.Value ?? storedLimit.limitValue ?? null) as number | null,
+    limitType: (raw.limitType ?? raw.LimitType ?? userLimit.type ?? userLimit.Type ?? storedLimit.limitType ?? null) as string | number | null,
+    residentalObjectId: (raw.residentalObjectId ?? raw.ResidentalObjectId ?? null) as string | null,
+  };
+};
 
 const normalizeActivationResult = (raw: Record<string, unknown>): ActivateSmartMeterResult => ({
   accessToken: String(raw.accessToken ?? raw.AccessToken ?? ""),
@@ -39,6 +69,7 @@ const normalizeDeviceStatus = (raw: Record<string, unknown>): DeviceStatusDto =>
   deviceId: String(raw.deviceId ?? raw.DeviceId ?? ""),
   deviceType: (raw.deviceType ?? raw.DeviceType ?? null) as string | number | null,
   currentLoadKW: (raw.currentLoadKW ?? raw.CurrentLoadKW ?? null) as number | null,
+  totalConsumptionKWh: (raw.totalConsumptionKWh ?? raw.TotalConsumptionKWh ?? null) as number | null,
   lastHeartbeat: (raw.lastHeartbeat ?? raw.LastHeartbeat ?? null) as string | null,
   voltageL1: (raw.voltageL1 ?? raw.VoltageL1 ?? null) as number | null,
   voltageL2: (raw.voltageL2 ?? raw.VoltageL2 ?? null) as number | null,
@@ -116,7 +147,10 @@ export const smartMeterApi: ISmartMeterAPIService = {
 
     return client
       .put(`/SmartMeter/${id}`, formData)
-      .then(() => ok<void>("Smart meter updated successfully."))
+      .then(() => {
+        writeStoredLimit(id, dto.limitValue, dto.limitType);
+        return ok<void>("Smart meter updated successfully.");
+      })
       .catch((e) => err(e, "Failed to update smart meter"));
   },
 

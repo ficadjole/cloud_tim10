@@ -88,6 +88,7 @@ type TelemetryPoint = {
 };
 
 type BarChartPoint = {
+  id: string;
   label: string;
   highTariff: number;
   lowTariff: number;
@@ -189,7 +190,7 @@ const BarChart = ({ data }: { data: BarChartPoint[] }) => {
     <div className="h-60 rounded-xl border border-gray-200 bg-white px-4 py-4">
       <div className="flex h-44 items-end gap-3">
         {data.map((item) => (
-          <div key={item.label} className="flex min-w-0 flex-1 flex-col items-center justify-end gap-2">
+          <div key={item.id} className="flex min-w-0 flex-1 flex-col items-center justify-end gap-2">
             <div className="flex h-36 w-full max-w-14 items-end justify-center gap-1.5">
               <div
                 className="w-4 rounded-t-md bg-[#469FFE]"
@@ -530,6 +531,7 @@ export default function UserDashboard() {
         const days = getMonthDays(bill.billingPeriod);
 
         return {
+          id: bill.id,
           label: formatPeriod(bill.billingPeriod),
           highTariff: bill.highTariffKWh / days,
           lowTariff: bill.lowTariffKWh / days,

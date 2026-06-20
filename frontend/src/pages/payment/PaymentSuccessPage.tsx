@@ -46,7 +46,7 @@ export default function PaymentSuccessPage() {
     const timer = setTimeout(() => {
       
       axios.post(`https://localhost:7262/api/Bills/fulfill-payment?sessionId=${sessionId}`, {})
-        .then(response => {
+        .then(() => {
           console.log("[SMARTGRID] Uspeh! Račun uspešno proknjižen u bazi podataka!");
           sessionStorage.removeItem(pendingPaymentBillKey);
         })

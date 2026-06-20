@@ -5,6 +5,9 @@ using SmartGrid.Application.Interfaces.Storage;
 using SmartGrid.Domain.Common;
 using SmartGrid.Domain.Enums;
 using SmartGrid.Domain.ValueObjects;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SmartGrid.Application.Features.Bills.Queries.GetBillPdf
 {
@@ -42,7 +45,15 @@ namespace SmartGrid.Application.Features.Bills.Queries.GetBillPdf
                 }
             }
 
-            byte[] pdfBytes = await pdfExportService.ExportToPdfAsync(textContent, bill.Status.ToString());
+            textContent = textContent.Replace("Status: Unpaid", "")
+                                     .Replace("Status: UNPAID", "")
+                                     .Replace("Status: Paid", "")
+                                     .Replace("Status: PAID", "");
+
+            string dbStatusValue = bill.Status == PaymentState.Paid ? "Paid" : "Unpaid";
+            textContent += $"\nStatus: {dbStatusValue}";
+
+            byte[] pdfBytes = await pdfExportService.ExportToPdfAsync(textContent);
             return Result<byte[]>.Success(pdfBytes);
         }
     }

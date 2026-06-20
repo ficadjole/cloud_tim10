@@ -8,6 +8,17 @@ import type {
 } from "../../models/residental_object/ResidentalObjectTypes";
 import type { SmartMeterDto } from "../../models/smart_meter/SmartMeterTypes";
 
+const meterLimitStorageKey = "smartMeterLimits";
+
+const readStoredLimits = (): Record<string, Pick<SmartMeterDto, "limitValue" | "limitType">> => {
+  try {
+    const raw = localStorage.getItem(meterLimitStorageKey);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+};
+
 const normalizeMeter = (raw: Record<string, unknown>): SmartMeterDto => ({
   id: String(raw.id ?? raw.Id ?? ""),
   serialNumber: (raw.serialNumber ?? raw.SerialNumber ?? null) as string | null,
@@ -17,6 +28,8 @@ const normalizeMeter = (raw: Record<string, unknown>): SmartMeterDto => ({
   maxPower: (raw.maxPower ?? raw.MaxPower ?? undefined) as number | undefined,
   note: (raw.note ?? raw.Note ?? null) as string | null,
   deviceGuid: (raw.deviceGuid ?? raw.DeviceGuid ?? null) as string | null,
+  limitValue: (raw.limitValue ?? raw.LimitValue ?? readStoredLimits()[String(raw.id ?? raw.Id ?? "")]?.limitValue ?? null) as number | null,
+  limitType: (raw.limitType ?? raw.LimitType ?? readStoredLimits()[String(raw.id ?? raw.Id ?? "")]?.limitType ?? null) as string | number | null,
   residentalObjectId: (raw.residentalObjectId ?? raw.ResidentalObjectId ?? null) as string | null,
 });
 
