@@ -1,7 +1,8 @@
-import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom"; 
 import { AiOutlineLoading } from "react-icons/ai";
 import { FaCheck, FaDownload, FaFileInvoiceDollar, FaHome } from "react-icons/fa";
+import axios from "axios"; 
 import { billApi } from "../../api_services/bills/BillAPIService";
 import type { BillDto } from "../../models/bill/BillTypes";
 
@@ -32,6 +33,32 @@ export default function PaymentSuccessPage() {
   const bill = useMemo(readPendingBill, []);
   const [loadingPdf, setLoadingPdf] = useState(false);
   const [error, setError] = useState("");
+
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+  const queryParams = new URLSearchParams(window.location.search);
+  const sessionId = queryParams.get("session_id") || searchParams.get("session_id");
+
+  if (sessionId) {
+    console.log("[SMARTGRID] Pronađen session_id u ruteru, šaljem backendu:", sessionId);
+
+    const timer = setTimeout(() => {
+      
+      axios.post(`https://localhost:7262/api/Bills/fulfill-payment?sessionId=${sessionId}`, {})
+        .then(response => {
+          console.log("[SMARTGRID] Uspeh! Račun uspešno proknjižen u bazi podataka!");
+          sessionStorage.removeItem(pendingPaymentBillKey);
+        })
+        .catch(err => {
+          console.error("[SMARTGRID] Greška prilikom proknjižavanja:", err.response?.data || err.message);
+        });
+
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }
+}, [searchParams]);
 
   const handleDownloadPdf = async () => {
     if (!bill) return;

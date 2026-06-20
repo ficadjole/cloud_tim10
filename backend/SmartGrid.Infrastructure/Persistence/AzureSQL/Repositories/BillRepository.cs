@@ -29,6 +29,7 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
         public async Task UpdateAsync(Bill bill, CancellationToken ct = default)
         {
             Guid billGuid = Guid.Parse(bill.Id.Value);
+
             var entity = await _dbContext.Bills.FindAsync(new object[] { billGuid }, cancellationToken: ct);
 
             if (entity != null)
@@ -36,7 +37,6 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
                 entity.Status = bill.Status;
                 entity.StripeSessionId = bill.StripeSessionId;
 
-                _dbContext.Bills.Update(entity);
                 await _dbContext.SaveChangesAsync(ct);
             }
         }

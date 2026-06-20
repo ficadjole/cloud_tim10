@@ -45,7 +45,7 @@ namespace SmartGrid.Infrastructure.Services
                         }
                     },
                     Mode = "payment",
-                    SuccessUrl = successUrl,
+                    SuccessUrl = successUrl + "?session_id={CHECKOUT_SESSION_ID}",
                     CancelUrl = cancelUrl,
                     ClientReferenceId = bill.Id.Value
                 };
