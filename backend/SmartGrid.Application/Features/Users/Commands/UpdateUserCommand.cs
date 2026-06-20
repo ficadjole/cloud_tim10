@@ -81,7 +81,9 @@ namespace SmartGrid.Application.Features.Users.Commands
                     Id = existingUser.Id.ToString(),
                     Name = existingUser.GetFullName(),
                     Email = existingUser.Email,
-                    Role = existingUser.Role.ToString()
+                    Role = existingUser.Role.ToString(),
+                    PhoneNumber = existingUser.PhoneNumber,
+                    AccountStatus = existingUser.AccountStatus.ToString()
                 };
 
                 return Result<UserDto>.Success(userDto);

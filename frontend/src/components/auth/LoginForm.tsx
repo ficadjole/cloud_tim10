@@ -29,13 +29,19 @@ export function LoginForm({ authApi }: { authApi: IAuthAPIService }) {
       setError(res.message ?? "Invalid credentials");
       setLoading(false);
       return;
-}
+    }
 
+      if (res.user.accountStatus === "Suspended") {
+        setError("Vaš nalog je suspendovan. Kontaktirajte administratora.");
+        setLoading(false);
+        return;
+    }
 
 
 const claims = jwtDecode<{ 
   [ROLE_CLAIM]?: string 
 }>(res.token);
+
 const role = claims?.[ROLE_CLAIM] ?? res.user.role;
 
 console.log("Final role:", role);
@@ -44,7 +50,7 @@ login(res.token, {
   id: res.user.id,
   name: res.user.name,
   email: res.user.email,
-  username: res.user.email,
+  accountStatus: res.user.accountStatus,
   role,
 });
 

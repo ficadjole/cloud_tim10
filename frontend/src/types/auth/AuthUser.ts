@@ -3,5 +3,5 @@ export type AuthUser = {
   name: string;
   email: string;
   role: string;
-  username: string;
+  accountStatus: string;
 };

@@ -93,7 +93,7 @@ namespace SmartGrid.Application.Features.Users.Commands
 
                 logger.LogInformation("User created message sent to queue for user ID: {UserId}", user.Id);
 
-                var userDto = new UserDto() { Id = user.Id.ToString(), Name = user.GetFullName(), Email = user.Email, Role = user.Role.ToString() };
+                var userDto = new UserDto() { Id = user.Id.ToString(), Name = user.GetFullName(), Email = user.Email, Role = user.Role.ToString(), PhoneNumber = user.PhoneNumber, AccountStatus = user.AccountStatus.ToString() };
 
                 var authResponseDto = new AuthResponseDto() { Token = token.Value, User = userDto };
 

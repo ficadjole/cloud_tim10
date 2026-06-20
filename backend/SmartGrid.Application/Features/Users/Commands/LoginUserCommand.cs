@@ -60,7 +60,7 @@ namespace SmartGrid.Application.Features.Users.Commands
 
                 logger.LogInformation("User with email {Email} logged in successfully.", request.Email);
 
-                var userDto = new UserDto() { Id = user.Id.ToString(), Name = user.GetFullName(), Email = user.Email, Role = user.Role.ToString() };
+                var userDto = new UserDto() { Id = user.Id.ToString(), Name = user.GetFullName(), Email = user.Email, Role = user.Role.ToString(), PhoneNumber = user.PhoneNumber, AccountStatus = user.AccountStatus.ToString() };
 
                 var authResponseDto = new AuthResponseDto() { Token = jwtToken.Value, User = userDto };
 

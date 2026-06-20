@@ -770,7 +770,7 @@ export default function UserDashboard() {
                     {user?.name ?? "Potrošač"}
                   </h1>
                   <p className="mt-1 text-sm text-[#AFAFAF] montserrat_medium">
-                    {user?.email ?? user?.username ?? "Nema email adrese"}
+                    {user?.email ?? "Nema email adrese"}
                   </p>
                 </div>
               </div>
