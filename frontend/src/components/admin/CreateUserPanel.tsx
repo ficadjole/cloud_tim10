@@ -46,7 +46,9 @@ export default function CreateUserPanel() {
   };
 
   const inputClass =
-    "w-full h-[45px] rounded-xl border border-[#469FFE]/1 bg-white/4 px-4 py-3 text-sm text-[#469FFE] shadow-[0_0_0_1.5px_#469FFE,0_0_25px_-17px_#000] outline-none transition-all duration-200 ease-[cubic-bezier(0.19,1,0.22,1)] placeholder:text-[#469FFE]/60 hover:shadow-[0_0_0_2.5px_#67afff,0_0_25px_-15px_#000] focus:scale-[0.98] active:scale-[0.95] cursor-text montserrat_medium";
+    "w-full h-[38px] rounded-xl border border-[#469FFE]/30 bg-white/60 px-3 text-sm text-[#363636] outline-none transition-all duration-200 placeholder:text-gray-400 hover:border-[#469FFE]/60 focus:border-[#469FFE] focus:ring-2 focus:ring-[#469FFE]/10 montserrat_medium";
+
+  const labelClass = "text-xs text-[#469FFE] montserrat_semibold";
 
   return (
     <div className="w-full max-w-screen-sm rounded-2xl bg-linear-to-b from-[#FAFAFA] to-white/1 backdrop-blur-2xl border border-white/40 px-4 py-4 shadow-lg">
@@ -90,19 +92,19 @@ export default function CreateUserPanel() {
         </p>
         <div className="grid grid-cols-2 gap-3 mb-5">
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs text-[#363636] montserrat_medium">Ime</label>
+            <label className={labelClass}>Ime</label>
             <input type="text" value={form.firstName} onChange={set("firstName")} placeholder="Nikola" className={inputClass} />
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs text-[#363636] montserrat_medium">Prezime</label>
+            <label className={labelClass}>Prezime</label>
             <input type="text" value={form.lastName} onChange={set("lastName")} placeholder="Knežević" className={inputClass} />
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs text-[#363636] montserrat_medium">Email adresa</label>
+            <label className={labelClass}>Email adresa</label>
             <input type="email" value={form.email} onChange={set("email")} placeholder="nikola@example.com" className={inputClass} />
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs text-[#363636] montserrat_medium">Kontakt telefon</label>
+            <label className={labelClass}>Kontakt telefon</label>
             <input type="tel" value={form.phoneNumber} onChange={set("phoneNumber")} placeholder="+381 6X XXX XXXX" className={inputClass} />
           </div>
         </div>

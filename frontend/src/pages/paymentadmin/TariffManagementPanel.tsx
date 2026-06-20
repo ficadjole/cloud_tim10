@@ -62,10 +62,10 @@ export default function TariffManagementPanel() {
         <p className="text-xs uppercase tracking-[0.3em] text-[#469FFE] montserrat_medium">
           Tarife
         </p>
-        <h2 className="mt-1 text-2xl text-[#363636] montserrat_bold">
+        <h2 className="mt-1 text-4xl text-[#363636] montserrat_extrabold">
           Tarifni modeli
         </h2>
-        <p className="mt-1 text-sm text-[#636363] montserrat_medium">
+        <p className="mt-1 text-md text-[#636363] montserrat_medium">
           Definišite cene za VT/NT po zonama i fiksne troškove
         </p>
       </div>
@@ -121,7 +121,7 @@ export default function TariffManagementPanel() {
 
       <div className="border-t border-[#469FFE]/10 my-5" />
 
-      <p className="text-xs uppercase tracking-[0.2em] text-[#469FFE] montserrat_semibold mb-3">
+      <p className="text-xs uppercase tracking-[0.2em] text-[#363636] montserrat_semibold mb-3">
         Fiksni troškovi
       </p>
       <div className="grid grid-cols-2 gap-3 mb-6">
