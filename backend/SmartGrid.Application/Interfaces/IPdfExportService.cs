@@ -2,6 +2,6 @@
 {
     public interface IPdfExportService
     {
-        Task<byte[]> ExportToPdfAsync(string textContent, string currentStatus);
+        Task<byte[]> ExportToPdfAsync(string textContent);
     }
 }
