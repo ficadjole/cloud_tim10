@@ -9,5 +9,6 @@ namespace SmartGrid.Application.Interfaces.Repositories
         Task SaveAsync(ManualStateLog log, CancellationToken ct = default);
         Task UpdateStatusAsync(ManualStateLog log, CancellationToken ct = default);
         Task<ManualStateLog?> GetById(EntityId id, CancellationToken ct = default);
+        Task<IReadOnlyCollection<ManualStateLog>> GetAllAsync(CancellationToken ct = default);
     }
 }

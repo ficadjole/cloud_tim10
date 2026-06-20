@@ -3,6 +3,7 @@
     public enum ProcessingStatus
     {
         WaitingForProcessing,
-        Processed
+        Processed,
+        Rejected
     }
 }

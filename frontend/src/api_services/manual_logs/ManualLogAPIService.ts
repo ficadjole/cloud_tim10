@@ -1,6 +1,7 @@
 import axios from "axios";
 import client from "../axios/axiosClient";
 import type { ApiResponse } from "../users/IUsersAPIService";
+import type { ManualLogDto } from "../../types/manualLog/ManualLogTypes";
 
 export type CreateManualLogDto = {
   smartMeterId: string;
@@ -43,5 +44,36 @@ export const manualLogApi = {
         message: "Manual reading submitted successfully.",
       }))
       .catch((e) => err<void>(e, "Failed to submit manual reading"));
+  },
+
+  async getAll(): Promise<ApiResponse<ManualLogDto[]>> {
+    return client
+      .get<ManualLogDto[]>("/ManualLogs")
+      .then((r) => ({
+        success: true as const,
+        data: r.data,
+        message: "",
+      }))
+      .catch((e) => err<ManualLogDto[]>(e, "Failed to load manual logs"));
+  },
+
+  async approve(id: string): Promise<ApiResponse<void>> {
+    return client
+      .put(`/ManualLogs/${id}/approve`)
+      .then(() => ({
+        success: true as const,
+        message: "Manual log approved successfully.",
+      }))
+      .catch((e) => err<void>(e, "Failed to approve manual log"));
+  },
+
+  async reject(id: string): Promise<ApiResponse<void>> {
+    return client
+      .put(`/ManualLogs/${id}/reject`)
+      .then(() => ({
+        success: true as const,
+        message: "Manual log rejected successfully.",
+      }))
+      .catch((e) => err<void>(e, "Failed to reject manual log"));
   },
 };

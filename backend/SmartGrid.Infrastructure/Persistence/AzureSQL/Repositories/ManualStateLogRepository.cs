@@ -44,5 +44,16 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
             _dbContext.ManualStateLogs.Update(entity);
             await _dbContext.SaveChangesAsync(ct);
         }
+
+        public async Task<IReadOnlyCollection<ManualStateLog>> GetAllAsync(CancellationToken ct = default)
+        {
+            var entities = await _dbContext.ManualStateLogs.AsNoTracking().ToListAsync(ct);
+
+            return entities
+                .Select(e => _mapper.MapToDomain(e))
+                .Where(d => d != null)
+                .Select(d => d!)
+                .ToList();
+        }
     }
 }

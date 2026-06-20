@@ -1,19 +1,23 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/auth/useAuthHook";
-import { FaTimes } from "react-icons/fa";
+import { FaTimes, FaCamera } from "react-icons/fa";
 import bg2 from "../../public/bg3.png";
 import NotificationBell from "../../components/admin/notification/NotificationBell";
 import TariffManagementPanel from "./TariffManagementPanel";
 import DeviceStatusPanel from "../device/DeviceStatusPanel";
+import ManualLogsApprovalPanel from "../../components/admin/ManualLogsApprovalPanel";
 import meterIcon from "../../public/meter.png";
 import tariffIcon from "../../public/tariff.png";
+import imageIcon from "../../public/image.png";
+
+type PanelKey = "tariff" | "network" | "manual";
 
 export default function PaymentAdminPage() {
   const { logout } = useAuth();
   const navigate = useNavigate();
-  const [activeCard, setActiveCard] = useState<"tariff" | "network" | null>(null);
-  const [openPanel, setOpenPanel] = useState<"tariff" | "network" | null>(null);
+  const [activeCard, setActiveCard] = useState<PanelKey | null>(null);
+  const [openPanel, setOpenPanel] = useState<PanelKey | null>(null);
 
   const handleLogout = () => {
     logout();
@@ -104,10 +108,36 @@ export default function PaymentAdminPage() {
               <div className={`flex h-full min-h-48 items-center justify-center self-stretch rounded-2xl px-5 py-5 transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] md:min-h-0 ${activeCard === "network" ? "md:w-64" : "md:absolute md:right-7 md:top-7 md:w-20 md:h-20 md:min-h-0 md:p-0"}`}>
                 <img
                   src={meterIcon}
-                  alt="Korisnici"
+                  alt="Mreža"
                   className={`w-auto object-contain transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${activeCard === "network" ? "h-full max-h-64 opacity-100" : "h-12 w-12 max-h-12 opacity-90"}`}
                 />
               </div>
+            </div>
+          </div>
+
+          <div
+            onMouseEnter={() => setActiveCard("manual")}
+            onFocus={() => setActiveCard("manual")}
+            onClick={() => setOpenPanel("manual")}
+            className={`group w-full min-w-0 rounded-2xl cursor-pointer bg-linear-to-b from-[#FAFAFA] to-white/1 backdrop-blur-2xl border border-white/40 px-6 py-6 shadow-lg transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+              activeCard === "manual" ? "md:flex-[2.1_1_0%]" : "md:flex-1"
+            }`}
+          >
+            <div className="relative grid h-full min-h-70 grid-cols-1 items-stretch gap-8 rounded-2xl bg-[#FAFAFA] p-8 transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] md:grid-cols-[minmax(0,1fr)_auto]">
+              <div className={`flex flex-col justify-between transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${activeCard === "manual" ? "opacity-100" : "opacity-85 md:pr-24"}`}>
+                <div>
+                  <p className="text-sm uppercase tracking-[0.3em] text-[#469FFE] montserrat_medium">Pregled stanja</p>
+                  <h2 className={`mt-4 text-[#363636] montserrat_bold transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${activeCard === "manual" ? "text-4xl" : "text-3xl"}`}>
+                    Ručna očitavanja
+                  </h2>
+                  <p className={`mt-4 max-w-md text-[#636363] montserrat_medium transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${activeCard === "manual" ? "text-base" : "text-sm"}`}>
+                    Pregled priložene slike i odobravanje/odbijanje unetog stanja brojila.
+                  </p>
+                </div>
+              </div>
+
+              <div className={`flex h-full min-h-48 items-center justify-center self-stretch rounded-2xl px-5 py-5 transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] md:min-h-0 ${activeCard === "manual" ? "md:w-64" : "md:absolute md:right-7 md:top-7 md:w-20 md:h-20 md:min-h-0 md:p-0"}`}>
+                <img src={imageIcon} alt="Camera" className={`transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${activeCard === "manual" ? "text-[8rem] opacity-100" : "text-3xl opacity-90"}`} />
               </div>
             </div>
           </div>
@@ -127,12 +157,15 @@ export default function PaymentAdminPage() {
                     </button>
                   </div>
 
-                  {openPanel === "tariff" ? <TariffManagementPanel /> : <DeviceStatusPanel />}
+                  {openPanel === "tariff" && <TariffManagementPanel />}
+                  {openPanel === "network" && <DeviceStatusPanel />}
+                  {openPanel === "manual" && <ManualLogsApprovalPanel />}
                 </div>
               </div>
             </div>
           )}
         </div>
       </div>
+    </div>
   );
 }

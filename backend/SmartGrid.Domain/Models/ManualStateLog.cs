@@ -72,7 +72,17 @@ namespace SmartGrid.Domain.Models
 
             Status = ProcessingStatus.Processed;
         }
+
+        public void MarkAsRejected()
+        {
+            if (Status != ProcessingStatus.WaitingForProcessing)
+                throw new InvalidOperationException("Only logs that are waiting for processing can be rejected.");
+
+            Status = ProcessingStatus.Rejected;
+        }
         #endregion
+
+
 
     }
 }
