@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/auth/useAuthHook";
-import { FaTimes, FaMoneyBillWave, FaNetworkWired } from "react-icons/fa";
+import { FaTimes } from "react-icons/fa";
 import bg2 from "../../public/bg3.png";
 import NotificationBell from "../../components/admin/notification/NotificationBell";
 import TariffManagementPanel from "./TariffManagementPanel";

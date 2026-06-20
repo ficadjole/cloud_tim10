@@ -4,6 +4,7 @@ import { smartMeterApi } from "../../api_services/smart_meters/SmartMeterAPIServ
 import { useLockBodyScroll } from "../../hooks/ui/useLockBodyScroll";
 import type {
   SmartMeterConnectionType,
+  SmartMeterLimitType,
   SmartMeterDto,
   UpdateSmartMeterDto,
 } from "../../models/smart_meter/SmartMeterTypes";
@@ -24,6 +25,8 @@ const buttonClass =
 const getInitialForm = (meter: SmartMeterDto): UpdateSmartMeterDto => ({
   connectionType: String(meter.connectionType || "1") as SmartMeterConnectionType,
   note: meter.note ?? "",
+  limitValue: meter.limitValue ?? undefined,
+  limitType: String(meter.limitType ?? "1") as SmartMeterLimitType,
 });
 
 export default function EditSmartMeterModal({
@@ -33,6 +36,7 @@ export default function EditSmartMeterModal({
   onUpdated,
 }: EditSmartMeterModalProps) {
   const [form, setForm] = useState<UpdateSmartMeterDto | null>(null);
+  const [limitValueInput, setLimitValueInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -42,6 +46,7 @@ export default function EditSmartMeterModal({
     if (!open || !meter) return;
 
     setForm(getInitialForm(meter));
+    setLimitValueInput(meter.limitValue ? String(meter.limitValue) : "");
     setError("");
   }, [open, meter]);
 
@@ -51,14 +56,30 @@ export default function EditSmartMeterModal({
     setForm((prev) => (prev ? { ...prev, note: event.target.value } : prev));
   };
 
+  const handleLimitTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setForm((prev) => (prev ? { ...prev, limitType: event.target.value as SmartMeterLimitType } : prev));
+  };
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
+
+    const normalizedLimitValue = limitValueInput.trim()
+      ? Number(limitValueInput.replace(",", "."))
+      : undefined;
+
+    if (normalizedLimitValue !== undefined && (!Number.isFinite(normalizedLimitValue) || normalizedLimitValue <= 0)) {
+      setError("Limit mora biti pozitivan broj.");
+      return;
+    }
+
     setLoading(true);
 
     const response = await smartMeterApi.update(meter.id, {
       ...form,
       note: form.note?.trim(),
+      limitValue: normalizedLimitValue,
+      limitType: normalizedLimitValue !== undefined ? form.limitType : undefined,
     });
 
     setLoading(false);
@@ -122,6 +143,46 @@ export default function EditSmartMeterModal({
               />
             </div>
 
+            <div className="rounded-xl border border-blue-100 bg-blue-50/60 p-4">
+              <div className="mb-3">
+                <p className="text-[11px] uppercase tracking-widest text-[#469FFE] montserrat_medium">
+                  Limit potrošnje
+                </p>
+                <p className="mt-1 text-xs text-[#AFAFAF] montserrat_medium">
+                  Podesite upozorenje u kWh ili dinarima.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs text-[#363636] montserrat_medium">Tip limita</label>
+                  <select
+                    value={String(form.limitType ?? "1")}
+                    onChange={handleLimitTypeChange}
+                    className={inputClass}
+                  >
+                    <option value="1">kWh</option>
+                    <option value="0">RSD</option>
+                  </select>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs text-[#363636] montserrat_medium">
+                    Vrednost limita
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={limitValueInput}
+                    onChange={(event) => setLimitValueInput(event.target.value)}
+                    placeholder={String(form.limitType ?? "1") === "0" ? "npr. 5000" : "npr. 350"}
+                    className={inputClass}
+                  />
+                </div>
+              </div>
+            </div>
+
             <div className="flex items-center justify-end gap-2.5 border-t border-gray-100 pt-5">
               <button
                 type="button"
@@ -137,7 +198,7 @@ export default function EditSmartMeterModal({
                 className={`${buttonClass} inline-flex items-center gap-2 bg-[#469FFE] px-5 py-2.5 text-white after:bg-[#2b7bdc] hover:bg-[#2b7bdc] [text-shadow:3px_5px_2px_#1f5fb0] hover:[text-shadow:2px_2px_2px_#b5e0ff]`}
               >
                 <FaSave />
-                {loading ? "Cuvanje..." : "Sacuvaj"}
+                {loading ? "Čuvanje..." : "Sačuvaj"}
               </button>
             </div>
           </form>

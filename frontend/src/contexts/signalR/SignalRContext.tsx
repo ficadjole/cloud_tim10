@@ -32,6 +32,7 @@ const normalizeDeviceStatus = (raw: unknown): DeviceStatusDto | null => {
         deviceId,
         deviceType: (item.deviceType ?? item.DeviceType ?? null) as string | number | null,
         currentLoadKW: (item.currentLoadKW ?? item.CurrentLoadKW ?? null) as number | null,
+        totalConsumptionKWh: (item.totalConsumptionKWh ?? item.TotalConsumptionKWh ?? null) as number | null,
         lastHeartbeat: (item.lastHeartbeat ?? item.LastHeartbeat ?? item.timestamp ?? item.Timestamp ?? null) as string | null,
         voltageL1: (item.voltageL1 ?? item.VoltageL1 ?? null) as number | null,
         voltageL2: (item.voltageL2 ?? item.VoltageL2 ?? null) as number | null,

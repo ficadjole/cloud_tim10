@@ -1,4 +1,5 @@
 export type SmartMeterConnectionType = "1" | "2";
+export type SmartMeterLimitType = "0" | "1";
 
 export type SmartMeterDto = {
   id: string;
@@ -9,6 +10,8 @@ export type SmartMeterDto = {
   maxPower?: number;
   note?: string | null;
   deviceGuid?: string | null;
+  limitValue?: number | null;
+  limitType?: SmartMeterLimitType | string | number | null;
   residentalObjectId?: string | null;
 };
 
@@ -16,6 +19,7 @@ export type DeviceStatusDto = {
   deviceId: string;
   deviceType?: string | number | null;
   currentLoadKW?: number | null;
+  totalConsumptionKWh?: number | null;
   lastHeartbeat?: string | null;
   voltageL1?: number | null;
   voltageL2?: number | null;
@@ -43,5 +47,5 @@ export type UpdateSmartMeterDto = {
   connectionType: SmartMeterConnectionType;
   note?: string;
   limitValue?: number;
-  limitType?: string | number;
+  limitType?: SmartMeterLimitType | string | number;
 };

@@ -1,0 +1,47 @@
+import axios from "axios";
+import client from "../axios/axiosClient";
+import type { ApiResponse } from "../users/IUsersAPIService";
+
+export type CreateManualLogDto = {
+  smartMeterId: string;
+  highTariffValue: number;
+  lowTariffValue: number;
+  image: File;
+};
+
+const getErrorMessage = (e: unknown, fallback: string) => {
+  if (!axios.isAxiosError(e)) return fallback;
+
+  const data = e.response?.data as { message?: string; errors?: string | Record<string, string[]> } | string | undefined;
+  if (typeof data === "string") return data || fallback;
+  if (typeof data?.errors === "string") return data.errors;
+  if (data?.errors && typeof data.errors === "object") {
+    const messages = Object.values(data.errors).flat().filter(Boolean);
+    if (messages.length) return messages.join(" ");
+  }
+
+  return data?.message ?? fallback;
+};
+
+const err = <T>(e: unknown, fallback: string): ApiResponse<T> => ({
+  success: false,
+  message: getErrorMessage(e, fallback),
+});
+
+export const manualLogApi = {
+  async create(dto: CreateManualLogDto): Promise<ApiResponse<void>> {
+    const formData = new FormData();
+    formData.append("SmartMeterId", dto.smartMeterId);
+    formData.append("HighTariffValue", String(dto.highTariffValue));
+    formData.append("LowTariffValue", String(dto.lowTariffValue));
+    formData.append("ManualLogImage", dto.image);
+
+    return client
+      .post("/ManualLogs", formData)
+      .then(() => ({
+        success: true as const,
+        message: "Manual reading submitted successfully.",
+      }))
+      .catch((e) => err<void>(e, "Failed to submit manual reading"));
+  },
+};
