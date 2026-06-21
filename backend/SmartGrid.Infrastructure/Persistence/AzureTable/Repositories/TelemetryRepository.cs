@@ -30,13 +30,12 @@ namespace SmartGrid.Infrastructure.Persistence.AzureTable.Repositories
             var filter = $"PartitionKey eq '{smartMeterId}'";
             var entities = _tableClient.QueryAsync<TelemetryEntity>(filter, cancellationToken: ct);
 
-            TelemetryEntity? latest = null;
             await foreach (var entity in entities)
             {
-                latest = entity;
+                return _mapper.ToDomain(entity);
             }
 
-            return latest != null ? _mapper.ToDomain(latest) : null;
+            return null;
         }
 
         public async Task<IEnumerable<Telemetry>> GetHistoryAsync(
@@ -71,12 +70,13 @@ namespace SmartGrid.Infrastructure.Persistence.AzureTable.Repositories
             var history = await GetHistoryAsync(smartMeterId.Value, start, end, ct);
             var sortedHistory = history.OrderBy(t => t.Timestamp).ToList();
 
-            if (sortedHistory.Count < 2)
+            if (sortedHistory.Count == 0)
             {
                 return new ConsumptionSummary(0, 0);
             }
 
-            var firstReading = sortedHistory.First();
+            var readingBeforePeriod = await GetLatestBeforeAsync(smartMeterId.Value, start, ct);
+            var firstReading = readingBeforePeriod ?? sortedHistory.First();
             var lastReading = sortedHistory.Last();
 
             double totalConsumption = lastReading.TotalConsumptionKWh - firstReading.TotalConsumptionKWh;
@@ -114,6 +114,29 @@ namespace SmartGrid.Infrastructure.Persistence.AzureTable.Repositories
                 totalConsumption * highTariffRatio,
                 totalConsumption * lowTariffRatio
             );
+        }
+
+        private async Task<Telemetry?> GetLatestBeforeAsync(string smartMeterId, DateTime before, CancellationToken ct)
+        {
+            var filter = $"PartitionKey eq '{smartMeterId}' and ObservationTime lt datetime'{before:yyyy-MM-ddTHH:mm:ss.fffZ}'";
+            var entities = _tableClient.QueryAsync<TelemetryEntity>(filter, cancellationToken: ct);
+
+            Telemetry? latest = null;
+            await foreach (var entity in entities)
+            {
+                var telemetry = _mapper.ToDomain(entity);
+                if (telemetry == null)
+                {
+                    continue;
+                }
+
+                if (latest == null || telemetry.Timestamp > latest.Timestamp)
+                {
+                    latest = telemetry;
+                }
+            }
+
+            return latest;
         }
     }
 }

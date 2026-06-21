@@ -2,13 +2,7 @@ import axios from "axios";
 import client from "../axios/axiosClient";
 import type { ApiResponse } from "../users/IUsersAPIService";
 import type { ManualLogDto } from "../../types/manualLog/ManualLogTypes";
-
-export type CreateManualLogDto = {
-  smartMeterId: string;
-  highTariffValue: number;
-  lowTariffValue: number;
-  image: File;
-};
+import type { CreateManualLogDto, IManualLogAPIService } from "./IManualLogAPIService";
 
 const getErrorMessage = (e: unknown, fallback: string) => {
   if (!axios.isAxiosError(e)) return fallback;
@@ -29,7 +23,7 @@ const err = <T>(e: unknown, fallback: string): ApiResponse<T> => ({
   message: getErrorMessage(e, fallback),
 });
 
-export const manualLogApi = {
+export const manualLogApi: IManualLogAPIService = {
   async create(dto: CreateManualLogDto): Promise<ApiResponse<void>> {
     const formData = new FormData();
     formData.append("SmartMeterId", dto.smartMeterId);
@@ -49,6 +43,17 @@ export const manualLogApi = {
   async getAll(): Promise<ApiResponse<ManualLogDto[]>> {
     return client
       .get<ManualLogDto[]>("/ManualLogs")
+      .then((r) => ({
+        success: true as const,
+        data: r.data,
+        message: "",
+      }))
+      .catch((e) => err<ManualLogDto[]>(e, "Failed to load manual logs"));
+  },
+
+  async getByMeter(smartMeterId: string): Promise<ApiResponse<ManualLogDto[]>> {
+    return client
+      .get<ManualLogDto[]>(`/ManualLogs/meter/${smartMeterId}`)
       .then((r) => ({
         success: true as const,
         data: r.data,

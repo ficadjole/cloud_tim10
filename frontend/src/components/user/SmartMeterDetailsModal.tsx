@@ -19,6 +19,7 @@ import { manualLogApi } from "../../api_services/manual_logs/ManualLogAPIService
 import { useSignalR } from "../../contexts/signalR/SignalRContext";
 import { useLockBodyScroll } from "../../hooks/ui/useLockBodyScroll";
 import type { DeviceStatusDto, SmartMeterDto } from "../../models/smart_meter/SmartMeterTypes";
+import type { ManualLogDto } from "../../types/manualLog/ManualLogTypes";
 
 interface SmartMeterDetailsModalProps {
   open: boolean;
@@ -30,30 +31,25 @@ const detailItemClass = "rounded-lg border border-gray-200 bg-white px-3 py-3";
 const inputClass =
   "w-full h-[43px] rounded-xl border border-[#469FFE]/1 bg-white px-4 py-3 text-sm text-[#469FFE] shadow-[0_0_0_1.5px_#469FFE,0_0_25px_-17px_#000] outline-none transition-all duration-200 placeholder:text-[#469FFE]/60 hover:shadow-[0_0_0_2.5px_#67afff,0_0_25px_-15px_#000] focus:scale-[0.98] cursor-text montserrat_medium";
 const measurementRefreshMs = 2000;
-const manualReadingsStorageKey = "manualReadingsHold";
+const manualLogRefreshMs = 5000;
 const maxManualImageSizeBytes = 5 * 1024 * 1024;
 
-type ManualReadingHold = {
-  id: string;
-  meterId: string;
-  highTariffValue: number;
-  lowTariffValue: number;
-  imageName: string;
-  submittedAt: string;
-  status: "waiting";
+const manualLogStatusLabel: Record<string, string> = {
+  WaitingForProcessing: "Na cekanju",
+  Processed: "Odobreno",
+  Rejected: "Odbijeno",
 };
 
-const readManualReadingHolds = (): ManualReadingHold[] => {
-  try {
-    const raw = localStorage.getItem(manualReadingsStorageKey);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
+const manualLogStatusClass: Record<string, string> = {
+  WaitingForProcessing: "border-yellow-200 bg-yellow-100 text-yellow-700",
+  Processed: "border-green-200 bg-green-100 text-green-700",
+  Rejected: "border-red-200 bg-red-100 text-red-700",
 };
 
-const writeManualReadingHolds = (items: ManualReadingHold[]) => {
-  localStorage.setItem(manualReadingsStorageKey, JSON.stringify(items.slice(0, 20)));
+const manualLogPanelClass: Record<string, string> = {
+  WaitingForProcessing: "border-yellow-100 bg-yellow-50",
+  Processed: "border-green-100 bg-green-50",
+  Rejected: "border-red-100 bg-red-50",
 };
 
 const formatFileSize = (bytes: number) => {
@@ -166,7 +162,8 @@ export default function SmartMeterDetailsModal({ open, meter, onClose }: SmartMe
   const [manualImage, setManualImage] = useState<File | null>(null);
   const [manualImagePreview, setManualImagePreview] = useState("");
   const [manualFileInputKey, setManualFileInputKey] = useState(0);
-  const [manualHolds, setManualHolds] = useState<ManualReadingHold[]>([]);
+  const [manualLogs, setManualLogs] = useState<ManualLogDto[]>([]);
+  const [manualLogsLoading, setManualLogsLoading] = useState(false);
   const [manualSubmitting, setManualSubmitting] = useState(false);
   const [manualError, setManualError] = useState("");
   const [manualSuccess, setManualSuccess] = useState("");
@@ -174,6 +171,27 @@ export default function SmartMeterDetailsModal({ open, meter, onClose }: SmartMe
   const [error, setError] = useState("");
 
   useLockBodyScroll(open && Boolean(meter));
+
+  const loadManualLogs = async (smartMeterId: string, showLoading = false) => {
+    if (showLoading) {
+      setManualLogsLoading(true);
+    }
+
+    const response = await manualLogApi.getByMeter(smartMeterId);
+
+    if (showLoading) {
+      setManualLogsLoading(false);
+    }
+
+    if (!response.success) {
+      if (showLoading) {
+        setManualError(response.message);
+      }
+      return;
+    }
+
+    setManualLogs(response.data ?? []);
+  };
 
   useEffect(() => {
     if (!open || !meter) return;
@@ -237,7 +255,16 @@ export default function SmartMeterDetailsModal({ open, meter, onClose }: SmartMe
     setManualFileInputKey((current) => current + 1);
     setManualError("");
     setManualSuccess("");
-    setManualHolds(readManualReadingHolds().filter((item) => item.meterId === meter.id));
+    setManualLogs([]);
+    void loadManualLogs(meter.id, true);
+
+    const intervalId = window.setInterval(() => {
+      void loadManualLogs(meter.id);
+    }, manualLogRefreshMs);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
   }, [open, meter]);
 
   useEffect(() => {
@@ -340,18 +367,7 @@ export default function SmartMeterDetailsModal({ open, meter, onClose }: SmartMe
       return;
     }
 
-    const nextHold: ManualReadingHold = {
-      id: `${meter.id}-${Date.now()}`,
-      meterId: meter.id,
-      highTariffValue,
-      lowTariffValue,
-      imageName: manualImage.name,
-      submittedAt: new Date().toISOString(),
-      status: "waiting",
-    };
-    const stored = [nextHold, ...readManualReadingHolds().filter((item) => item.id !== nextHold.id)];
-    writeManualReadingHolds(stored);
-    setManualHolds(stored.filter((item) => item.meterId === meter.id));
+    await loadManualLogs(meter.id);
     setManualHighTariff("");
     setManualLowTariff("");
     setManualImage(null);
@@ -571,30 +587,46 @@ export default function SmartMeterDetailsModal({ open, meter, onClose }: SmartMe
                 </div>
               )}
 
-              {manualHolds.length > 0 && (
-                <div className="mb-4 rounded-lg border border-yellow-100 bg-yellow-50 px-3 py-3">
-                  <p className="mb-2 text-[11px] uppercase tracking-widest text-yellow-700 montserrat_medium">
-                    Unosi na čekanju
+              {manualLogsLoading && (
+                <p className="mb-4 text-xs text-[#AFAFAF] montserrat_medium">Učitavanje ručnih očitavanja...</p>
+              )}
+
+              {manualLogs.length > 0 && (
+                <div className="mb-4 rounded-lg border border-gray-100 bg-[#FAFAFA] px-3 py-3">
+                  <p className="mb-2 text-[11px] uppercase tracking-widest text-gray-500 montserrat_medium">
+                    Ručna očitavanja
                   </p>
                   <div className="space-y-2">
-                    {manualHolds.slice(0, 3).map((item) => (
-                      <div key={item.id} className="rounded-md border border-yellow-100 bg-white/70 px-3 py-2">
+                    {manualLogs.slice(0, 3).map((item) => (
+                      <div
+                        key={item.id}
+                        className={`rounded-md border px-3 py-2 ${manualLogPanelClass[item.status] ?? "border-gray-100 bg-white/70"}`}
+                      >
                         <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                           <p className="text-xs text-[#363636] montserrat_semibold">
                             VT {formatNumber(item.highTariffValue, "kWh")} / NT {formatNumber(item.lowTariffValue, "kWh")}
                           </p>
-                          <span className="rounded-md border border-yellow-200 bg-yellow-100 px-2 py-0.5 text-[11px] text-yellow-700 montserrat_medium">
-                            Na čekanju
+                          <span
+                            className={`rounded-md border px-2 py-0.5 text-[11px] montserrat_medium ${manualLogStatusClass[item.status] ?? "border-gray-200 bg-gray-100 text-gray-600"}`}
+                          >
+                            {manualLogStatusLabel[item.status] ?? item.status}
                           </span>
                         </div>
-                        <p className="mt-1 text-[11px] text-[#AFAFAF] montserrat_medium">
-                          {new Date(item.submittedAt).toLocaleString("sr-RS")} - {item.imageName}
-                        </p>
+                        {item.imageUrl && (
+                          <a
+                            href={import.meta.env.VITE_BLOB_BASE_URL + item.imageUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="mt-1 inline-block text-[11px] text-[#469FFE] underline-offset-2 hover:underline montserrat_medium"
+                          >
+                            Pogledaj sliku očitavanja
+                          </a>
+                        )}
                       </div>
                     ))}
                   </div>
-                  <p className="mt-2 text-[11px] text-yellow-700 montserrat_medium">
-                    Neobrađeni unosi se ne uzimaju u obzir pri generisanju računa.
+                  <p className="mt-2 text-[11px] text-[#AFAFAF] montserrat_medium">
+                    Samo odobrena ručna očitavanja ulaze u obračun računa.
                   </p>
                 </div>
               )}

@@ -33,6 +33,14 @@ namespace SmartGrid.WebApi.Controllers
             return result.ToActionResult();
         }
 
+        [HttpGet("meter/{smartMeterId}")]
+        [Authorize(Roles = "User,PaymentAdmin,SysAdmin")]
+        public async Task<IActionResult> GetManualLogsBySmartMeter(string smartMeterId, CancellationToken ct)
+        {
+            var result = await mediator.Send(new GetManualLogsBySmartMeterQuery(smartMeterId), ct);
+            return result.ToActionResult();
+        }
+
         [HttpPut("{id}/approve")]
         [Authorize(Roles = "PaymentAdmin,SysAdmin")]
         public async Task<IActionResult> ApproveManualLog(string id, CancellationToken ct)
