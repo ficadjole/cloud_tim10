@@ -33,6 +33,13 @@ const inputClass =
 const measurementRefreshMs = 2000;
 const manualLogRefreshMs = 5000;
 const maxManualImageSizeBytes = 5 * 1024 * 1024;
+const manualLogBlobBaseUrl =
+  import.meta.env.VITE_BLOB_BASE_URL ?? "http://127.0.0.1:10000/devstoreaccount1/manual-readings-images/";
+
+const getManualLogImageUrl = (path: string) => {
+  if (/^https?:\/\//i.test(path)) return path;
+  return `${manualLogBlobBaseUrl.replace(/\/?$/, "/")}${path.replace(/^\/+/, "")}`;
+};
 
 const manualLogStatusLabel: Record<string, string> = {
   WaitingForProcessing: "Na cekanju",
@@ -161,6 +168,7 @@ export default function SmartMeterDetailsModal({ open, meter, onClose }: SmartMe
   const [manualLowTariff, setManualLowTariff] = useState("");
   const [manualImage, setManualImage] = useState<File | null>(null);
   const [manualImagePreview, setManualImagePreview] = useState("");
+  const [manualLogPreviewUrl, setManualLogPreviewUrl] = useState<string | null>(null);
   const [manualFileInputKey, setManualFileInputKey] = useState(0);
   const [manualLogs, setManualLogs] = useState<ManualLogDto[]>([]);
   const [manualLogsLoading, setManualLogsLoading] = useState(false);
@@ -252,6 +260,7 @@ export default function SmartMeterDetailsModal({ open, meter, onClose }: SmartMe
     setManualLowTariff("");
     setManualImage(null);
     setManualImagePreview("");
+    setManualLogPreviewUrl(null);
     setManualFileInputKey((current) => current + 1);
     setManualError("");
     setManualSuccess("");
@@ -613,14 +622,13 @@ export default function SmartMeterDetailsModal({ open, meter, onClose }: SmartMe
                           </span>
                         </div>
                         {item.imageUrl && (
-                          <a
-                            href={import.meta.env.VITE_BLOB_BASE_URL + item.imageUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="mt-1 inline-block text-[11px] text-[#469FFE] underline-offset-2 hover:underline montserrat_medium"
+                          <button
+                            type="button"
+                            onClick={() => setManualLogPreviewUrl(getManualLogImageUrl(item.imageUrl))}
+                            className="mt-1 inline-block text-left text-[11px] text-[#469FFE] underline-offset-2 hover:underline montserrat_medium"
                           >
                             Pogledaj sliku očitavanja
-                          </a>
+                          </button>
                         )}
                       </div>
                     ))}
@@ -722,6 +730,19 @@ export default function SmartMeterDetailsModal({ open, meter, onClose }: SmartMe
           </div>
         </div>
       </div>
+      {manualLogPreviewUrl && (
+        <div
+          className="fixed inset-0 z-[90] flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm"
+          onClick={() => setManualLogPreviewUrl(null)}
+        >
+          <img
+            src={manualLogPreviewUrl}
+            alt="Uvecana slika ocitavanja"
+            className="max-h-[85vh] max-w-full rounded-2xl shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          />
+        </div>
+      )}
     </div>
   );
 }
