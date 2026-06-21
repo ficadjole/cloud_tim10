@@ -45,8 +45,8 @@ const getInitialAuth = () => {
           id,
           name: parsedUser?.name ?? email,
           email: parsedUser?.email ?? email,
-          username: parsedUser?.username ?? parsedUser?.email ?? email,
           role,
+          accountStatus: parsedUser?.accountStatus
         } as AuthUser,
       };
     }
@@ -74,7 +74,7 @@ const login = (t: string, authUser?: Partial<AuthUser>) => {
     id: authUser?.id ?? id,
     name: authUser?.name ?? authUser?.email ?? email,
     email: authUser?.email ?? email,
-    username: authUser?.username ?? authUser?.email ?? email,
+    accountStatus: authUser?.accountStatus!,
     role,
   };
 

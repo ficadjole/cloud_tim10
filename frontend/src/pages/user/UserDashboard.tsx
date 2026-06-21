@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaFileInvoiceDollar, FaHome, FaSignal, FaUserCircle } from "react-icons/fa";
+import { FaUserCircle } from "react-icons/fa";
 import { IoIosLogOut } from "react-icons/io";
 import { useAuth } from "../../hooks/auth/useAuthHook";
 import { useSignalR } from "../../contexts/signalR/SignalRContext";
