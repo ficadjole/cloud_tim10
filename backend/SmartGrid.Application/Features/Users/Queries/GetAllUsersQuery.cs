@@ -21,7 +21,7 @@ namespace SmartGrid.Application.Features.Users.Queries
             {
                 logger.LogInformation("Fetching all users from the repository.");
 
-                
+
                 var users = await userRepository.GetAllAsync();
 
                 var userDtos = users.Select(user => new UserDto

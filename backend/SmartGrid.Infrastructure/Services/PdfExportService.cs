@@ -2,9 +2,6 @@
 using PdfSharpCore.Drawing;
 using PdfSharpCore.Pdf;
 using SmartGrid.Application.Interfaces;
-using System;
-using System.IO;
-using System.Threading.Tasks;
 
 namespace SmartGrid.Infrastructure.Services
 {
@@ -42,7 +39,7 @@ namespace SmartGrid.Infrastructure.Services
                 string redRsd = "0.00 RSD";
                 string fixedRsd = "0.00 RSD";
                 string totalRsd = "0.00 RSD";
-                string status = "Unpaid"; 
+                string status = "Unpaid";
 
                 string[] lines = textContent.Split('\n');
                 foreach (var line in lines)

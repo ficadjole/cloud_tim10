@@ -48,7 +48,7 @@ namespace SmartGrid.Application.Features.SmartMeters.Commands
                         return Result<ActivationResult>.Failure(activateResult.Error!.Message, activateResult.Error.Type);
                 }
 
-                    await smartMeterRepository.UpdateAsync(meter, cancellationToken);
+                await smartMeterRepository.UpdateAsync(meter, cancellationToken);
 
                 logger.LogInformation("Smart meter {SerialNumber} successfully activated with DeviceGuid: {DeviceGuid}",
                     request.SerialNumber, request.DeviceGuid);

@@ -5,9 +5,6 @@ using SmartGrid.Application.Interfaces.Storage;
 using SmartGrid.Domain.Common;
 using SmartGrid.Domain.Enums;
 using SmartGrid.Domain.ValueObjects;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace SmartGrid.Application.Features.Bills.Queries.GetBillPdf
 {

@@ -1,5 +1,4 @@
-﻿using System;
-using SmartGrid.ITSimulator.Enums;
+﻿using SmartGrid.ITSimulator.Enums;
 using SmartGrid.ITSimulator.Models;
 
 namespace SmartGrid.ITSimulator.Services

@@ -31,16 +31,20 @@ export default function SetPasswordForm({ token, onSuccess }: Props) {
 
     setLoading(true);
     try {
-      await client.post(`/CreateUser/set-password?token=${encodeURIComponent(token)}`, {
-        password,
-        confirmPassword: confirm,
-      });
+      await client.post(
+        `/User/set-password?token=${encodeURIComponent(token)}`,
+        {
+          password,
+          confirmPassword: confirm,
+        },
+      );
       onSuccess?.();
     } catch (e) {
       setError(
         axios.isAxiosError(e)
-          ? (e.response?.data as { message?: string })?.message ?? "Greška pri postavljanju lozinke."
-          : "Greška pri postavljanju lozinke."
+          ? ((e.response?.data as { message?: string })?.message ??
+              "Greška pri postavljanju lozinke.")
+          : "Greška pri postavljanju lozinke.",
       );
     } finally {
       setLoading(false);
@@ -54,8 +58,12 @@ export default function SetPasswordForm({ token, onSuccess }: Props) {
           <div className="w-12 h-12 rounded-2xl bg-white/8 border border-white/12 flex items-center justify-center mx-auto mb-4">
             <span className="text-white/60 text-lg">◈</span>
           </div>
-          <h1 className="text-[#469FFE] montserrat_bold text-3xl">Postavi lozinku</h1>
-          <p className="text-md text-[#363636] mt-1 montserrat_medium">Unesite novu lozinku za vaš nalog</p>
+          <h1 className="text-[#469FFE] montserrat_bold text-3xl">
+            Postavi lozinku
+          </h1>
+          <p className="text-md text-[#363636] mt-1 montserrat_medium">
+            Unesite novu lozinku za vaš nalog
+          </p>
         </div>
 
         {error && (
@@ -66,7 +74,9 @@ export default function SetPasswordForm({ token, onSuccess }: Props) {
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
-            <label className="block text-xs text-[#469FFE] mb-2 font-medium montserrat_semibold">Nova lozinka</label>
+            <label className="block text-xs text-[#469FFE] mb-2 font-medium montserrat_semibold">
+              Nova lozinka
+            </label>
             <input
               type="password"
               value={password}
@@ -78,7 +88,9 @@ export default function SetPasswordForm({ token, onSuccess }: Props) {
           </div>
 
           <div>
-            <label className="block text-xs text-[#469FFE] mb-2 font-medium montserrat_semibold">Potvrdi lozinku</label>
+            <label className="block text-xs text-[#469FFE] mb-2 font-medium montserrat_semibold">
+              Potvrdi lozinku
+            </label>
             <input
               type="password"
               value={confirm}

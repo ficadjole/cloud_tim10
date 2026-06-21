@@ -35,21 +35,15 @@ namespace SmartGrid.Infrastructure.Extensions
             services.AddSingleton(tableServiceClient);
 
             services.AddSingleton<ITableMapper<Telemetry, TelemetryEntity>, TelemetryTableMapper>();
-            services.AddSingleton<ITableMapper<Device, DeviceEntity>, DeviceTableMapper>();
             services.AddSingleton<ITableMapper<DeviceStatus, DeviceStatusEntity>, DeviceStatusTableMapper>();
-            services.AddSingleton<ITableMapper<Firmware, FirmwareEntity>, FirmwareTableMapper>();
             services.AddSingleton<ITableMapper<Alert, AlertEntity>, AlertTableMapper>();
 
             services.AddSingleton<ITableKeyProvider<Telemetry>, TelemetryTableKeyProvider>();
-            services.AddSingleton<ITableKeyProvider<Device>, DeviceTableKeyProvider>();
             services.AddSingleton<ITableKeyProvider<DeviceStatus>, DeviceStatusTableKeyProvider>();
-            services.AddSingleton<ITableKeyProvider<Firmware>, FirmwareTableKeyProvider>();
             services.AddSingleton<ITableKeyProvider<Alert>, AlertTableKeyProvider>();
 
             services.AddScoped<ITelemetryRepository, TelemetryRepository>();
-            services.AddScoped<IDeviceRepository, DeviceRepository>();
             services.AddScoped<IDeviceStatusRepository, DeviceStatusRepository>();
-            services.AddScoped<IFirmwareRepository, FirmwareRepository>();
             services.AddScoped<IDeviceStatusQueryRepository, DeviceStatusQueryRepository>();
             services.AddScoped<IAlertRepository, AlertRepository>();
 

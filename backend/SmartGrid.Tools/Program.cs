@@ -10,7 +10,7 @@ Console.WriteLine($"Target Storage: {ConnectionString}");
 Console.WriteLine();
 
 var tables = new[] { "Telemetries", "DeviceStatuses", "Alerts" };
-var blobs = new[] { "manual-readings-images" };
+var blobs = new[] { "manual-readings-images", "invoices" };
 var queues = new[] { "alert-queue", "device-status-queue", "user-queue", "reset-password-queue" };
 
 var tableServiceClient = new TableServiceClient(ConnectionString);

@@ -130,18 +130,18 @@ namespace SmartGrid.Application.Features.Bills.Commands.GenerateMonthlyBills
         //samo za test
         public async Task<Result> Handle(GenerateMonthlyBillsCommand request, CancellationToken ct)
         {
-            
-            
+
+
             DateTime utcNow = DateTime.UtcNow;
 
-            
-            
-            
+
+
+
             DateTime currentMinute = new DateTime(utcNow.Year, utcNow.Month, utcNow.Day, utcNow.Hour, utcNow.Minute, 0, DateTimeKind.Utc);
 
-            
-            DateTime firstDayOfPreviousMonth = currentMinute.AddMinutes(-1); 
-            DateTime lastDayOfPreviousMonth = currentMinute.AddTicks(-1);    
+
+            DateTime firstDayOfPreviousMonth = currentMinute.AddMinutes(-1);
+            DateTime lastDayOfPreviousMonth = currentMinute.AddTicks(-1);
 
             var tariffModel = await tariffModelRepository.GetActiveTariffAsync(ct);
             if (tariffModel == null)
@@ -158,7 +158,7 @@ namespace SmartGrid.Application.Features.Bills.Commands.GenerateMonthlyBills
                     continue;
                 }
 
-                
+
                 var existingBill = await billRepository.GetByPeriodAsync(meter.Id, firstDayOfPreviousMonth, ct);
                 if (existingBill != null)
                 {
@@ -183,7 +183,7 @@ namespace SmartGrid.Application.Features.Bills.Commands.GenerateMonthlyBills
                     maxPowerValue = meter.MaxPower.Value;
                 }
 
-                
+
                 var consumption = await telemetryRepository.GetConsumptionForPeriodAsync(
                     meter.Id,
                     firstDayOfPreviousMonth,

@@ -21,7 +21,7 @@ namespace SmartGrid.Application.Features.Bills.Commands
         {
             var idResult = EntityId.Create(request.BillId);
             if (idResult.IsFailure)
-                return Result<CheckoutSessionDto>.Failure(idResult.Error.Message, ErrorType.Validation);
+                return Result<CheckoutSessionDto>.Failure(idResult.Error!.Message, ErrorType.Validation);
 
             var bill = await billRepository.GetByIdAsync(idResult.Value, ct);
             if (bill == null)
@@ -35,7 +35,7 @@ namespace SmartGrid.Application.Features.Bills.Commands
             );
 
             if (sessionResult.IsFailure)
-                return Result<CheckoutSessionDto>.Failure(sessionResult.Error.Message, sessionResult.Error.Type);
+                return Result<CheckoutSessionDto>.Failure(sessionResult.Error!.Message, sessionResult.Error.Type);
 
             return Result<CheckoutSessionDto>.Success(new CheckoutSessionDto(sessionResult.Value));
         }

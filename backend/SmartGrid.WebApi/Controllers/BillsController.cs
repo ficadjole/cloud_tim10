@@ -54,7 +54,7 @@ namespace SmartGrid.WebApi.Controllers
 
         [HttpGet("owner/{ownerId}")]
         [Authorize(Roles = "User,PaymentAdmin")]
-        public async Task<IActionResult> GetBillsByOwner([FromRoute] string ownerId,[FromQuery] int pageNumber = 1,[FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetBillsByOwner([FromRoute] string ownerId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
             var query = new GetBillsByOwnerQuery(ownerId, pageNumber, pageSize);
             var result = await mediator.Send(query);
