@@ -55,5 +55,19 @@ namespace SmartGrid.Infrastructure.Persistence.AzureSQL.Repositories
                 .Select(d => d!)
                 .ToList();
         }
+
+        public async Task<IReadOnlyCollection<ManualStateLog>> GetBySmartMeterIdAsync(EntityId smartMeterId, CancellationToken ct = default)
+        {
+            var entities = await _dbContext.ManualStateLogs
+                .AsNoTracking()
+                .Where(e => e.SmartMeterId.ToString() == smartMeterId.Value)
+                .ToListAsync(ct);
+
+            return entities
+                .Select(e => _mapper.MapToDomain(e))
+                .Where(d => d != null)
+                .Select(d => d!)
+                .ToList();
+        }
     }
 }

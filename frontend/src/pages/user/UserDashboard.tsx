@@ -627,7 +627,7 @@ export default function UserDashboard() {
             activeCard={activeCard}
             eyebrow="Kontrolni panel"
             title="Objekti i potrošači"
-            children={"Pregled, upravljanje i izmena objekata i potrošača."}
+            children={"Pregled, upravljanje i izmena objekata i potrošača. Ručna prijava stanja brojila."}
             icon={houseIcon}
             onHover={setActiveCard}
             onOpen={setOpenPanel}

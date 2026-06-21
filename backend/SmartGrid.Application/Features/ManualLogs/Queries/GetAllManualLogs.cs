@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using SmartGrid.Application.Interfaces.Repositories;
 using SmartGrid.Domain.Common;
 using SmartGrid.Domain.Enums;
+using SmartGrid.Domain.ValueObjects;
 
 namespace SmartGrid.Application.Features.ManualLogs.Queries
 {
@@ -16,6 +17,8 @@ namespace SmartGrid.Application.Features.ManualLogs.Queries
     );
 
     public record GetAllManualLogsQuery : IRequest<Result<IEnumerable<ManualLogDto>>>;
+
+    public record GetManualLogsBySmartMeterQuery(string SmartMeterId) : IRequest<Result<IEnumerable<ManualLogDto>>>;
 
     internal class GetAllManualLogsHandler(
         IManualStateLogRepository repository,
@@ -41,6 +44,41 @@ namespace SmartGrid.Application.Features.ManualLogs.Queries
             catch (Exception ex)
             {
                 logger.LogError(ex, "[GetAllManualLogs] Error fetching manual logs.");
+                return Result<IEnumerable<ManualLogDto>>.Failure("Failed to fetch manual logs.", ErrorType.Failure);
+            }
+        }
+    }
+
+    internal class GetManualLogsBySmartMeterHandler(
+        IManualStateLogRepository repository,
+        ILogger<GetManualLogsBySmartMeterHandler> logger) : IRequestHandler<GetManualLogsBySmartMeterQuery, Result<IEnumerable<ManualLogDto>>>
+    {
+        public async Task<Result<IEnumerable<ManualLogDto>>> Handle(GetManualLogsBySmartMeterQuery request, CancellationToken ct)
+        {
+            try
+            {
+                var smartMeterId = EntityId.Create(request.SmartMeterId);
+                if (smartMeterId.IsFailure)
+                {
+                    return Result<IEnumerable<ManualLogDto>>.Failure(smartMeterId.Error!.Message, smartMeterId.Error.Type);
+                }
+
+                var logs = await repository.GetBySmartMeterIdAsync(smartMeterId.Value, ct);
+
+                var dtos = logs.Select(l => new ManualLogDto(
+                    l.Id.Value,
+                    l.SmartMeterId.Value,
+                    l.HighTariffValue,
+                    l.LowTariffValue,
+                    l.ImageUrl,
+                    l.Status.ToString()
+                ));
+
+                return Result<IEnumerable<ManualLogDto>>.Success(dtos);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "[GetManualLogsBySmartMeter] Error fetching manual logs for meter {SmartMeterId}.", request.SmartMeterId);
                 return Result<IEnumerable<ManualLogDto>>.Failure("Failed to fetch manual logs.", ErrorType.Failure);
             }
         }
